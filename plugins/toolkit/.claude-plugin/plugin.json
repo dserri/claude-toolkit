@@ -1,0 +1,7 @@
+{
+  "name": "toolkit",
+  "description": "Personal multi-session workflow tools: coordinator setup for Claude Code sessions.",
+  "author": {
+    "name": "dserri"
+  }
+}

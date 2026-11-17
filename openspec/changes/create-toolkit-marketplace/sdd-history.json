@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 2,
+  "route": "full",
+  "request": {
+    "digest": "sha256:194a5a4191f92cf39cfab8e5df7f2b4fef751811ee6dd1ffabbf41ef5adfc3fa",
+    "route": "full",
+    "changeName": "create-toolkit-marketplace",
+    "kind": "feature",
+    "summary": "Root .claude-plugin/marketplace.json lists plugin toolkit (./plugins/toolkit, plugin.json without version so commits are releases). create-coordinator SKILL.md, launch.ps1 and resolve-projects.ps1 are copied byte for byte from release 0.2.0 (SHA-256 pinned, BOM kept, .gitattributes eol=lf). README covers install, update, rollback and development; AGENTS.md/CLAUDE.md give repository rules. tests/toolkit.test.mjs (white-box) and tests/blackbox.test.mjs (written independently from the spec) verify manifests, containment, hashes, BOMs, developer-only invocation, no version and the exact skill set. claude plugin validate passes on the marketplace and lists toolkit:create-coordinator. UX/UI: no rendered interface; the only user-visible change is the skill name /toolkit:create-coordinator, documented in the README.",
+    "surfaces": [],
+    "acceptance": [
+      "toolkit-marketplace"
+    ]
+  },
+  "repository": {
+    "baseDigest": "sha256:2e1cfa82b035c26cbbbdae632cea070514eb8b773f616aaeaf668e2f0be8f10d",
+    "finalDigest": "sha256:69030dbcf5c3ab18dc54b7b0359eb5331fb152f8005ce804642dadae33024f95",
+    "configDigest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "dependencyDigest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "environmentDigest": "sha256:2385622c4dfd2867cf84e02a9e8f8b0036331258ca50e36a0af283b95c6f450e",
+    "affectedFiles": [
+      ".claude-plugin/marketplace.json",
+      ".gitattributes",
+      "AGENTS.md",
+      "CLAUDE.md",
+      "README.md",
+      "openspec/changes/create-toolkit-marketplace/.openspec.yaml",
+      "openspec/changes/create-toolkit-marketplace/design.md",
+      "openspec/changes/create-toolkit-marketplace/proposal.md",
+      "openspec/changes/create-toolkit-marketplace/specs/toolkit-marketplace/spec.md",
+      "openspec/changes/create-toolkit-marketplace/tasks.md",
+      "plugins/toolkit/.claude-plugin/plugin.json",
+      "plugins/toolkit/skills/create-coordinator/SKILL.md",
+      "plugins/toolkit/skills/create-coordinator/launch.ps1",
+      "plugins/toolkit/skills/create-coordinator/resolve-projects.ps1",
+      "tests/blackbox.test.mjs",
+      "tests/toolkit.test.mjs"
+    ],
+    "unrelatedWorkPreserved": true,
+    "recoverable": true
+  },
+  "validation": [
+    {
+      "id": "tests",
+      "lane": "test",
+      "coverage": [
+        "test"
+      ],
+      "kind": "command",
+      "key": "sha256:2130156d93e4d6a33931b46892502ba59857e3f467e063d0302ab40108556847",
+      "codeDigest": "sha256:69030dbcf5c3ab18dc54b7b0359eb5331fb152f8005ce804642dadae33024f95",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          ".claude-plugin/marketplace.json",
+          ".gitattributes",
+          "plugins/toolkit/.claude-plugin/plugin.json",
+          "plugins/toolkit/skills/create-coordinator/SKILL.md",
+          "plugins/toolkit/skills/create-coordinator/launch.ps1",
+          "plugins/toolkit/skills/create-coordinator/resolve-projects.ps1",
+          "tests/toolkit.test.mjs",
+          "tests/blackbox.test.mjs"
+        ]
+      },
+      "summary": "✔ marketplace.json exists at the repository root and parses (1.6657ms)\n✔ marketplace is named claude-toolkit with an owner and plugins (0.5627ms)\n✔ marketplace lists exactly one plugin named toolkit (0.3877ms)\n✔ every plugin source is a relative path inside the repository root (1.0595ms)\n✔ source containment check rejects escaping and absolute sources (0.7942ms)\n✔ toolkit source is a directory with plugin.json named toolkit (1.0082ms)\n✔ every listed plugin source has a plugin.json whose name matches its listing (0.5942ms)\n✔ toolkit plugin.json declares no version (0.4221ms)\n✔ toolkit marketplace entry declares no version (0.3708ms)\n✔ toolkit provides the create-coordinator skill files (0.6739ms)\n✔ create-coordinator files match the 0.2.0 runtime manifest SHA-256 (1.7242ms)\n✔ create-coordinator files byte-equal the installed 0.2.0 release copy (1.9803ms)\n✔ both PowerShell scripts start with the UTF-8 BOM (1.4139ms)\n✔ create-coordinator frontmatter keeps disable-model-invocation true (0.6544ms)\n✔ the skills across listed plugins are exactly create-coordinator (0.5819ms)\n✔ every SKILL.md frontmatter name matches its directory and none is sdd (0.7311ms)\n✔ no listed plugin ships an sdd skill directory or agent file (0.5105ms)\n✔ marketplace lists the toolkit plugin from inside the repository (1.4895ms)\n✔ plugin manifest is named toolkit and declares no version (0.3567ms)\n✔ create-coordinator files are identical to release 0.2.0 (1.1077ms)\n✔ PowerShell scripts keep their UTF-8 byte order mark (0.4749ms)\n✔ create-coordinator stays developer-invoked only (0.4744ms)\n✔ toolkit ships exactly the create-coordinator skill and nothing that could shadow SDD (0.3134ms)\nℹ tests 23\nℹ suites 0\nℹ pass 23\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 613.172\n",
+      "exitCode": 0,
+      "durationMs": 700
+    }
+  ],
+  "continuation": {
+    "baseline": {
+      "schemaVersion": 2,
+      "base": null,
+      "unrelatedPaths": [
+        "openspec/changes/archive/.gitkeep",
+        "openspec/config.yaml",
+        "openspec/specs/.gitkeep"
+      ],
+      "unrelatedDigest": "sha256:d832b13a0ae399df5b297976ffc94f51586734dfde2bc1d08e570eed960b7b15"
+    },
+    "remediationCycles": 0,
+    "history": [
+      {
+        "resultDigest": "sha256:51e98d0a95ec6ccc7231c36eb40abffb512eb1d7f871aa9fe03b4bebdbfcf855",
+        "sourceDigest": "sha256:bb5fb189efc255718c969184289de5f9d193bcbd70d0664ddc1d64a0f6b858b5",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:240abe38cc18a370d094e5b4d994889883bceaa826db62915d62ade347f3a82a",
+        "sourceDigest": "sha256:69030dbcf5c3ab18dc54b7b0359eb5331fb152f8005ce804642dadae33024f95",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      }
+    ],
+    "historyCount": 2,
+    "historyDigest": "sha256:054946e873d4c1679517b6629ca89fa55f795c2456694c3bae2ec1eaa6d52325"
+  },
+  "blocker": {
+    "stage": "openspec",
+    "reasons": [
+      "OpenSpec implementation tasks are incomplete."
+    ]
+  },
+  "definitionOfDone": {
+    "status": "BLOCKED",
+    "blockers": [
+      "OpenSpec implementation tasks are incomplete."
+    ]
+  },
+  "nextAction": "Resolve openspec: OpenSpec implementation tasks are incomplete.",
+  "status": "blocked",
+  "createdAt": "2026-11-17T15:19:49.619Z"
+}

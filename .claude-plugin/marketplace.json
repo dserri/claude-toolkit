@@ -1,0 +1,16 @@
+{
+  "name": "claude-toolkit",
+  "owner": {
+    "name": "dserri"
+  },
+  "metadata": {
+    "description": "Personal Claude Code plugins, installed on top of the team-shared SDD skill."
+  },
+  "plugins": [
+    {
+      "name": "toolkit",
+      "source": "./plugins/toolkit",
+      "description": "Personal multi-session workflow tools: coordinator setup for Claude Code sessions."
+    }
+  ]
+}
