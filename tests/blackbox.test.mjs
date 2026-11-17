@@ -1,20 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync, realpathSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { homedir } from "node:os";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const marketplacePath = join(repoRoot, ".claude-plugin", "marketplace.json");
-const releaseRoot = join(homedir(), ".create-coordinator", "releases", "0.2.0");
-const releaseSkillDir = join(releaseRoot, "create-coordinator");
-const releaseManifestPath = join(releaseRoot, "runtime-manifest.json");
-const skillFiles = ["SKILL.md", "launch.ps1", "resolve-projects.ps1"];
 
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8").replace(/^\uFEFF/, ""));
-const sha256 = (buffer) => createHash("sha256").update(buffer).digest("hex");
 
 const isInside = (root, target) => {
   const rel = relative(root, target);
@@ -135,57 +128,9 @@ test("toolkit marketplace entry declares no version", () => {
   assert.equal(Object.hasOwn(entry, "version"), false);
 });
 
-test("toolkit provides the create-coordinator skill files", () => {
-  const skillDir = join(toolkitDir(), "skills", "create-coordinator");
-  for (const file of skillFiles) {
-    assert.ok(existsSync(join(skillDir, file)), `${file} is present`);
-  }
-});
-
-test("create-coordinator files match the 0.2.0 runtime manifest SHA-256", (t) => {
-  if (!existsSync(releaseManifestPath)) {
-    t.skip("0.2.0 release manifest not installed");
-    return;
-  }
-  const manifest = readJson(releaseManifestPath);
-  assert.ok(Array.isArray(manifest.files), "manifest lists files");
-  const skillDir = join(toolkitDir(), "skills", "create-coordinator");
-  for (const file of skillFiles) {
-    const entry = manifest.files.find((item) => item.path === `create-coordinator/${file}`);
-    assert.ok(entry, `manifest records create-coordinator/${file}`);
-    assert.equal(sha256(readFileSync(join(skillDir, file))), entry.sha256.toLowerCase(), `${file} SHA-256`);
-  }
-});
-
-test("create-coordinator files byte-equal the installed 0.2.0 release copy", (t) => {
-  if (!existsSync(releaseSkillDir)) {
-    t.skip("0.2.0 release not installed");
-    return;
-  }
-  const skillDir = join(toolkitDir(), "skills", "create-coordinator");
-  for (const file of skillFiles) {
-    assert.ok(readFileSync(join(skillDir, file)).equals(readFileSync(join(releaseSkillDir, file))), `${file} is byte-equal`);
-  }
-});
-
-test("both PowerShell scripts start with the UTF-8 BOM", () => {
-  const skillDir = join(toolkitDir(), "skills", "create-coordinator");
-  for (const file of ["launch.ps1", "resolve-projects.ps1"]) {
-    const bytes = readFileSync(join(skillDir, file));
-    assert.deepEqual([...bytes.subarray(0, 3)], [0xef, 0xbb, 0xbf], `${file} BOM`);
-  }
-});
-
-test("create-coordinator frontmatter keeps disable-model-invocation true", () => {
-  const text = readFileSync(join(toolkitDir(), "skills", "create-coordinator", "SKILL.md"), "utf8");
-  const frontmatter = parseFrontmatter(text);
-  assert.ok(frontmatter, "SKILL.md has frontmatter");
-  assert.equal(frontmatter["disable-model-invocation"], "true");
-});
-
-test("the skills across listed plugins are exactly create-coordinator", () => {
+test("the listed plugins ship no skills yet", () => {
   const names = pluginDirs().flatMap((plugin) => listDirs(join(plugin.dir, "skills"))).sort();
-  assert.deepEqual(names, ["create-coordinator"]);
+  assert.deepEqual(names, []);
 });
 
 test("every SKILL.md frontmatter name matches its directory and none is sdd", () => {
@@ -203,7 +148,7 @@ test("every SKILL.md frontmatter name matches its directory and none is sdd", ()
       frontmatterNames.push(frontmatter.name ?? skill);
     }
   }
-  assert.deepEqual(frontmatterNames.sort(), ["create-coordinator"]);
+  assert.deepEqual(frontmatterNames.sort(), []);
 });
 
 test("no listed plugin ships an sdd skill directory or agent file", () => {

@@ -1,0 +1,526 @@
+{
+  "route": "full",
+  "request": {
+    "digest": "sha256:c37cdbbe273000e0bc9c1d9ea4e04a5784c7e60d021b0d513f7c6cbc7fbb13d3",
+    "route": "full",
+    "changeName": "create-toolkit-marketplace",
+    "kind": "feature",
+    "summary": "Root .claude-plugin/marketplace.json lists plugin toolkit (./plugins/toolkit); plugin.json has no version, so commits are releases; the plugin has no components yet. README (local use with --plugin-dir, marketplace install once allowed, update, rollback, develop), AGENTS.md and CLAUDE.md in English. Tests: toolkit.test.mjs (manifests, no version, plugin contains only its manifest), blackbox.test.mjs (written independently from the spec: marketplace shape, source containment with must-fail cases, no sdd skill or agent), cli.test.mjs (claude plugin validate on root and plugin). Security: --plugin-dir loads the developer's own repository outside the organization's marketplace allowlist, by explicit developer choice for local testing; plugin sources are proven to stay inside the repository; no secrets or personal paths are added. UX/UI: no interface; the only user-visible effect is documented commands.",
+    "surfaces": [
+      "security"
+    ],
+    "acceptance": [
+      "toolkit-marketplace#marketplace-and-plugin-validate",
+      "toolkit-marketplace#plugin-source-stays-inside-the-repository",
+      "toolkit-marketplace#session-started-with-the-plugin-directory",
+      "toolkit-marketplace#no-version-pinning",
+      "toolkit-marketplace#nothing-can-shadow-sdd"
+    ]
+  },
+  "repository": {
+    "baseDigest": "sha256:2e1cfa82b035c26cbbbdae632cea070514eb8b773f616aaeaf668e2f0be8f10d",
+    "finalDigest": "sha256:8c76e6952630ba9cbc7c09acd15a27d1fc3c75d650a56c9bead1925c4fa7f7a4",
+    "configDigest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "dependencyDigest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "environmentDigest": "sha256:2385622c4dfd2867cf84e02a9e8f8b0036331258ca50e36a0af283b95c6f450e",
+    "affectedFiles": [
+      ".claude-plugin/marketplace.json",
+      ".gitattributes",
+      "AGENTS.md",
+      "CLAUDE.md",
+      "README.md",
+      "openspec/changes/create-toolkit-marketplace/.openspec.yaml",
+      "openspec/changes/create-toolkit-marketplace/design.md",
+      "openspec/changes/create-toolkit-marketplace/proposal.md",
+      "openspec/changes/create-toolkit-marketplace/specs/toolkit-marketplace/spec.md",
+      "openspec/changes/create-toolkit-marketplace/tasks.md",
+      "plugins/toolkit/.claude-plugin/plugin.json",
+      "tests/blackbox.test.mjs",
+      "tests/cli.test.mjs",
+      "tests/toolkit.test.mjs"
+    ],
+    "unrelatedWorkPreserved": true,
+    "recoverable": true
+  },
+  "implementation": {
+    "summary": "Root .claude-plugin/marketplace.json lists plugin toolkit (./plugins/toolkit); plugin.json has no version, so commits are releases; the plugin has no components yet. README (local use with --plugin-dir, marketplace install once allowed, update, rollback, develop), AGENTS.md and CLAUDE.md in English. Tests: toolkit.test.mjs (manifests, no version, plugin contains only its manifest), blackbox.test.mjs (written independently from the spec: marketplace shape, source containment with must-fail cases, no sdd skill or agent), cli.test.mjs (claude plugin validate on root and plugin). Security: --plugin-dir loads the developer's own repository outside the organization's marketplace allowlist, by explicit developer choice for local testing; plugin sources are proven to stay inside the repository; no secrets or personal paths are added. UX/UI: no interface; the only user-visible effect is documented commands.",
+    "builder": {
+      "provider": "claude",
+      "identityStrength": "operator-asserted"
+    }
+  },
+  "validation": [
+    {
+      "id": "tests",
+      "lane": "test",
+      "coverage": [
+        "test",
+        "security"
+      ],
+      "kind": "command",
+      "key": "sha256:b99dcddb1f7d20289b537f73ddd857cd442deaebb547416da5f0df2887063b9f",
+      "codeDigest": "sha256:8c76e6952630ba9cbc7c09acd15a27d1fc3c75d650a56c9bead1925c4fa7f7a4",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          ".claude-plugin/marketplace.json",
+          ".gitattributes",
+          "AGENTS.md",
+          "CLAUDE.md",
+          "README.md",
+          "plugins/toolkit/.claude-plugin/plugin.json",
+          "tests/toolkit.test.mjs",
+          "tests/blackbox.test.mjs",
+          "tests/cli.test.mjs"
+        ]
+      },
+      "summary": "✔ marketplace.json exists at the repository root and parses (5.6634ms)\n✔ marketplace is named claude-toolkit with an owner and plugins (1.3047ms)\n✔ marketplace lists exactly one plugin named toolkit (1.181ms)\n✔ every plugin source is a relative path inside the repository root (2.8732ms)\n✔ source containment check rejects escaping and absolute sources (1.9175ms)\n✔ toolkit source is a directory with plugin.json named toolkit (2.4284ms)\n✔ every listed plugin source has a plugin.json whose name matches its listing (1.6369ms)\n✔ toolkit plugin.json declares no version (1.3151ms)\n✔ toolkit marketplace entry declares no version (0.8699ms)\n✔ the listed plugins ship no skills yet (2.9508ms)\n✔ every SKILL.md frontmatter name matches its directory and none is sdd (1.3811ms)\n✔ no listed plugin ships an sdd skill directory or agent file (1.3377ms)\n✔ claude plugin validate accepts the marketplace and the toolkit plugin (3431.9477ms)\n✔ marketplace lists the toolkit plugin from inside the repository (6.188ms)\n✔ plugin manifest is named toolkit and declares no version (1.801ms)\n✔ toolkit skeleton ships only its manifest, so nothing can shadow SDD (1.24ms)\nℹ tests 16\nℹ suites 0\nℹ pass 16\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 4389.9365\n",
+      "exitCode": 0,
+      "durationMs": 4553,
+      "reused": true
+    }
+  ],
+  "review": {
+    "verdict": "PASS",
+    "reviewedDigest": "sha256:8c76e6952630ba9cbc7c09acd15a27d1fc3c75d650a56c9bead1925c4fa7f7a4",
+    "concerns": [
+      "combined: the manifests, tests and docs agree. The README and AGENTS.md commands match the tested layout (./plugins/toolkit, no version, plugin contains only its manifest).",
+      "combined: no added comments in production files. Tests cover containment must-fail cases, no version, no sdd skill or agent, and claude plugin validate on root and plugin.",
+      "security: --plugin-dir loads only the developer's own clone, by recorded explicit choice. No secrets or personal paths. Sources are proven to stay inside the repo, including through symlinks.",
+      "UX/UI: no interface. The only user-visible effect is documented CLI commands, so there is nothing to render-verify.",
+      "The change does not depend on the unrelated paths (openspec/config.yaml, the .gitkeep files)."
+    ],
+    "findings": [
+      {
+        "id": "session-scenario-manual-evidence",
+        "severity": "info",
+        "status": "open",
+        "blocking": false,
+        "summary": "The acceptance scenario 'Session started with the plugin directory', and the 'SDD installation is unchanged' part of 'Nothing can shadow SDD', cite the evidence 'tests'. No test in tests/*.test.mjs starts a session with --plugin-dir or checks the SDD installation. The only support is the developer's hand verification in tasks.md 2.2, which design.md and README.md state openly. This is accepted as a declared trade-off: the plugin is empty, and the CLI's plugin list omits --plugin-dir plugins. When the coordinator change adds components, it should add automated session checks as design.md plans."
+      }
+    ],
+    "coverage": "complete",
+    "independent": true,
+    "fresh": true,
+    "readOnly": true,
+    "reviewer": {
+      "provider": "claude",
+      "contextId": "47a41453-f8a3-4095-a417-5dc72f9fe88e"
+    },
+    "policyDigest": "sha256:dfc56dd0d294c15c71b1b3827b25d4456e998122cdd1fe41b427f9790c628a98",
+    "inputs": {
+      "intentDigest": "sha256:37dddfc463531e7ca486075ff5c3b762c76503b1b7f567cd0a024d0348a76865",
+      "files": {
+        ".claude-plugin/marketplace.json": "sha256:618320fd07d611473afeb6777d28f009e74d55191c388833f78696fe4c3c7c24",
+        ".gitattributes": "sha256:2a4b8879967c694e5fe347854c1297cd7991221a0da6eb962d6f26e9e02655ec",
+        "AGENTS.md": "sha256:0d5b7ecc3d5d51621342fbfaef87c45efbb051ecebcaec4a31914809bfdf8fe7",
+        "CLAUDE.md": "sha256:9b3e4d0b11b1b7b192308d4d5902b00e7d9b1626f806d1c4dac5c156451bb8b1",
+        "README.md": "sha256:50f7233dbdf76266586bb9ec35a5c8ba1ae26ac5cac9e3f56983f3b66c97244d",
+        "openspec/changes/create-toolkit-marketplace/.openspec.yaml": "sha256:e83228e14234ba2003d45f600f91d06e405e75d478496ff625456fc1b81e403f",
+        "openspec/changes/create-toolkit-marketplace/design.md": "sha256:57e76e6bc6b0a0ef51647a258adac87046cb9a65f79510f150ae95d649564f1c",
+        "openspec/changes/create-toolkit-marketplace/proposal.md": "sha256:1e8f3c32f8ae3ddd06d4d7c8116a8837df8ca3331f14e38b97b7a1031f445cc6",
+        "openspec/changes/create-toolkit-marketplace/specs/toolkit-marketplace/spec.md": "sha256:b093cd75009d50395cccaa6868d5e404b3430e0e031ea3da8bc10d36b52ae5ca",
+        "openspec/changes/create-toolkit-marketplace/tasks.md": "sha256:a3898fbc5e668e7ca8de72c8154d0f78277f88068051b609718833644529afb4",
+        "plugins/toolkit/.claude-plugin/plugin.json": "sha256:aafb80e520b7384a985816f7a88f2c72737df260026ac570cac02f3b4a60ed33",
+        "tests/blackbox.test.mjs": "sha256:9bee14cbe4ec0fb9ae8657d8352d88753c897bbdc27c70544685170c3bed7171",
+        "tests/cli.test.mjs": "sha256:225f66cae02234e4dd4ff56f95c583b56a2fa8c575361b75dfac8167668f417a",
+        "tests/toolkit.test.mjs": "sha256:ffc7582983b7344182d9ede57d60e28bc47d39750657496b50f14ee7e01cf7d3"
+      },
+      "sources": [
+        {
+          "path": ".claude-plugin/marketplace.json",
+          "content": "{\n  \"name\": \"claude-toolkit\",\n  \"owner\": {\n    \"name\": \"dserri\"\n  },\n  \"metadata\": {\n    \"description\": \"Personal Claude Code plugins, compatible with and separate from the team-shared SDD skill.\"\n  },\n  \"plugins\": [\n    {\n      \"name\": \"toolkit\",\n      \"source\": \"./plugins/toolkit\",\n      \"description\": \"Personal multi-session workflow tools for Claude Code.\"\n    }\n  ]\n}\n",
+          "mode": 438
+        },
+        {
+          "path": ".gitattributes",
+          "content": "* text=auto eol=lf\n",
+          "mode": 438
+        },
+        {
+          "path": "AGENTS.md",
+          "content": "# claude-toolkit\n\nPrivate Claude Code plugin marketplace (`claude-toolkit`) with one plugin, `toolkit`: a personal proof of concept for a multi-session coordinator workflow. See [README.md](README.md) for local use, install and update.\n\n## Layout\n\n| Path | Contents |\n|---|---|\n| `.claude-plugin/marketplace.json` | Marketplace catalogue; plugins are listed by relative `source` |\n| `plugins/toolkit/.claude-plugin/plugin.json` | Plugin manifest; no `version`, so each pushed commit is a release |\n| `plugins/toolkit/<component>/` | Plugin components at the plugin root (`skills/`, `agents/`, `hooks/`), invoked as `toolkit:<name>` |\n| `tests/` | `node --test`: structural checks plus `claude plugin validate` (needs `claude` on `PATH`) |\n| `openspec/` | OpenSpec specs and changes |\n\n## Rules\n\n- Compatible with SDD, separate from it: never change SDD files, rules, skills or agents, never name a skill or agent `sdd`, and use SDD only through its documented commands. Everything is written in English, like SDD.\n- The organization's managed policy blocks non-official marketplaces, so sessions load this clone with `--plugin-dir plugins/toolkit`: every saved file, committed or not, is live in the next session started that way.\n- A marketplace install receives every pushed commit: run `node --test` before committing.\n- `.gitattributes` keeps LF line endings so checkouts on Windows stay byte-identical.\n",
+          "mode": 438
+        },
+        {
+          "path": "CLAUDE.md",
+          "content": "@AGENTS.md\n",
+          "mode": 438
+        },
+        {
+          "path": "README.md",
+          "content": "# claude-toolkit\n\nPersonal Claude Code plugins, laid out as a private plugin marketplace. A proof of concept: it is compatible with the team-shared SDD skill but entirely separate from it, and never changes it. Every toolkit skill and agent carries the `toolkit:` prefix.\n\n## Contents\n\n| Plugin | Status |\n|---|---|\n| `toolkit` | Skeleton. The single-project coordinator (a coordinator session that creates, names and briefs worker sessions, and starts with VS Code) is planned next. |\n\n## Use it locally\n\nThe organization's managed Claude Code policy currently allows only the official Anthropic marketplace, so `claude plugin marketplace add` is refused until access is granted. Meanwhile, load the plugin from the clone in each session that needs it:\n\n```\nclaude --plugin-dir <clone>/plugins/toolkit\n```\n\nNew sessions load the files as they are on disk; update with `git pull`.\n\n## Install from the marketplace (once allowed)\n\nGit must already reach `github.com/dserri/claude-toolkit` (an SSH key or a stored HTTPS credential; Claude Code has no token of its own).\n\n```\nclaude plugin marketplace add dserri/claude-toolkit\nclaude plugin install toolkit@claude-toolkit\n```\n\nThen enable auto-update for `claude-toolkit` in `/plugin` → Marketplaces. The plugin declares no version, so every pushed commit is a release; sessions pick it up at the next start or after `/reload-plugins`. To update by hand:\n\n```\nclaude plugin marketplace update claude-toolkit\nclaude plugin update toolkit@claude-toolkit\n```\n\nRoll back with `claude plugin uninstall toolkit@claude-toolkit`, or stop passing `--plugin-dir`.\n\n## Develop\n\n```\nnode --test\n```\n\nThe tests include `claude plugin validate`, so `claude` must be on `PATH`. Loading with `--plugin-dir` and the untouched SDD installation are verified by hand, not by these tests.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/create-toolkit-marketplace/.openspec.yaml",
+          "content": "schema: spec-driven\ncreated: 2026-11-17\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/create-toolkit-marketplace/design.md",
+          "content": "# Design\n\n## Context\n\nClaude Code 2.1.326 loads plugins from Git marketplaces with the developer's existing Git credentials, or from a local folder with `--plugin-dir`. The organization's server-managed policy allows only `github:anthropics/claude-plugins-official` as a marketplace source (verified: `claude plugin marketplace add dserri/claude-toolkit` is refused). This repository is a personal proof of concept, kept separate from SDD until the developer validates it.\n\n## Goals / Non-Goals\n\n**Goals:** one repository that is both marketplace and plugin source, loadable locally now and installable later without restructuring.\n\n**Non-Goals:** any plugin component (the coordinator follows in its own change); importing the earlier `create-coordinator` skill, which coordinates several projects through Windows Terminal and does not fit the single-project coordinator; publishing to the public plugin directory (no LICENSE or icon needed).\n\n## Decisions\n\n- **Layout:** `.claude-plugin/marketplace.json` at the root, plugin at `plugins/toolkit` with a relative `source`. One repository keeps marketplace and plugin in step.\n- **No `version` in `plugin.json`:** updates track commits, so a push is a release.\n- **Local loading:** `--plugin-dir <clone>/plugins/toolkit` per session; files load as they are on disk. The marketplace layout stays valid for when an admin allows the repository or hosts it on claude.ai.\n- **Tests:** `node --test` covers the manifests, plugin source containment, the absence of components that could shadow SDD, and runs `claude plugin validate` on the root and the plugin. Loading with `--plugin-dir` (with `/sdd` still offered) and the unchanged SDD installation are developer-verified (task 2.2): the CLI's plugin list omits `--plugin-dir` plugins and an empty plugin has nothing to invoke. The coordinator change adds automated session checks once the plugin has components.\n- **`.gitattributes`** sets `* text=auto eol=lf` so checkouts on Windows stay byte-identical.\n\n## Risks / Trade-offs\n\n- [`--plugin-dir` loads a plugin from a source the organization's marketplace policy does not list] → the developer's explicit choice for local testing of their own repository; access will be requested before anyone else uses it.\n- [A push reaches every marketplace install at its next update] → `node --test` runs before each commit.\n\n## Migration Plan\n\n1. Push the repository; start sessions that need the toolkit with `--plugin-dir`.\n2. Once an admin allows the marketplace: add it, install `toolkit@claude-toolkit` and enable auto-update.\n3. Rollback: stop passing `--plugin-dir`, or uninstall the plugin.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/create-toolkit-marketplace/proposal.md",
+          "content": "# Proposal\n\n## Why\n\nThe coordinator workflow (a coordinator session that creates, names and briefs worker sessions and starts with VS Code) needs a home that Claude Code can load and later install and update by itself. A Git-backed plugin marketplace gives that, kept separate from the team-shared SDD skill so the idea can be validated as a personal proof of concept before it is proposed to the team.\n\n## What Changes\n\n- Add a plugin marketplace at the repository root, named `claude-toolkit`, listing one plugin, `toolkit`, with no components yet.\n- Add repository guidance (`README.md`, `AGENTS.md`, `CLAUDE.md`), in English like SDD, and tests that include `claude plugin validate`.\n- Load the plugin locally with `--plugin-dir`: the organization's managed policy refuses non-official marketplaces until access is requested.\n- SDD stays untouched: no SDD file, rule, skill or agent changes.\n\n## Capabilities\n\n### New Capabilities\n\n- `toolkit-marketplace`: a personal plugin marketplace that delivers the `toolkit` plugin from Git, loadable locally today and installable once the organization allows it.\n\n### Modified Capabilities\n\nNone.\n\n## Impact\n\n- New repository content only; no user-level Claude Code configuration changes.\n- Out of scope: the single-project coordinator (agent, worker creation, mailbox startup hook, VS Code extension) and multi-project coordination, which follow as separate changes.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/create-toolkit-marketplace/specs/toolkit-marketplace/spec.md",
+          "content": "# Spec Delta\n\n## Purpose\n\nDelivers the developer's personal Claude Code plugins from a private Git repository as a plugin marketplace, compatible with but separate from the team-shared SDD skill.\n\n## ADDED Requirements\n\n### Requirement: Valid marketplace\n\nThe repository SHALL be a valid Claude Code plugin marketplace named `claude-toolkit` that lists the plugin `toolkit` from a directory inside the repository.\n\n#### Scenario: Marketplace and plugin validate\n\n- **WHEN** `claude plugin validate` runs on the repository root and on the plugin directory\n- **THEN** both pass with no errors\n\n#### Scenario: Plugin source stays inside the repository\n\n- **WHEN** a plugin `source` is absolute, empty or resolves outside the repository root\n- **THEN** the repository tests reject it\n\n### Requirement: Local loading\n\nUntil the organization allows the marketplace, sessions SHALL load the plugin from the clone with `--plugin-dir`, without changing user-level Claude Code configuration.\n\n#### Scenario: Session started with the plugin directory\n\n- **WHEN** Claude Code starts with `--plugin-dir <clone>/plugins/toolkit`\n- **THEN** the session starts with the plugin loaded and still offers the team-shared `sdd` skill\n\n### Requirement: Updates follow the repository\n\nNew commits SHALL reach users without a version bump.\n\n#### Scenario: No version pinning\n\n- **WHEN** the plugin manifest is read\n- **THEN** it declares no `version`, so a marketplace install tracks commits\n\n### Requirement: SDD untouched\n\nThe toolkit SHALL NOT modify or shadow SDD files, rules, skills or agents.\n\n#### Scenario: Nothing can shadow SDD\n\n- **WHEN** the plugin contents are listed\n- **THEN** no skill or agent is named `sdd`, and the SDD installation is unchanged after loading the plugin\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/create-toolkit-marketplace/tasks.md",
+          "content": "# Tasks\n\n## 1. Marketplace and plugin\n\n- [x] 1.1 Add `.gitattributes`, `.claude-plugin/marketplace.json` and `plugins/toolkit/.claude-plugin/plugin.json` (no `version`) and verify `claude plugin validate` on the root passes with no errors\n- [x] 1.2 Add `tests/toolkit.test.mjs`, `tests/blackbox.test.mjs` and `tests/cli.test.mjs` (manifests, source containment, no SDD shadowing, `claude plugin validate`) and verify `node --test` passes\n- [x] 1.3 Add `README.md` (local use, install, update, rollback), `AGENTS.md` and `CLAUDE.md` (`@AGENTS.md`) in English and verify every documented command matches the tested layout\n\n## 2. Local loading\n\n- [x] 2.1 After the developer approves the push, push to `origin` and attempt `claude plugin marketplace add dserri/claude-toolkit`; verified refused by the organization's managed policy, so the developer chose local loading with `--plugin-dir` and will request access later\n- [x] 2.2 Verify by hand (developer-confirmed, not covered by `node --test`) that a session started with `--plugin-dir` loads the plugin and still offers `/sdd`, and that the SDD installation is unchanged\n- [x] 2.3 Remove the copied `create-coordinator` skill at the developer's request (it coordinates several projects and does not fit the single-project coordinator) and verify the plugin contains only its manifest\n",
+          "mode": 438
+        },
+        {
+          "path": "plugins/toolkit/.claude-plugin/plugin.json",
+          "content": "{\n  \"name\": \"toolkit\",\n  \"description\": \"Personal multi-session workflow tools for Claude Code.\",\n  \"author\": {\n    \"name\": \"dserri\"\n  }\n}\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/blackbox.test.mjs",
+          "content": "import { test } from \"node:test\";\nimport assert from \"node:assert/strict\";\nimport { existsSync, readFileSync, readdirSync, statSync, realpathSync } from \"node:fs\";\nimport { dirname, isAbsolute, join, relative, resolve, sep } from \"node:path\";\nimport { fileURLToPath } from \"node:url\";\n\nconst repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), \"..\");\nconst marketplacePath = join(repoRoot, \".claude-plugin\", \"marketplace.json\");\n\nconst readJson = (path) => JSON.parse(readFileSync(path, \"utf8\").replace(/^\\uFEFF/, \"\"));\n\nconst isInside = (root, target) => {\n  const rel = relative(root, target);\n  return rel === \"\" || (!rel.startsWith(\"..\") && !isAbsolute(rel) && !rel.split(sep).includes(\"..\"));\n};\n\nconst sourceProblem = (source) => {\n  if (typeof source !== \"string\" || source.length === 0) {\n    return \"source is not a non-empty string\";\n  }\n  if (isAbsolute(source) || /^[A-Za-z]:/.test(source) || source.startsWith(\"/\") || source.startsWith(\"\\\\\")) {\n    return \"source is absolute\";\n  }\n  const resolved = resolve(repoRoot, source);\n  if (!isInside(repoRoot, resolved)) {\n    return \"source escapes the repository root\";\n  }\n  if (existsSync(resolved) && !isInside(realpathSync(repoRoot), realpathSync(resolved))) {\n    return \"source resolves outside the repository root through a link\";\n  }\n  return null;\n};\n\nconst loadMarketplace = () => readJson(marketplacePath);\n\nconst pluginDirs = () => loadMarketplace().plugins.map((plugin) => ({\n  name: plugin.name,\n  source: plugin.source,\n  dir: resolve(repoRoot, plugin.source)\n}));\n\nconst toolkitDir = () => {\n  const plugin = pluginDirs().find((entry) => entry.name === \"toolkit\");\n  assert.ok(plugin, \"toolkit plugin is listed\");\n  return plugin.dir;\n};\n\nconst parseFrontmatter = (text) => {\n  const match = text.replace(/^\\uFEFF/, \"\").match(/^---\\r?\\n([\\s\\S]*?)\\r?\\n---(\\r?\\n|$)/);\n  if (!match) {\n    return null;\n  }\n  const fields = {};\n  for (const line of match[1].split(/\\r?\\n/)) {\n    const field = line.match(/^([A-Za-z0-9_-]+):\\s*(.*)$/);\n    if (field) {\n      fields[field[1]] = field[2].trim().replace(/^[\"']|[\"']$/g, \"\");\n    }\n  }\n  return fields;\n};\n\nconst listDirs = (path) => existsSync(path) ? readdirSync(path).filter((entry) => statSync(join(path, entry)).isDirectory()) : [];\nconst listEntries = (path) => existsSync(path) ? readdirSync(path) : [];\n\ntest(\"marketplace.json exists at the repository root and parses\", () => {\n  assert.ok(existsSync(marketplacePath), \"marketplace.json is present\");\n  const marketplace = loadMarketplace();\n  assert.equal(typeof marketplace, \"object\");\n});\n\ntest(\"marketplace is named claude-toolkit with an owner and plugins\", () => {\n  const marketplace = loadMarketplace();\n  assert.equal(marketplace.name, \"claude-toolkit\");\n  assert.ok(marketplace.owner && typeof marketplace.owner === \"object\", \"owner is an object\");\n  assert.ok(Array.isArray(marketplace.plugins) && marketplace.plugins.length > 0, \"plugins is a non-empty array\");\n  for (const plugin of marketplace.plugins) {\n    assert.equal(typeof plugin.name, \"string\");\n    assert.ok(plugin.name.length > 0);\n    assert.ok(\"source\" in plugin, `plugin ${plugin.name} has a source`);\n  }\n});\n\ntest(\"marketplace lists exactly one plugin named toolkit\", () => {\n  const names = loadMarketplace().plugins.map((plugin) => plugin.name);\n  assert.equal(names.filter((name) => name === \"toolkit\").length, 1);\n});\n\ntest(\"every plugin source is a relative path inside the repository root\", () => {\n  for (const plugin of loadMarketplace().plugins) {\n    assert.equal(sourceProblem(plugin.source), null, `plugin ${plugin.name} source ${JSON.stringify(plugin.source)}`);\n  }\n});\n\ntest(\"source containment check rejects escaping and absolute sources\", () => {\n  assert.equal(sourceProblem(\"../outside\"), \"source escapes the repository root\");\n  assert.equal(sourceProblem(\"./plugins/../../outside\"), \"source escapes the repository root\");\n  assert.equal(sourceProblem(\"C:\\\\outside\"), \"source is absolute\");\n  assert.equal(sourceProblem(\"/outside\"), \"source is absolute\");\n  assert.equal(sourceProblem(\"\"), \"source is not a non-empty string\");\n  assert.equal(sourceProblem({ source: \"github\" }), \"source is not a non-empty string\");\n  assert.equal(sourceProblem(\"./plugins/toolkit\"), null);\n});\n\ntest(\"toolkit source is a directory with plugin.json named toolkit\", () => {\n  const dir = toolkitDir();\n  assert.ok(existsSync(dir) && statSync(dir).isDirectory(), \"toolkit source is a directory\");\n  const manifestPath = join(dir, \".claude-plugin\", \"plugin.json\");\n  assert.ok(existsSync(manifestPath), \"plugin.json is present\");\n  assert.equal(readJson(manifestPath).name, \"toolkit\");\n});\n\ntest(\"every listed plugin source has a plugin.json whose name matches its listing\", () => {\n  for (const plugin of pluginDirs()) {\n    const manifestPath = join(plugin.dir, \".claude-plugin\", \"plugin.json\");\n    assert.ok(existsSync(manifestPath), `plugin.json for ${plugin.name}`);\n    assert.equal(readJson(manifestPath).name, plugin.name);\n  }\n});\n\ntest(\"toolkit plugin.json declares no version\", () => {\n  const manifest = readJson(join(toolkitDir(), \".claude-plugin\", \"plugin.json\"));\n  assert.equal(Object.hasOwn(manifest, \"version\"), false);\n});\n\ntest(\"toolkit marketplace entry declares no version\", () => {\n  const entry = loadMarketplace().plugins.find((plugin) => plugin.name === \"toolkit\");\n  assert.equal(Object.hasOwn(entry, \"version\"), false);\n});\n\ntest(\"the listed plugins ship no skills yet\", () => {\n  const names = pluginDirs().flatMap((plugin) => listDirs(join(plugin.dir, \"skills\"))).sort();\n  assert.deepEqual(names, []);\n});\n\ntest(\"every SKILL.md frontmatter name matches its directory and none is sdd\", () => {\n  const frontmatterNames = [];\n  for (const plugin of pluginDirs()) {\n    for (const skill of listDirs(join(plugin.dir, \"skills\"))) {\n      const skillPath = join(plugin.dir, \"skills\", skill, \"SKILL.md\");\n      assert.ok(existsSync(skillPath), `${skill} has SKILL.md`);\n      const frontmatter = parseFrontmatter(readFileSync(skillPath, \"utf8\"));\n      assert.ok(frontmatter, `${skill} has frontmatter`);\n      assert.notEqual(frontmatter.name, \"sdd\");\n      if (frontmatter.name !== undefined) {\n        assert.equal(frontmatter.name, skill);\n      }\n      frontmatterNames.push(frontmatter.name ?? skill);\n    }\n  }\n  assert.deepEqual(frontmatterNames.sort(), []);\n});\n\ntest(\"no listed plugin ships an sdd skill directory or agent file\", () => {\n  for (const plugin of pluginDirs()) {\n    const skillNames = listDirs(join(plugin.dir, \"skills\")).map((name) => name.toLowerCase());\n    assert.equal(skillNames.includes(\"sdd\"), false, `${plugin.name} skills`);\n    const agentNames = listEntries(join(plugin.dir, \"agents\")).map((name) => name.toLowerCase().replace(/\\.md$/, \"\"));\n    assert.equal(agentNames.includes(\"sdd\"), false, `${plugin.name} agents`);\n  }\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/cli.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { spawnSync } from 'node:child_process';\nimport { fileURLToPath } from 'node:url';\n\nconst root = fileURLToPath(new URL('..', import.meta.url));\n\nconst validate = (target) => spawnSync('claude', ['plugin', 'validate', target], { cwd: root, encoding: 'utf8' });\n\ntest('claude plugin validate accepts the marketplace and the toolkit plugin', () => {\n  for (const target of ['.', 'plugins/toolkit']) {\n    const result = validate(target);\n\n    assert.equal(result.error, undefined, target);\n    assert.equal(result.status, 0, result.stdout + result.stderr);\n    assert.match(result.stdout, /Validation passed/, target);\n  }\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/toolkit.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { readFileSync, readdirSync } from 'node:fs';\nimport { fileURLToPath } from 'node:url';\nimport { join } from 'node:path';\n\nconst root = fileURLToPath(new URL('..', import.meta.url));\n\nconst readJson = (...segments) => JSON.parse(readFileSync(join(root, ...segments), 'utf8'));\n\ntest('marketplace lists the toolkit plugin from inside the repository', () => {\n  const marketplace = readJson('.claude-plugin', 'marketplace.json');\n\n  assert.equal(marketplace.name, 'claude-toolkit');\n  assert.ok(marketplace.owner?.name);\n  assert.deepEqual(\n    marketplace.plugins.map(({ name, source }) => ({ name, source })),\n    [{ name: 'toolkit', source: './plugins/toolkit' }],\n  );\n});\n\ntest('plugin manifest is named toolkit and declares no version', () => {\n  const plugin = readJson('plugins', 'toolkit', '.claude-plugin', 'plugin.json');\n\n  assert.equal(plugin.name, 'toolkit');\n  assert.equal(Object.hasOwn(plugin, 'version'), false);\n});\n\ntest('toolkit skeleton ships only its manifest, so nothing can shadow SDD', () => {\n  assert.deepEqual(readdirSync(join(root, 'plugins', 'toolkit')), ['.claude-plugin']);\n  assert.deepEqual(readdirSync(join(root, 'plugins', 'toolkit', '.claude-plugin')), ['plugin.json']);\n});\n",
+          "mode": 438
+        }
+      ]
+    },
+    "concernsApplied": [
+      "combined",
+      "security"
+    ],
+    "fallback": "same-provider-fresh",
+    "durationMs": 25934,
+    "usage": {
+      "inputTokens": 4,
+      "outputTokens": 2427,
+      "cachedInputTokens": 20490,
+      "cacheCreationInputTokens": 22281
+    },
+    "invocations": 1
+  },
+  "acceptance": [
+    {
+      "scenarioId": "toolkit-marketplace#marketplace-and-plugin-validate",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:8c76e6952630ba9cbc7c09acd15a27d1fc3c75d650a56c9bead1925c4fa7f7a4",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "toolkit-marketplace#plugin-source-stays-inside-the-repository",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:8c76e6952630ba9cbc7c09acd15a27d1fc3c75d650a56c9bead1925c4fa7f7a4",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "toolkit-marketplace#session-started-with-the-plugin-directory",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:8c76e6952630ba9cbc7c09acd15a27d1fc3c75d650a56c9bead1925c4fa7f7a4",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "toolkit-marketplace#no-version-pinning",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:8c76e6952630ba9cbc7c09acd15a27d1fc3c75d650a56c9bead1925c4fa7f7a4",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "toolkit-marketplace#nothing-can-shadow-sdd",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:8c76e6952630ba9cbc7c09acd15a27d1fc3c75d650a56c9bead1925c4fa7f7a4",
+      "evidenceIds": [
+        "tests"
+      ]
+    }
+  ],
+  "limitations": [],
+  "openspec": {
+    "changeName": "create-toolkit-marketplace",
+    "artifactsReady": true,
+    "tasksComplete": true,
+    "scenariosCovered": true,
+    "scenarioCount": 5,
+    "scenarioDigest": "sha256:1e60decaca97db4b7da758405b41d3e63fae1ee9387c1b859a734c140bcf612d",
+    "guidanceDigest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "validationDigest": "sha256:a0ec5949a2031ca22a30f9dc7a8a22a03f030837aa8c0b7bc78337265523e0bc"
+  },
+  "applicability": {
+    "requiredValidationLanes": [
+      "security",
+      "test"
+    ],
+    "reviewConcerns": [
+      "combined",
+      "security"
+    ]
+  },
+  "continuation": {
+    "baseline": {
+      "schemaVersion": 2,
+      "base": null,
+      "unrelatedPaths": [
+        "openspec/changes/archive/.gitkeep",
+        "openspec/config.yaml",
+        "openspec/specs/.gitkeep"
+      ],
+      "unrelatedDigest": "sha256:d832b13a0ae399df5b297976ffc94f51586734dfde2bc1d08e570eed960b7b15"
+    },
+    "remediationCycles": 1,
+    "history": [
+      {
+        "resultDigest": "sha256:51e98d0a95ec6ccc7231c36eb40abffb512eb1d7f871aa9fe03b4bebdbfcf855",
+        "sourceDigest": "sha256:bb5fb189efc255718c969184289de5f9d193bcbd70d0664ddc1d64a0f6b858b5",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:240abe38cc18a370d094e5b4d994889883bceaa826db62915d62ade347f3a82a",
+        "sourceDigest": "sha256:69030dbcf5c3ab18dc54b7b0359eb5331fb152f8005ce804642dadae33024f95",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:3f7ecdd52b86c3970fa9ac5f40ace7ecef3856fb5518d7427b9dae0c9965e140",
+        "sourceDigest": "sha256:8b42fe677e9f5d797bde41f2031bf45bdcc7ac79fb3530c964ddd2293539310e",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:ef5b9c819a9ff234fbe4a34462086e7d45c072048e2c82efef69c8c6ed36e333",
+        "sourceDigest": "sha256:8b42fe677e9f5d797bde41f2031bf45bdcc7ac79fb3530c964ddd2293539310e",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "acceptance-evidence-mismatch",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "All seven acceptance criteria are marked 'automated' and cite only the 'tests' check, but node --test only reads repository files. It cannot prove four of them. 'Marketplace validates' needs a claude plugin validate run. 'Session started with the plugin directory' and 'Plain session' need actual Claude Code sessions. 'SDD still resolves' needs an SDD hash check. The summary says these were checked by hand in headless sessions, but no output from those runs is included. As a result, four criteria are recorded as passing without evidence. Fix: attach the recorded claude plugin validate output and the session and SDD-hash results as manual evidence, and link each of those criteria to it."
+          },
+          {
+            "id": "undeclared-surface-security",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "request.surfaces is empty, but the change documents and relies on getting past the organization's managed marketplace policy. README.md, AGENTS.md and design.md all describe loading the clone with --plugin-dir, which runs code from a source the policy does not allow. design.md itself says this 'sidesteps the organization's marketplace restriction'. The developer's choice of this approach is respected; only the missing security surface declaration is reported. Fix: declare the security surface, and record approval from the managed-policy owner or link the admin request."
+          },
+          {
+            "id": "roots-txt-in-clone",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "resolve-projects.ps1 reads roots.txt from $PSScriptRoot, and SKILL.md tells the agent to write it there. With --plugin-dir, that folder is the git working tree, and no .gitignore covers it, so the file appears as untracked. A 'git add .' would commit the user's local project roots to the GitHub repo. design.md covers losing the file on a marketplace update but not this commit risk. Fix: add plugins/toolkit/skills/create-coordinator/roots.txt to a .gitignore until the planned move to a user folder."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:6b2e3bfcf0ee3b823f7151034870c957ea91968230d3662de32793cea5b723ee",
+        "sourceDigest": "sha256:8b42fe677e9f5d797bde41f2031bf45bdcc7ac79fb3530c964ddd2293539310e",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "acceptance-evidence-mismatch",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "All seven acceptance criteria are marked 'automated' and cite only the 'tests' check, but node --test only reads repository files. It cannot prove four of them. 'Marketplace validates' needs a claude plugin validate run. 'Session started with the plugin directory' and 'Plain session' need actual Claude Code sessions. 'SDD still resolves' needs an SDD hash check. The summary says these were checked by hand in headless sessions, but no output from those runs is included. As a result, four criteria are recorded as passing without evidence. Fix: attach the recorded claude plugin validate output and the session and SDD-hash results as manual evidence, and link each of those criteria to it."
+          },
+          {
+            "id": "undeclared-surface-security",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "request.surfaces is empty, but the change documents and relies on getting past the organization's managed marketplace policy. README.md, AGENTS.md and design.md all describe loading the clone with --plugin-dir, which runs code from a source the policy does not allow. design.md itself says this 'sidesteps the organization's marketplace restriction'. The developer's choice of this approach is respected; only the missing security surface declaration is reported. Fix: declare the security surface, and record approval from the managed-policy owner or link the admin request."
+          },
+          {
+            "id": "roots-txt-in-clone",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "resolve-projects.ps1 reads roots.txt from $PSScriptRoot, and SKILL.md tells the agent to write it there. With --plugin-dir, that folder is the git working tree, and no .gitignore covers it, so the file appears as untracked. A 'git add .' would commit the user's local project roots to the GitHub repo. design.md covers losing the file on a marketplace update but not this commit risk. Fix: add plugins/toolkit/skills/create-coordinator/roots.txt to a .gitignore until the planned move to a user folder."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:27c9898c5049d6e430ddda727560d3e75ec814f21822d343aa95ebfbecc42395",
+        "sourceDigest": "sha256:8b42fe677e9f5d797bde41f2031bf45bdcc7ac79fb3530c964ddd2293539310e",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "acceptance-evidence-mismatch",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "All seven acceptance criteria are marked 'automated' and cite only the 'tests' check, but node --test only reads repository files. It cannot prove four of them. 'Marketplace validates' needs a claude plugin validate run. 'Session started with the plugin directory' and 'Plain session' need actual Claude Code sessions. 'SDD still resolves' needs an SDD hash check. The summary says these were checked by hand in headless sessions, but no output from those runs is included. As a result, four criteria are recorded as passing without evidence. Fix: attach the recorded claude plugin validate output and the session and SDD-hash results as manual evidence, and link each of those criteria to it."
+          },
+          {
+            "id": "undeclared-surface-security",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "request.surfaces is empty, but the change documents and relies on getting past the organization's managed marketplace policy. README.md, AGENTS.md and design.md all describe loading the clone with --plugin-dir, which runs code from a source the policy does not allow. design.md itself says this 'sidesteps the organization's marketplace restriction'. The developer's choice of this approach is respected; only the missing security surface declaration is reported. Fix: declare the security surface, and record approval from the managed-policy owner or link the admin request."
+          },
+          {
+            "id": "roots-txt-in-clone",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "resolve-projects.ps1 reads roots.txt from $PSScriptRoot, and SKILL.md tells the agent to write it there. With --plugin-dir, that folder is the git working tree, and no .gitignore covers it, so the file appears as untracked. A 'git add .' would commit the user's local project roots to the GitHub repo. design.md covers losing the file on a marketplace update but not this commit risk. Fix: add plugins/toolkit/skills/create-coordinator/roots.txt to a .gitignore until the planned move to a user folder."
+          }
+        ],
+        "checks": 1,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:9c94835451ad6295898da127ab91490a208c80b05350bddb850e68e90ac6bb5a",
+        "sourceDigest": "sha256:126f3eb0648718f39214366669326355fb2bb315f06b4afc90cd9a905a41d42b",
+        "status": "blocked",
+        "stage": "openspec",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:071ac2bf4eb2f714b9065c988c5471227bb9885bcb4851aa1a46263f153f8421",
+        "sourceDigest": "sha256:d3ec773954ae7dccbd62936c0bc212ba71c3b4465360216c361b3b9389a9bbd0",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:b554073cfc8642b0c822503b4059212fc58f52078e5ee447146a0003889a1878",
+        "sourceDigest": "sha256:d3ec773954ae7dccbd62936c0bc212ba71c3b4465360216c361b3b9389a9bbd0",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:e667e721fde41114e16b6c1b56db8e6af0d879ce2e12566f168624422820a317",
+        "sourceDigest": "sha256:d3ec773954ae7dccbd62936c0bc212ba71c3b4465360216c361b3b9389a9bbd0",
+        "status": "complete",
+        "stage": "complete",
+        "verdict": "PASS",
+        "findings": [
+          {
+            "id": "acceptance-session-scenario-untested",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "Acceptance criteria 'Session started with the plugin directory' and the 'SDD installation is unchanged' part of 'Nothing can shadow SDD' cite evidence 'tests', but no test starts a --plugin-dir session, checks that /sdd is still offered, or inspects the SDD installation. Only the manual check in tasks.md 2.2 claims them. The plugin has no components, so the risk is low, but the evidence overstates test coverage and a regression would go unnoticed once components are added."
+          },
+          {
+            "id": "readme-git-prerequisite",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "README.md Develop section says the tests need `git` on PATH, but no test runs git; only cli.test.mjs runs `claude`. This adds a stated prerequisite the tests don't need; AGENTS.md correctly names only `claude`."
+          },
+          {
+            "id": "manifest-description-overstates",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "marketplace.json and plugin.json describe the plugin as 'a project coordinator that creates and briefs its worker sessions', but it has no components yet (the README calls it a skeleton). Anyone browsing the marketplace would see a feature that doesn't exist."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:2250a9c03f591db44b91b6d334cb8091562cb4659b80e49a9ac4635c5c291581",
+        "sourceDigest": "sha256:d3ec773954ae7dccbd62936c0bc212ba71c3b4465360216c361b3b9389a9bbd0",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "PASS",
+        "findings": [
+          {
+            "id": "acceptance-session-scenario-untested",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "Acceptance criteria 'Session started with the plugin directory' and the 'SDD installation is unchanged' part of 'Nothing can shadow SDD' cite evidence 'tests', but no test starts a --plugin-dir session, checks that /sdd is still offered, or inspects the SDD installation. Only the manual check in tasks.md 2.2 claims them. The plugin has no components, so the risk is low, but the evidence overstates test coverage and a regression would go unnoticed once components are added."
+          },
+          {
+            "id": "readme-git-prerequisite",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "README.md Develop section says the tests need `git` on PATH, but no test runs git; only cli.test.mjs runs `claude`. This adds a stated prerequisite the tests don't need; AGENTS.md correctly names only `claude`."
+          },
+          {
+            "id": "manifest-description-overstates",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "marketplace.json and plugin.json describe the plugin as 'a project coordinator that creates and briefs its worker sessions', but it has no components yet (the README calls it a skeleton). Anyone browsing the marketplace would see a feature that doesn't exist."
+          }
+        ],
+        "checks": 1,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:e0b1fc21900f5b190fa7473ffcac765631e88b82f7099d9cc480bcf870b91913",
+        "sourceDigest": "sha256:8c76e6952630ba9cbc7c09acd15a27d1fc3c75d650a56c9bead1925c4fa7f7a4",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      }
+    ],
+    "historyCount": 12,
+    "historyDigest": "sha256:dccf6f2d4d839f89a13a86146266e4fc55a6c768ed1dd728ed833b791bbab6e6"
+  },
+  "schemaVersion": 2,
+  "createdAt": "2026-11-17T16:01:03.065Z",
+  "definitionOfDone": {
+    "status": "PASS",
+    "blockers": []
+  },
+  "status": "complete",
+  "nextAction": "No further SDD action is required."
+}
