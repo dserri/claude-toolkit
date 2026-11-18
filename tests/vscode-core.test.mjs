@@ -75,7 +75,7 @@ test('the worker session name joins the project prefix and the worker name', () 
 });
 
 test('session arguments refuse an invalid worker name', () => {
-  for (const name of ['../x', 'a b', 'Tester', 'coordinator', '', 'x'.repeat(41)]) {
+  for (const name of ['../x', 'a b', 'Tester', 'coordinator', 'claude', '', 'x'.repeat(41)]) {
     assert.throws(() => core.newWorkerArgs({ projectFolder, pluginDir, name }), /Invalid worker name/, name);
     assert.throws(() => core.resumeWorkerArgs({ projectFolder, pluginDir, name }), /Invalid worker name/, name);
     assert.throws(() => core.resumeWorkerArgs({ projectFolder, pluginDir, name, sessionRecord: sessionId }), /Invalid worker name/, name);
@@ -89,7 +89,7 @@ test('worker names follow the pattern and leave out the coordinator tab', () => 
     assert.equal(core.isWorkerName(name), true, name);
   }
 
-  for (const name of ['-x', 'a_b', 'a.b', 'a/b', 'a\\b', 'a"b', 'a;b', 'a$b', 'a b', 'A', 'coordinator', 'a'.repeat(41), 42]) {
+  for (const name of ['-x', 'a_b', 'a.b', 'a/b', 'a\\b', 'a"b', 'a;b', 'a$b', 'a b', 'A', 'coordinator', 'claude', 'a'.repeat(41), 42]) {
     assert.equal(core.isWorkerName(name), false, String(name));
   }
 });
@@ -190,6 +190,29 @@ test('a folder is enabled only after it was recorded, and recording it twice kee
   assert.equal(core.isEnabledFolder(once, folder), true);
   assert.deepEqual(core.withEnabledFolder(once, folder), once);
   assert.equal(core.isEnabledFolder(once, join('P:', 'repos', 'Rehlko', 'api')), false);
+});
+
+test('a plain Claude tab starts without agent, plugin or prompt, named after the project', () => {
+  assert.deepEqual(core.plainArgs({ projectFolder }), ['--name', 'rehlko-portal-claude']);
+  assert.equal(core.plainSessionName(projectFolder), 'rehlko-portal-claude');
+  assert.equal(core.PLAIN_TAB, 'claude');
+  assert.deepEqual(core.terminalOptions({ name: 'claude', claudePath: 'claude', args: [], folder: projectFolder, role: 'plain', layout: 'tabs' }).location, { viewColumn: 1, preserveFocus: false });
+});
+
+test('the coordinator takes precedence over plain mode, and nothing starts without either', () => {
+  assert.equal(core.startMode({ coordinatorEnabled: true, plainEnabled: true }), 'coordinator');
+  assert.equal(core.startMode({ coordinatorEnabled: true, plainEnabled: false }), 'coordinator');
+  assert.equal(core.startMode({ coordinatorEnabled: false, plainEnabled: true }), 'plain');
+  assert.equal(core.startMode({ coordinatorEnabled: false, plainEnabled: false }), 'none');
+});
+
+test('stopping removes only that folder from a record, case-insensitively on Windows', () => {
+  const portal = join('P:', 'repos', 'Rehlko', 'rehlko-portal');
+  const api = join('P:', 'repos', 'Rehlko', 'api');
+  const folders = core.withEnabledFolder(core.withEnabledFolder([], portal), api);
+
+  assert.deepEqual(core.withoutFolder(folders, portal), [core.folderKey(api)]);
+  assert.deepEqual(core.withoutFolder(folders, join('P:', 'repos', 'other')), folders);
 });
 
 test('the plugin folder defaults to plugins/toolkit next to the extension folder', () => {

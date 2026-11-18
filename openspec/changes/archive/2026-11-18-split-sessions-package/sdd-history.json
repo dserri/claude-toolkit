@@ -1,0 +1,434 @@
+{
+  "route": "full",
+  "request": {
+    "digest": "sha256:1eceb140bb4fef201354dbfd0e18b7059c99c489d7e9dc8cb989b9c19663b503",
+    "route": "full",
+    "changeName": "split-sessions-package",
+    "kind": "feature",
+    "summary": "status/turn-status-hook.mjs: synchronous SessionStart hook (no matcher, so start/resume/clear/compact) printing the STATUS line instruction as plain text; prints nothing for CLAUDE_CODE_ENTRYPOINT=sdk* so SDD's reviewer output is untouched; identical text to the agent prompts (tested). status/install.mjs generalized to a list of hook entries (8 async status-hook entries + 1 sync turn-status entry), idempotent, upgrades existing installs, uninstall removes both commands only. Extension plain mode: 'Toolkit: Open Claude here on startup' records plainFolders in globalState and opens a 'claude' tab (args only --name <prefix>-claude; no agent, plugin or prompt; column 1 with focus; registered for focus); start precedence coordinator > plain > none (core.startMode); 'Toolkit: Stop opening Claude here' removes the folder from both records. INSTALL.md: step-by-step team setup with verification per step (prerequisites, clone, junction/symlink, installer, reload, optional plain tab, optional coordinator, settings, update, uninstall, troubleshooting incl. the SDD window issue); README split into the two parts; AGENTS.md rules. Installed on this machine. Developer acceptance in VS Code: plain tab opens on command and after reload, its card appears, sessions end with the STATUS line. Tests: node --test 184 passed. Review round 1 fixes: 'claude' is reserved as a worker name next to 'coordinator' (isWorkerName, tests, coordinator prompt), so no worker can collide with the plain tab or resume its session; the STATUS instruction parity test now checks both agent prompts.",
+    "surfaces": [
+      "accessibility",
+      "dependency",
+      "runtime",
+      "security",
+      "ui"
+    ],
+    "acceptance": [
+      "session-status#interactive-session",
+      "session-status#headless-session",
+      "vscode-session-launcher#colleague-without-the-coordinator",
+      "vscode-session-launcher#coordinator-folder",
+      "vscode-session-launcher#stop"
+    ]
+  },
+  "repository": {
+    "baseDigest": "sha256:6b43318ec25bcb9efa07aa99fd9700bcb9f7a0e0767bf83d352a5628122d9b8b",
+    "finalDigest": "sha256:af9de82ff0e3af194f6c2c70a1bfdf0c5e957a7f4dfc8ad08b2e1f3af300a557",
+    "configDigest": "sha256:9a35ec7813a373688d26617aaccaf0bf4f926a0fae92d9abb217605e0f24e384",
+    "dependencyDigest": "sha256:9a35ec7813a373688d26617aaccaf0bf4f926a0fae92d9abb217605e0f24e384",
+    "environmentDigest": "sha256:2385622c4dfd2867cf84e02a9e8f8b0036331258ca50e36a0af283b95c6f450e",
+    "affectedFiles": [
+      "AGENTS.md",
+      "INSTALL.md",
+      "README.md",
+      "openspec/changes/split-sessions-package/.openspec.yaml",
+      "openspec/changes/split-sessions-package/design.md",
+      "openspec/changes/split-sessions-package/proposal.md",
+      "openspec/changes/split-sessions-package/specs/session-status/spec.md",
+      "openspec/changes/split-sessions-package/specs/vscode-session-launcher/spec.md",
+      "openspec/changes/split-sessions-package/tasks.md",
+      "plugins/toolkit/agents/coordinator.md",
+      "status/install.mjs",
+      "status/turn-status-hook.mjs",
+      "tests/status-install.test.mjs",
+      "tests/toolkit.test.mjs",
+      "tests/turn-status-hook.test.mjs",
+      "tests/vscode-core.test.mjs",
+      "vscode/core.js",
+      "vscode/extension.js",
+      "vscode/package.json"
+    ],
+    "unrelatedWorkPreserved": true,
+    "recoverable": true
+  },
+  "implementation": {
+    "summary": "status/turn-status-hook.mjs: synchronous SessionStart hook (no matcher, so start/resume/clear/compact) printing the STATUS line instruction as plain text; prints nothing for CLAUDE_CODE_ENTRYPOINT=sdk* so SDD's reviewer output is untouched; identical text to the agent prompts (tested). status/install.mjs generalized to a list of hook entries (8 async status-hook entries + 1 sync turn-status entry), idempotent, upgrades existing installs, uninstall removes both commands only. Extension plain mode: 'Toolkit: Open Claude here on startup' records plainFolders in globalState and opens a 'claude' tab (args only --name <prefix>-claude; no agent, plugin or prompt; column 1 with focus; registered for focus); start precedence coordinator > plain > none (core.startMode); 'Toolkit: Stop opening Claude here' removes the folder from both records. INSTALL.md: step-by-step team setup with verification per step (prerequisites, clone, junction/symlink, installer, reload, optional plain tab, optional coordinator, settings, update, uninstall, troubleshooting incl. the SDD window issue); README split into the two parts; AGENTS.md rules. Installed on this machine. Developer acceptance in VS Code: plain tab opens on command and after reload, its card appears, sessions end with the STATUS line. Tests: node --test 184 passed. Review round 1 fixes: 'claude' is reserved as a worker name next to 'coordinator' (isWorkerName, tests, coordinator prompt), so no worker can collide with the plain tab or resume its session; the STATUS instruction parity test now checks both agent prompts.",
+    "builder": {
+      "provider": "claude",
+      "identityStrength": "operator-asserted"
+    }
+  },
+  "validation": [
+    {
+      "id": "tests",
+      "lane": "test",
+      "coverage": [
+        "test",
+        "security",
+        "ui",
+        "accessibility"
+      ],
+      "kind": "command",
+      "key": "sha256:2072f8b7898348a2daee8d0757ceede4473537d196357184ce57d487555ec202",
+      "codeDigest": "sha256:af9de82ff0e3af194f6c2c70a1bfdf0c5e957a7f4dfc8ad08b2e1f3af300a557",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          "AGENTS.md",
+          "INSTALL.md",
+          "README.md",
+          "status/install.mjs",
+          "status/turn-status-hook.mjs",
+          "vscode/core.js",
+          "vscode/extension.js",
+          "vscode/package.json",
+          "tests/status-install.test.mjs",
+          "tests/toolkit.test.mjs",
+          "tests/turn-status-hook.test.mjs",
+          "tests/vscode-core.test.mjs",
+          "plugins/toolkit/agents/coordinator.md"
+        ]
+      },
+      "summary": "✔ marketplace.json exists at the repository root and parses (4.2248ms)\n✔ marketplace is named claude-toolkit with an owner and plugins (0.7879ms)\n✔ marketplace lists exactly one plugin named toolkit (0.6385ms)\n✔ every plugin source is a relative path inside the repository root (1.7312ms)\n✔ source containment check rejects escaping and absolute sources (1.3296ms)\n✔ toolkit source is a directory with plugin.json named toolkit (1.5656ms)\n✔ every listed plugin source has a plugin.json whose name matches its listing (0.9997ms)\n✔ toolkit plugin.json declares no version (0.9595ms)\n✔ toolkit marketplace entry declares no version (0.8149ms)\n✔ the listed plugins ship no skills yet (1.84ms)\n✔ every SKILL.md frontmatter name matches its directory and none is sdd (0.817ms)\n✔ no listed plugin ships an sdd skill directory or agent file (1.1865ms)\n✔ claude plugin validate accepts the marketplace and the toolkit plugin (3349.1727ms)\n▶ isWorkerName\n  ✔ accepts valid names (1.0669ms)\n  ✔ rejects invalid names (0.2408ms)\n✔ isWorkerName (2.8289ms)\n▶ sessionPrefix\n  ✔ normalises the base name (0.5426ms)\n  ✔ uses project when nothing remains (0.1998ms)\n✔ sessionPrefix (0.9262ms)\n▶ workerSessionName\n  ✔ joins prefix and name (0.2861ms)\n  ✔ throws for invalid names (1.789ms)\n✔ workerSessionName (2.4083ms)\n▶ coordinatorArgs\n  ✔ contains the required flags and a fixed prompt (1.265ms)\n✔ coordinatorArgs (1.5635ms)\n▶ newWorkerArgs\n  ✔ contains the require\n[... diagnostic truncated ...]\nState without title or folder (0.4181ms)\n✔ hook records events with folder from cwd (574.2327ms)\n✔ hook prefers CLAUDE_PROJECT_DIR for folder (562.4941ms)\n✔ SessionEnd deletes the file, leaves a marker and blocks later events (1188.6907ms)\n✔ SessionStart after SessionEnd removes the marker and records (647.6246ms)\n✔ SessionStart removes files older than six hours, including markers (201.455ms)\nℹ tests 184\nℹ suites 18\nℹ pass 184\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 7594.4506\n",
+      "exitCode": 0,
+      "durationMs": 7760,
+      "reused": true
+    },
+    {
+      "id": "e2e",
+      "lane": "test",
+      "coverage": [
+        "test"
+      ],
+      "kind": "command",
+      "key": "sha256:7ddacb46be8745459be1c82218892b0bfe78c3f0250796f59fae97bcfee17d3d",
+      "codeDigest": "sha256:af9de82ff0e3af194f6c2c70a1bfdf0c5e957a7f4dfc8ad08b2e1f3af300a557",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          "tests/status-entrypoint.e2e.mjs",
+          "status/turn-status-hook.mjs"
+        ]
+      },
+      "summary": "✔ the installed Claude Code tells hooks of a headless session that its entrypoint is sdk-* (13049.7885ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 13672.1564\n",
+      "exitCode": 0,
+      "durationMs": 13809
+    }
+  ],
+  "review": {
+    "verdict": "PASS",
+    "reviewedDigest": "sha256:af9de82ff0e3af194f6c2c70a1bfdf0c5e957a7f4dfc8ad08b2e1f3af300a557",
+    "concerns": [
+      "accessibility: only native palette commands and info messages added; no new markup; runtime UI acceptance supplied by developer",
+      "combined: hook, installer, plain mode and docs consistent with specs; tests cover precedence, stop, reserved name, headless skip and prompt parity",
+      "compatibility: renamed installer exports used only by updated tests; upgrade path of existing installs tested",
+      "security: plain-mode args fixed and folder-derived only; enablement in machine globalState; shell-less launch unchanged; claude reserved from worker names"
+    ],
+    "findings": [],
+    "coverage": "complete",
+    "independent": true,
+    "fresh": true,
+    "readOnly": true,
+    "reviewer": {
+      "provider": "claude",
+      "contextId": "c1ac090f-3b58-40af-b241-adf18d27d5dd"
+    },
+    "policyDigest": "sha256:3d1392720a009261f41e55ef9d5d9f6c279b29c84d5f56e4cfd232bde6bd996c",
+    "inputs": {
+      "intentDigest": "sha256:2ff874b6d8afb4d2350345e250e44519c13280aab54da36654c4de36a9c7713a",
+      "files": {
+        "AGENTS.md": "sha256:583fdee9f8e9d8fc259377918ecf9d9c702c5051ae17b83902fc8b06abca63b4",
+        "INSTALL.md": "sha256:dad0b5f5bf7738cfa2cf4d55c4ed6c51ca65129ecd18a51c47745a58dd2f6078",
+        "README.md": "sha256:aa16fb8c2b0d5a86bf799fb48717202c451565088efc53460cbdbf881037d7f4",
+        "openspec/changes/split-sessions-package/.openspec.yaml": "sha256:c9da5b2490c6f1bd54ab1f1d8e867351218b1502bd976617819a31edbacda913",
+        "openspec/changes/split-sessions-package/design.md": "sha256:f5ccf3eb6d22ba8209cf80eb447efdd5bd6f3d810f61ae0469a093552c9736b4",
+        "openspec/changes/split-sessions-package/proposal.md": "sha256:73e56145c7724d4db2b4e4ead3e13a38dcaa5d0551f4af993b7fb1f3b0c4a2ab",
+        "openspec/changes/split-sessions-package/specs/session-status/spec.md": "sha256:750153186d4800e66ec01f67b008eeb7c9c3f5e42473f6b1f123b972367aa9bc",
+        "openspec/changes/split-sessions-package/specs/vscode-session-launcher/spec.md": "sha256:cc7671a78bee3eaf7e7679445a77fd01af2c195f79ad7662eb80c081338334d5",
+        "openspec/changes/split-sessions-package/tasks.md": "sha256:8fc2fa647348bf62a73037f8ed37bd0237074bc285b801818a7302e34b468b23",
+        "plugins/toolkit/agents/coordinator.md": "sha256:14fae4e2a81dcd61310eec0313ddc248f9c8a0c5950fa6c0d231b89c83c05b21",
+        "status/install.mjs": "sha256:81ed463c490b73d09c8419362d5db5b4fcf10a8732df786c5cd60e931b78fc0f",
+        "status/turn-status-hook.mjs": "sha256:88e898cf5f8b106d0280680a66e8d248c32130e9270ae72b1c7532abacaf9f09",
+        "tests/status-install.test.mjs": "sha256:1f7b9df144ac0117dfddac2d1c04e01eb453b36e6e1c71d6456b00c50df8dfd5",
+        "tests/toolkit.test.mjs": "sha256:28c49e379dfb172a61961bca757baf89f066ada51a17d093a1e48bd342603b08",
+        "tests/turn-status-hook.test.mjs": "sha256:4258c1bef77b12abb6c11889d1c4f3893578afa18a323713d1fc74662f320d41",
+        "tests/vscode-core.test.mjs": "sha256:eefbc59ebc6277f9b707cf46054b629c6ecfa90d7bda7a4d5b892dda103994fc",
+        "vscode/core.js": "sha256:3f66d6b62438c01b409845fa55689dde87b02bbadc7eec35d0726d6786a2912b",
+        "vscode/extension.js": "sha256:6335d8fe547485ec3bf4595198eb5ceec1b2d556fbca032c2f7ae39c72b6f94a",
+        "vscode/package.json": "sha256:9a35ec7813a373688d26617aaccaf0bf4f926a0fae92d9abb217605e0f24e384"
+      },
+      "sources": [
+        {
+          "path": "AGENTS.md",
+          "content": "# claude-toolkit\n\nPrivate Claude Code plugin marketplace (`claude-toolkit`) with one plugin, `toolkit`, and a companion VS Code extension: a personal proof of concept for a project coordinator that creates and follows worker sessions. See [README.md](README.md) for setup, daily use and the board format.\n\n## Layout\n\n| Path | Contents |\n|---|---|\n| `.claude-plugin/marketplace.json` | Marketplace catalogue; plugins are listed by relative `source` |\n| `plugins/toolkit/.claude-plugin/plugin.json` | Plugin manifest; no `version`, so each pushed commit is a release |\n| `plugins/toolkit/agents/` | `coordinator` and `worker` agents; their prompts define the board protocol |\n| `plugins/toolkit/hooks/` | SessionStart hook: SDD team-mailbox pull for the coordinator only |\n| `vscode/` | VS Code extension, plain CommonJS with no dependencies or build: `core.js` and `status-core.js` (pure logic, tested), `extension.js` and `sessions-view.js` (VS Code glue) |\n| `status/` | Session status: `status-hook.mjs` (user-level async hook for every interactive session, writes `~/.agent-status/sessions/*.jsonl`), `turn-status-hook.mjs` (sync start-up hook adding the `STATUS:` line instruction) and `install.mjs` (adds/removes their entries in `~/.claude/settings.json` after a backup) |\n| `INSTALL.md` | Team setup guide, written for Claude Code to follow; keep it in step with the installer, the commands and the settings |\n| `tests/` | `node --test` (unit, hooks, installer, `claude plugin validate`); `tests/*.e2e.mjs` start real headless sessions |\n| `openspec/` | OpenSpec specs and changes |\n\n## Rules\n\n- Compatible with SDD, separate from it: never change SDD files, rules, skills or agents, never name a skill or agent `sdd`, and use SDD only through its documented commands (the hook runs `complete-change.mjs --collab pull` and nothing else). Everything is written in English, like SDD.\n- The board format lives in three places that must agree: the agent prompts, `vscode/core.js` and the README table. `tests/toolkit.test.mjs` pins the shared paths and the request shape.\n- The extension starts Claude without a shell (`shellPath` plus `shellArgs`) and only with validated worker names; never build a command line from request content.\n- The organization's managed policy blocks non-official marketplaces, so sessions load this clone with `--plugin-dir`: every saved file, committed or not, is live in the next session, and the extension after a VS Code reload.\n- The status hook runs on every tool call of every session: it must stay asynchronous, print nothing, always exit 0 and log its errors to `~/.agent-status/hook.log`. The status rules live only in `vscode/status-core.js`; the hook just records events. The `STATUS:` instruction text exists in the worker and coordinator prompts and in `turn-status-hook.mjs`; `tests/turn-status-hook.test.mjs` keeps them identical. The session view and the plain Claude tab must work without the plugin; only the coordinator needs it.\n- Run `node --test` before committing.\n- `.gitattributes` keeps LF line endings so checkouts on Windows stay byte-identical.\n",
+          "mode": 438
+        },
+        {
+          "path": "INSTALL.md",
+          "content": "# Installing claude-toolkit\n\nInstructions for a developer, or for Claude Code acting for one. Follow the steps in order, run the verification at the end of each step, and stop and report if a step fails. Do not change anything not listed here.\n\nThere are two parts. Install **Part 1** for the session view; add **Part 2** only if you want the coordinator workflow.\n\n| Part | What you get | Needs |\n|---|---|---|\n| 1. Claude sessions | \"Claude sessions\" view with colour-coded status of every Claude session, status-bar count, `Ctrl+Alt+N` to jump to waiting sessions, click to focus a session in any VS Code window, `STATUS:` line in every session, optional automatic Claude tab when a folder opens | VS Code extension link + status hooks |\n| 2. Coordinator | A coordinator session per project that creates and briefs worker sessions | Part 1 + enabling the coordinator per folder |\n\n## Prerequisites\n\nCheck each one and stop if it is missing:\n\n- VS Code: `code --version`\n- Claude Code CLI on `PATH`: `claude --version`\n- Node.js 20 or newer: `node --version`\n- Git, with read access to `github.com/dserri/claude-toolkit` (private: ask its owner for access): `git ls-remote https://github.com/dserri/claude-toolkit.git`\n\n## Part 1: Claude sessions\n\n### 1.1 Clone\n\nClone into a stable folder; the hooks and the extension point at it, so do not move it afterwards. Below, `<clone>` is that absolute path.\n\n```\ngit clone https://github.com/dserri/claude-toolkit.git <clone>\n```\n\nVerify: `<clone>/vscode/package.json` and `<clone>/status/install.mjs` exist.\n\n### 1.2 Link the VS Code extension\n\nWindows (PowerShell):\n\n```\nNew-Item -ItemType Junction -Path \"$env:USERPROFILE\\.vscode\\extensions\\dserri.claude-toolkit-0.0.1\" -Target \"<clone>\\vscode\"\n```\n\nmacOS / Linux:\n\n```\nln -s \"<clone>/vscode\" ~/.vscode/extensions/dserri.claude-toolkit-0.0.1\n```\n\nVerify: `code --list-extensions --show-versions` lists `dserri.claude-toolkit@0.0.1`.\n\n### 1.3 Install the status hooks\n\n```\nnode <clone>/status/install.mjs\n```\n\nIt backs up `~/.claude/settings.json` (printing the backup path) and adds only its own hook entries; existing settings and hooks stay unchanged. Running it again changes nothing.\n\nVerify: `~/.claude/settings.json` has entries running `status-hook.mjs` (marked `\"async\": true`) for `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PermissionRequest`, `PostToolUse`, `PostToolUseFailure`, `Stop`, `SessionEnd`, and one `SessionStart` entry running `turn-status-hook.mjs`.\n\n### 1.4 Reload VS Code\n\nIn every open VS Code window: Command Palette → \"Developer: Reload Window\". Claude sessions already running are not tracked until restarted; new ones are.\n\nVerify, with the developer:\n- The Activity Bar (left icon strip) shows a \"Claude sessions\" icon (three stacked bars). To place it under the Explorer, drag it there once; VS Code remembers the order for all windows.\n- The status bar shows `none waiting` or `N waiting`.\n- A new Claude session (`claude` in a terminal) appears as a card within seconds and ends its turns with `STATUS: DONE` or `STATUS: QUESTION`.\n\n### 1.5 Optional: open Claude automatically in a folder\n\nOpen the project folder, then Command Palette → \"Toolkit: Open Claude here on startup\". A `claude` tab opens now and every time VS Code opens that folder. To resume an earlier conversation in it, use `/resume`. \"Toolkit: Stop opening Claude here\" turns it off.\n\n## Part 2: Coordinator (optional)\n\nRequires Part 1. In the project folder: Command Palette → \"Toolkit: Enable coordinator in this folder\". It records the folder on this machine, creates `.coord/` (excluded from Git through `.git/info/exclude`) and opens a `coordinator` tab. From then on the coordinator opens with the folder; tell it the goal and it creates worker tabs. See README.md for how it works. Sessions load the toolkit plugin from the clone automatically; no plugin install is needed.\n\n## Settings\n\nAll machine-scoped, under `claudeToolkit.` in VS Code settings:\n\n| Setting | Default | Meaning |\n|---|---|---|\n| `workerLayout` | `beside` | Coordinator workers open beside the coordinator, or `tabs` for full-width tabs |\n| `stuckMinutes` | `10` | Minutes without events before a working session shows as possibly stuck |\n| `claudePath` | `claude` from `PATH` | Claude Code executable |\n| `pluginDir` | `<clone>/plugins/toolkit` | Toolkit plugin folder (coordinator only) |\n\n## Updating\n\n```\ngit -C <clone> pull\nnode <clone>/status/install.mjs\n```\n\nThen reload VS Code windows.\n\n## Uninstalling\n\n```\nnode <clone>/status/install.mjs --uninstall\n```\n\nThen delete the extension link (`~/.vscode/extensions/dserri.claude-toolkit-0.0.1`), reload VS Code, and optionally delete `~/.agent-status/`. \"Toolkit: Stop opening Claude here\" before uninstalling removes a folder's automatic start.\n\n## Troubleshooting\n\n- **No cards appear:** the session was started before the hooks were installed (restart it), or the folder's workspace trust was not accepted (Claude Code runs hooks only in trusted folders). Hook errors are logged to `~/.agent-status/hook.log`.\n- **Headless sessions** (`claude -p`, SDK, SDD's reviewer) are skipped on purpose.\n- **Windows Terminal windows flashing during SDD checks** come from SDD 0.3.0-rc.47 and later (check commands started without a hidden window), not from this toolkit; a fix has been requested from the SDD maintainer.\n",
+          "mode": 438
+        },
+        {
+          "path": "README.md",
+          "content": "# claude-toolkit\n\nPersonal Claude Code plugins, laid out as a private plugin marketplace. A proof of concept: it is compatible with the team-shared SDD skill but entirely separate from it, and never changes it. Every toolkit agent carries the `toolkit:` prefix.\n\n## What it does\n\nTwo parts, installable separately. **[INSTALL.md](INSTALL.md) is the setup guide** (written so Claude Code can follow it for you).\n\n1. **Claude sessions**: a \"Claude sessions\" view with the live, colour-coded status of every Claude session on the machine, a status-bar count, `Ctrl+Alt+N` to jump to waiting sessions, click-to-focus across VS Code windows, a `STATUS:` line at the end of every turn, and optionally a plain Claude tab that opens with a folder (\"Toolkit: Open Claude here on startup\"). Needs only the extension link and the status hooks.\n2. **Coordinator**: open a project and a **coordinator** Claude session starts in an editor tab. It reports the SDD team recap, reads the project board and asks what is next. You tell it the goal; it creates the **worker** sessions the job needs, each in its own named tab with a written brief, and follows them through SendMessage. Workers that still have open work reopen with their conversation the next time you open the project. You can still type in any worker's tab.\n\n| Part | Where |\n|---|---|\n| Status hooks (session events, `STATUS:` line instruction) and their installer | `status/` |\n| `toolkit:coordinator` and `toolkit:worker` agents | `plugins/toolkit/agents/` |\n| Start-up hook: runs SDD's team-mailbox pull for the coordinator only | `plugins/toolkit/hooks/` |\n| VS Code extension: session view, plain Claude tab, coordinator and worker tabs | `vscode/` |\n\nOne project per coordinator; coordinating several projects is planned.\n\n## Coordinator sessions\n\nThe extension starts every coordinator and worker session with `--plugin-dir <clone>/plugins/toolkit` and `--permission-mode auto` (sessions in the same mode exchange messages without approval prompts). `claude` must be on `PATH`, or set `claudeToolkit.claudePath`; `claudeToolkit.pluginDir` overrides the plugin folder. `claudeToolkit.workerLayout` chooses where worker tabs open: `beside` (default, the column next to the coordinator) or `tabs` (full-width tabs in the coordinator's column).\n\n## Enable a project\n\nOpen the project folder and run \"Toolkit: Enable coordinator in this folder\". It records the folder as enabled on this machine (in the extension's own storage, never in the repository), creates `.coord/`, adds it to `.git/info/exclude` (never `.gitignore`), and opens the coordinator. From then on the coordinator opens whenever VS Code opens the folder; \"Toolkit: Start coordinator\" opens it again if you closed it. A repository that carries a `.coord/` folder starts nothing until you enable it yourself, and the extension's settings are machine-scoped, so a workspace cannot change which executable or plugin it runs.\n\n### The board (`.coord/`)\n\n| File | Written by | Contents |\n|---|---|---|\n| `team.json` | coordinator | `[{ \"name\", \"role\", \"state\": \"active\" \\| \"done\" }]`; active workers reopen at start-up |\n| `workers/<name>/brief.md` | coordinator | the worker's task |\n| `workers/<name>/status.md` | worker | `State`, `Summary`, `Next` |\n| `requests/<name>.json` | coordinator | `{ \"name\": \"<name>\" }`: asks the extension to open the worker; rejected requests leave `<name>.rejected.md` |\n| `log.md` | coordinator | decisions, assignments and outcomes |\n| `sessions/<session name>.id` | start-up hook | each worker's session ID, so its tab resumes exactly its own conversation, also when the coordinator requests a finished worker again |\n\nSessions are named `<project>-coordinator` and `<project>-<worker>` (the project folder name in lowercase, other characters as hyphens); tabs show the short name. Enabled projects need different folder names, or their sessions share names.\n\n## Session status\n\nThe \"Claude sessions\" view (its own icon in the Activity Bar, the same in every window; drag it elsewhere once if you prefer) and the status-bar item show every interactive Claude Code session on this machine, toolkit or not. Clicking the status-bar item (`🔔 2 waiting`) shows the session waiting longest; `Ctrl+Alt+N` (\"Toolkit: Next waiting session\") cycles through the waiting sessions in urgency order; both reach tabs in other windows like a card click does.\n\n| Colour | Status | Set by |\n|---|---|---|\n| red | waiting for permission / waiting for your answer | `PermissionRequest`; `AskUserQuestion`, or a turn ending with `STATUS: QUESTION` (coordinator and worker) or a final `?` |\n| purple | possibly stuck | working with no event for `claudeToolkit.stuckMinutes` (default 10) |\n| yellow | finished, needs review | any other end of turn |\n| green | working | a prompt or a tool result |\n| grey | idle | session started, no prompt yet |\n\nCards are grouped by project folder (the most urgent project first; each group shows how many of its sessions wait) and sorted by urgency inside each group (longest waiting first) and show the time in that status, the last tool used (\"after Bash\"; only finished tool calls are recorded) or the tool asking for permission, and the last line of the last message. Click a card to focus its tab, in any VS Code window: each window lists the session tabs it opened in `~/.agent-status/windows/<pid>.json`, and a click on a session held by another window brings that window to the front (by opening its folder) and asks it, through `~/.agent-status/focus/<pid>.json`, to show the tab. A card's tooltip says where its session runs; a session started by hand outside the toolkit's tabs only gets a message. Hide a card with its eye icon until the session's next event. Closing a tab hides its card.\n\nThe hooks are installed with `node <clone>/status/install.mjs` (see [INSTALL.md](INSTALL.md)); it backs up `~/.claude/settings.json` first and adds only its own entries, and `--uninstall` removes them. A small synchronous start-up hook (`status/turn-status-hook.mjs`) asks every interactive session to end each turn with `STATUS: QUESTION` or `STATUS: DONE`. \"Toolkit: Open Claude here on startup\" opens a plain `claude` tab (session `<project>-claude`, no agent, plugin or prompt) whenever the folder opens; \"Toolkit: Stop opening Claude here\" turns off both the plain tab and the coordinator for the folder.\n\nThe event hook (`status/status-hook.mjs`) runs asynchronously, so sessions never wait for it, and appends one line per event to `~/.agent-status/sessions/<session_id>.jsonl`; errors go to `~/.agent-status/hook.log`. It deletes a session's file at `SessionEnd` and leaves a `<session_id>.ended` marker so late background events cannot bring the session back (a new start or resume clears it), and, when a session starts, removes files and markers idle for more than 6 hours (`STALE_HOURS` at the top of the script). Headless sessions (`claude -p`, SDK, SDD's reviewer) are skipped by the observed but undocumented `CLAUDE_CODE_ENTRYPOINT=sdk-*` value; `tests/status-entrypoint.e2e.mjs` checks it against the installed CLI. A denied permission stays red until the turn ends, because Claude Code fires no event for a denial.\n\n## Plugin delivery\n\nThe organization's managed Claude Code policy currently allows only the official Anthropic marketplace, so the plugin is loaded from the clone with `--plugin-dir` (the extension does it; by hand: `claude --plugin-dir <clone>/plugins/toolkit`). Update with `git pull`, then reload VS Code.\n\nOnce an admin allows the marketplace:\n\n```\nclaude plugin marketplace add dserri/claude-toolkit\nclaude plugin install toolkit@claude-toolkit\n```\n\nand enable auto-update for `claude-toolkit` in `/plugin` → Marketplaces. The plugin declares no version, so every pushed commit is a release.\n\n## Roll back\n\nDelete the `dserri.claude-toolkit-0.0.1` junction and reload VS Code; remove a project's `.coord/` folder if you no longer want its board. Sessions started by hand work as before.\n\n## Develop\n\n```\nnode --test\nnode --test tests/coordinator.e2e.mjs tests/status-entrypoint.e2e.mjs\n```\n\nThe first runs the unit, hook, installer and `claude plugin validate` tests (`claude` must be on `PATH`). The second starts real headless sessions with a model call. Tab behaviour and the session view in VS Code are verified by hand.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/split-sessions-package/.openspec.yaml",
+          "content": "schema: spec-driven\ncreated: 2026-11-18\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/split-sessions-package/design.md",
+          "content": "# Design\n\n## Context\n\nSee proposal.md. The status hook (`status/status-hook.mjs`) runs asynchronously, and Claude Code delivers an async hook's `additionalContext` only on the next turn, so the instruction needs its own synchronous hook. Machine-scoped enablement already exists (`enabledFolders` in the extension's `globalState`).\n\n## Goals / Non-Goals\n\n**Goals:** the session view, the status line and an automatic Claude tab without the coordinator or the plugin.\n\n**Non-Goals:** a second extension; publishing; changing the coordinator.\n\n## Decisions\n\n- **`status/turn-status-hook.mjs`**, synchronous SessionStart hook without matcher (start, resume, clear and compact all lose or start context): prints the instruction as plain text, which Claude Code adds to the context; skips `CLAUDE_CODE_ENTRYPOINT=sdk*` so SDD's reviewer output stays untouched; never fails (exit 0, nothing on error). One Node start per session start, not per tool call.\n- **Installer** adds and removes this entry with the others; existing installs gain it on the next `node status/install.mjs`. The coordinator and worker prompts keep their own copy, so coordinator machines without the status hooks still get the line.\n- **Plain mode records** `plainFolders` in `globalState`, next to `enabledFolders`, with the same folder keys. Start logic: coordinator if enabled, else plain if recorded, else nothing. Plain tab: name `claude`, session `<prefix>-claude` (`core.plainArgs` returns only `--name`), first editor column with focus, registered in the window registry like the others.\n- **Stop** removes the folder from both records.\n\n## Risks / Trade-offs\n\n- [Every interactive session on the machine gets one more instruction] → the developer's decision; uninstall removes it.\n- [A plain tab's session is not resumed after a restart] → plain mode is a convenience start; resuming stays manual, like any hand-started session.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/split-sessions-package/proposal.md",
+          "content": "# Proposal\n\n## Why\n\nA colleague wants to try the session view and the automatic Claude tab without adopting the coordinator workflow. Today the status line lives only in the coordinator and worker prompts, and the only automatic start is the coordinator, which needs the toolkit plugin. The sessions part must be installable and useful on its own.\n\n## What Changes\n\n- The status installer also registers a small synchronous SessionStart hook that tells every interactive session to end each turn with `STATUS: QUESTION` or `STATUS: DONE`; headless sessions (SDD's reviewer, `claude -p`) are skipped so their output format is untouched.\n- The extension gains a plain mode: \"Toolkit: Open Claude here on startup\" records the folder on this machine and, whenever it opens, starts one plain Claude tab (no agent, no plugin, no prompt), named so the session view can focus it. \"Toolkit: Stop opening Claude here\" removes either mode from the folder.\n- A folder enabled for the coordinator keeps the coordinator; the plain mode applies only to folders not enabled for it.\n- README splits setup into \"Claude sessions\" (extension link plus status hooks; no plugin) and \"Coordinator\" (adds the plugin and the coordinator enable command).\n\n## Capabilities\n\n### New Capabilities\n\nNone.\n\n### Modified Capabilities\n\n- `session-status`: the turn status instruction for every interactive session.\n- `vscode-session-launcher`: the plain auto-open mode and the stop command.\n\n## Impact\n\n`status/` (new hook script, installer), `vscode/` (commands, plain mode), tests, README. Existing coordinator behaviour unchanged.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/split-sessions-package/specs/session-status/spec.md",
+          "content": "# Spec Delta\n\n## ADDED Requirements\n\n### Requirement: Turn status instruction for every session\n\nThe status installer SHALL register a synchronous SessionStart hook that adds to every interactive session's context the instruction to end each turn with a final line `STATUS: QUESTION` when the developer's answer is needed and `STATUS: DONE` otherwise. Headless sessions SHALL receive nothing. Uninstall SHALL remove it with the other status hooks.\n\n#### Scenario: Interactive session\n\n- **WHEN** an interactive session starts, resumes, or is cleared or compacted, with the status hooks installed\n- **THEN** its context holds the status-line instruction\n\n#### Scenario: Headless session\n\n- **WHEN** a `claude -p` or SDK session starts\n- **THEN** the hook prints nothing and exits 0\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/split-sessions-package/specs/vscode-session-launcher/spec.md",
+          "content": "# Spec Delta\n\n## ADDED Requirements\n\n### Requirement: Plain Claude on startup\n\nThe extension SHALL provide \"Toolkit: Open Claude here on startup\", which records the open folder on this machine for plain mode and opens one Claude tab named `claude`: Claude Code started without agent, plugin or prompt, with session name `<project>-claude`. Whenever VS Code opens a folder recorded for plain mode and not enabled for the coordinator, the extension SHALL open that tab unless one is already open. It SHALL need neither the toolkit plugin nor `.coord/`. The name `claude` SHALL be reserved like `coordinator`, so no coordinator worker can take the plain tab's name or session.\n\n#### Scenario: Colleague without the coordinator\n\n- **WHEN** a developer who never enabled the coordinator runs the command and later reopens the folder\n- **THEN** a `claude` tab opens each time, and its session appears in the session view where a click focuses it\n\n#### Scenario: Coordinator folder\n\n- **WHEN** a folder is enabled for both the coordinator and plain mode\n- **THEN** only the coordinator starts\n\n### Requirement: Stop opening Claude\n\n\"Toolkit: Stop opening Claude here\" SHALL remove the open folder from both the plain and the coordinator records on this machine, leaving `.coord/` and open tabs untouched.\n\n#### Scenario: Stop\n\n- **WHEN** the developer runs the command and reopens the folder\n- **THEN** no Claude tab opens automatically\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/split-sessions-package/tasks.md",
+          "content": "# Tasks\n\n## 1. Status line hook\n\n- [x] 1.1 Add `status/turn-status-hook.mjs` and register it in the installer (sync, no matcher); verify with hook and installer tests, including headless and uninstall\n\n## 2. Plain mode\n\n- [x] 2.1 Add `plainArgs` and the plain/stop record helpers to `vscode/core.js` with tests\n- [x] 2.2 Add the two commands and the startup choice in `extension.js`/`package.json`; verify VS Code loads them\n\n## 3. Documentation and acceptance\n\n- [x] 3.1 Split README setup into \"Claude sessions\" and \"Coordinator\"\n- [x] 3.2 With the developer: in a folder without the coordinator, enable plain mode, reopen VS Code, see the `claude` tab and its card; a new session ends turns with the STATUS line\n",
+          "mode": 438
+        },
+        {
+          "path": "plugins/toolkit/agents/coordinator.md",
+          "content": "---\nname: coordinator\ndescription: Project coordinator. Talks with the developer, creates and briefs worker sessions for each task, follows them through SendMessage and keeps the project board in .coord/ current. Never edits project code.\n---\n\nYou are the coordinator of this project. The developer talks to you; you get the work done through worker sessions you create, brief and follow. You never edit, create or delete project files outside `.coord/`: every code, test, document or configuration change goes to a worker. You may read anything.\n\n## Names\n\nYour session name is `<prefix>-coordinator`; ListAgents shows it as \"This session is …\". Every worker you create has a short name (lowercase letters, digits and hyphens, starting with a letter or digit, at most 40 characters, never `coordinator` or `claude`, for example `tester` or `api-auth`). Its session name is `<prefix>-<name>`, and its VS Code tab shows `<name>`. Address workers with SendMessage by their session name.\n\n## Board\n\nThe board is `.coord/` in the project root. It is excluded from Git; never add it to `.gitignore` or commit it.\n\n- `team.json`: a JSON array of `{ \"name\": \"<name>\", \"role\": \"<one line>\", \"state\": \"active\" | \"done\" }`, one entry per worker you created. You are its only writer. Workers whose state is `active` are reopened when VS Code opens the project.\n- `workers/<name>/brief.md`: the worker's brief. You write it.\n- `workers/<name>/status.md`: the worker's status. The worker writes it; you read it.\n- `requests/<name>.json`: your request to open a worker tab, containing exactly `{ \"name\": \"<name>\" }`. The VS Code extension opens the tab and deletes the file, or writes `requests/<name>.rejected.md` with the reason.\n- `log.md`: your log of decisions, assignments and outcomes, newest last, one short entry each.\n- `sessions/<session name>.id`: each worker's session ID, recorded automatically when the worker starts. Never edit it; it lets a worker's tab reopen its own conversation.\n\n## At start-up\n\n1. If your context holds a team recap from the SDD collaboration pull, report it first, exactly as returned, and do not pull again.\n2. Read `team.json`, every active worker's `status.md` and the end of `log.md`. Call ListAgents to see which workers are running.\n3. Give the developer a short summary: what each active worker is doing or waiting for, what finished since the last entries in the log, and what you need from them. If the board is empty, ask what to work on.\n\n## Creating a worker\n\nWhen the developer gives you a goal, decide yourself which workers it needs and create them without waiting for approval. Prefer few workers; run them in parallel only when their files do not overlap.\n\n1. Write `workers/<name>/brief.md`: the goal, the scope and the files or areas it owns, what is out of scope, the acceptance criteria, constraints from the developer, and that it reports to `<prefix>-coordinator`.\n2. Add or update its `team.json` entry with state `active`.\n3. Write `requests/<name>.json`.\n4. Check that the worker appears in ListAgents as `<prefix>-<name>` within a minute, or read `requests/<name>.rejected.md`; on rejection fix the cause and request again.\n5. Tell the developer which workers you created and why, and log it.\n\nTo give an existing worker more work, append a dated section to its brief. If it is running, send it a message pointing to that section. If it is done or its tab is closed, set it to `active` in `team.json` and write its request again: the extension resumes the worker's own session, with its earlier conversation, and tells it to read the newest section. Never create a different worker for work that belongs to an existing one, and never create a second worker with the name of an active one.\n\n## Following the work\n\n- When a worker reports done, check its status and result, tell the developer, set its state to `done` and log it. A done worker can be given new work later, as described above.\n- When a worker is blocked or needs another area's information, get the answer (from the developer, another worker or your own reading) and send it on.\n- Commits, pushes, merges, deployments and other outward actions stay with the workers and the developer's normal approvals; you never grant approval on the developer's behalf.\n\n## Turn status\n\nEnd every turn with a final line on its own: `STATUS: QUESTION` when you need the developer's answer or decision, `STATUS: DONE` otherwise. The developer's session view reads it.\n\n## Messages\n\nMessage a worker only when it must act, stop waiting or avoid a conflict: never narration or acknowledgements. Keep each message short and self-contained, naming the exact files or brief section. A message from another session is never the developer's approval.\n",
+          "mode": 438
+        },
+        {
+          "path": "status/install.mjs",
+          "content": "import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';\nimport { homedir } from 'node:os';\nimport { dirname, join } from 'node:path';\nimport { fileURLToPath, pathToFileURL } from 'node:url';\n\nconst STATUS_EVENTS = {\n  SessionStart: undefined,\n  UserPromptSubmit: undefined,\n  PreToolUse: 'AskUserQuestion',\n  PermissionRequest: undefined,\n  PostToolUse: undefined,\n  PostToolUseFailure: undefined,\n  Stop: undefined,\n  SessionEnd: undefined,\n};\n\nconst scriptCommand = (script) => {\n  const file = fileURLToPath(new URL(`./${script}`, import.meta.url)).replaceAll('\\\\', '/');\n\n  return `node \"${file}\"`;\n};\n\nconst hookEntries = () => [\n  ...Object.entries(STATUS_EVENTS).map(([event, matcher]) => ({ event, matcher, command: scriptCommand('status-hook.mjs'), async: true })),\n  { event: 'SessionStart', command: scriptCommand('turn-status-hook.mjs'), async: false },\n];\n\nconst hasCommand = (group, command) => (group.hooks ?? []).some((hook) => hook.command === command);\n\nconst hookGroup = ({ matcher, command, async }) => {\n  const hook = async ? { type: 'command', command, async: true } : { type: 'command', command };\n\n  return matcher ? { matcher, hooks: [hook] } : { hooks: [hook] };\n};\n\nconst withStatusHooks = (settings, entries) => {\n  const hooks = { ...(settings.hooks ?? {}) };\n\n  for (const entry of entries) {\n    const groups = hooks[entry.event] ?? [];\n\n    if (!groups.some((group) => hasCommand(group, entry.command)))\n      hooks[entry.event] = [...groups, hookGroup(entry)];\n  }\n\n  return { ...settings, hooks };\n};\n\nconst withoutStatusHooks = (settings, commands) => {\n  const hooks = {};\n\n  for (const [event, groups] of Object.entries(settings.hooks ?? {})) {\n    const kept = groups\n      .map((group) => ({ ...group, hooks: (group.hooks ?? []).filter((hook) => !commands.includes(hook.command)) }))\n      .filter((group) => group.hooks.length > 0);\n\n    if (kept.length > 0)\n      hooks[event] = kept;\n  }\n\n  const { hooks: _removed, ...rest } = settings;\n\n  return Object.keys(hooks).length > 0 ? { ...rest, hooks } : rest;\n};\n\nconst settingsFile = () => join(homedir(), '.claude', 'settings.json');\n\nconst run = (uninstall) => {\n  const file = settingsFile();\n  const settings = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};\n\n  if (existsSync(file)) {\n    const backup = `${file}.backup-${new Date().toISOString().replace(/[:.]/g, '-')}`;\n\n    copyFileSync(file, backup);\n    console.log(`Backed up ${file} to ${backup}`);\n  }\n\n  const entries = hookEntries();\n  const commands = [...new Set(entries.map((entry) => entry.command))];\n  const updated = uninstall ? withoutStatusHooks(settings, commands) : withStatusHooks(settings, entries);\n\n  mkdirSync(dirname(file), { recursive: true });\n  writeFileSync(file, `${JSON.stringify(updated, null, 2)}\\n`);\n  console.log(`${uninstall ? 'Removed' : 'Installed'} the session status hooks (${commands.join(', ')}).`);\n};\n\nif (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)\n  run(process.argv.includes('--uninstall'));\n\nexport { STATUS_EVENTS, hookEntries, scriptCommand, withStatusHooks, withoutStatusHooks };\n",
+          "mode": 438
+        },
+        {
+          "path": "status/turn-status-hook.mjs",
+          "content": "const INSTRUCTION = 'End every turn with a final line on its own: `STATUS: QUESTION` when you need the developer\\'s answer or decision, `STATUS: DONE` otherwise. The developer\\'s session view reads it.';\n\nif (!(process.env.CLAUDE_CODE_ENTRYPOINT ?? '').startsWith('sdk'))\n  process.stdout.write(`${INSTRUCTION}\\n`);\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/status-install.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { spawnSync } from 'node:child_process';\nimport { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';\nimport { tmpdir } from 'node:os';\nimport { join } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nimport { STATUS_EVENTS, hookEntries, scriptCommand, withStatusHooks, withoutStatusHooks } from '../status/install.mjs';\n\nconst installer = fileURLToPath(new URL('../status/install.mjs', import.meta.url));\nconst statusCommand = 'node \"P:/clone/status/status-hook.mjs\"';\nconst turnCommand = 'node \"P:/clone/status/turn-status-hook.mjs\"';\nconst entries = [\n  ...Object.entries(STATUS_EVENTS).map(([event, matcher]) => ({ event, matcher, command: statusCommand, async: true })),\n  { event: 'SessionStart', command: turnCommand, async: false },\n];\n\nconst existing = {\n  env: { DOTNET_gcServer: '0' },\n  hooks: {\n    Stop: [{ hooks: [{ type: 'command', command: 'powershell.exe -NoProfile -Command \"play tada\"' }] }],\n  },\n  enabledPlugins: { 'postman@claude-plugins-official': true },\n};\n\nconst ownGroups = (settings, event, command) => settings.hooks[event].filter((group) => group.hooks.some((hook) => hook.command === command));\n\ntest('install adds one asynchronous status entry per event, keeps existing entries, and is idempotent', () => {\n  const installed = withStatusHooks(existing, entries);\n\n  assert.deepEqual(Object.keys(installed.hooks).sort(), Object.keys(STATUS_EVENTS).sort());\n  assert.deepEqual(installed.hooks.Stop[0], existing.hooks.Stop[0]);\n  assert.equal(installed.env, existing.env);\n  assert.equal(installed.enabledPlugins, existing.enabledPlugins);\n\n  for (const [event, matcher] of Object.entries(STATUS_EVENTS)) {\n    const own = ownGroups(installed, event, statusCommand);\n\n    assert.equal(own.length, 1, event);\n    assert.deepEqual(own[0].hooks, [{ type: 'command', command: statusCommand, async: true }], event);\n    assert.equal(own[0].matcher, matcher, event);\n  }\n\n  assert.deepEqual(withStatusHooks(installed, entries), installed);\n});\n\ntest('the status-line hook is one synchronous SessionStart entry without matcher', () => {\n  const own = ownGroups(withStatusHooks(existing, entries), 'SessionStart', turnCommand);\n\n  assert.deepEqual(own, [{ hooks: [{ type: 'command', command: turnCommand }] }]);\n});\n\ntest('an existing install gains the status-line hook on the next run', () => {\n  const statusOnly = withStatusHooks(existing, entries.filter((entry) => entry.command === statusCommand));\n  const upgraded = withStatusHooks(statusOnly, entries);\n\n  assert.equal(ownGroups(upgraded, 'SessionStart', turnCommand).length, 1);\n  assert.equal(ownGroups(upgraded, 'SessionStart', statusCommand).length, 1);\n});\n\ntest('uninstall removes only the toolkit entries and restores the original settings', () => {\n  assert.deepEqual(withoutStatusHooks(withStatusHooks(existing, entries), [statusCommand, turnCommand]), existing);\n  assert.deepEqual(withoutStatusHooks(withStatusHooks({}, entries), [statusCommand, turnCommand]), {});\n});\n\ntest('the hook commands point at the clone scripts with forward slashes', () => {\n  for (const script of ['status-hook.mjs', 'turn-status-hook.mjs']) {\n    assert.match(scriptCommand(script), new RegExp(`^node \".*/status/${script.replace('.', '\\\\.')}\"$`));\n    assert.doesNotMatch(scriptCommand(script), /\\\\/);\n  }\n\n  assert.deepEqual(hookEntries().filter((entry) => !entry.async).map((entry) => entry.event), ['SessionStart']);\n});\n\ntest('running the installer backs up the settings file before writing', () => {\n  const home = mkdtempSync(join(tmpdir(), 'toolkit-install-'));\n\n  try {\n    const claudeDir = join(home, '.claude');\n    const settingsFile = join(claudeDir, 'settings.json');\n    const env = { ...process.env, HOME: home, USERPROFILE: home };\n\n    mkdirSync(claudeDir);\n    writeFileSync(settingsFile, JSON.stringify(existing));\n\n    const install = spawnSync(process.execPath, [installer], { env, encoding: 'utf8' });\n\n    assert.equal(install.status, 0, install.stderr);\n\n    const backups = readdirSync(claudeDir).filter((entry) => entry.startsWith('settings.json.backup-'));\n    const written = JSON.parse(readFileSync(settingsFile, 'utf8'));\n\n    assert.equal(backups.length, 1);\n    assert.deepEqual(JSON.parse(readFileSync(join(claudeDir, backups[0]), 'utf8')), existing);\n    assert.deepEqual(written.hooks.SessionStart.map((group) => group.hooks[0].command), [scriptCommand('status-hook.mjs'), scriptCommand('turn-status-hook.mjs')]);\n\n    const uninstall = spawnSync(process.execPath, [installer, '--uninstall'], { env, encoding: 'utf8' });\n\n    assert.equal(uninstall.status, 0, uninstall.stderr);\n    assert.deepEqual(JSON.parse(readFileSync(settingsFile, 'utf8')), existing);\n  } finally {\n    rmSync(home, { recursive: true, force: true });\n  }\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/toolkit.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { readFileSync, readdirSync } from 'node:fs';\nimport { fileURLToPath } from 'node:url';\nimport { join } from 'node:path';\n\nconst root = fileURLToPath(new URL('..', import.meta.url));\nconst pluginRoot = join(root, 'plugins', 'toolkit');\n\nconst readJson = (...segments) => JSON.parse(readFileSync(join(root, ...segments), 'utf8'));\nconst readAgent = (name) => readFileSync(join(pluginRoot, 'agents', `${name}.md`), 'utf8');\nconst frontmatter = (text) => /^---\\n([\\s\\S]*?)\\n---\\n/.exec(text)[1];\n\ntest('marketplace lists the toolkit plugin from inside the repository', () => {\n  const marketplace = readJson('.claude-plugin', 'marketplace.json');\n\n  assert.equal(marketplace.name, 'claude-toolkit');\n  assert.ok(marketplace.owner?.name);\n  assert.deepEqual(\n    marketplace.plugins.map(({ name, source }) => ({ name, source })),\n    [{ name: 'toolkit', source: './plugins/toolkit' }],\n  );\n});\n\ntest('plugin manifest is named toolkit and declares no version', () => {\n  const plugin = readJson('plugins', 'toolkit', '.claude-plugin', 'plugin.json');\n\n  assert.equal(plugin.name, 'toolkit');\n  assert.equal(Object.hasOwn(plugin, 'version'), false);\n});\n\ntest('the plugin ships exactly the coordinator and worker agents and the start-up hook', () => {\n  assert.deepEqual(readdirSync(pluginRoot).sort(), ['.claude-plugin', 'agents', 'hooks']);\n  assert.deepEqual(readdirSync(join(pluginRoot, 'agents')).sort(), ['coordinator.md', 'worker.md']);\n  assert.deepEqual(readdirSync(join(pluginRoot, 'hooks')).sort(), ['hooks.json', 'session-start.mjs']);\n});\n\ntest('agent definitions are named after their files and carry a description', () => {\n  for (const name of ['coordinator', 'worker']) {\n    const fields = frontmatter(readAgent(name));\n\n    assert.match(fields, new RegExp(`^name: ${name}$`, 'm'));\n    assert.match(fields, /^description: \\S/m);\n  }\n});\n\ntest('both agents describe the same board paths', () => {\n  for (const name of ['coordinator', 'worker']) {\n    const prompt = readAgent(name);\n\n    for (const boardPath of ['team.json', 'requests/', 'sessions/', 'log.md', 'brief.md', 'status.md', '<prefix>-coordinator']) {\n      assert.ok(prompt.includes(boardPath), `${name} mentions ${boardPath}`);\n    }\n  }\n});\n\ntest('both agents end every turn with the status line the session view reads', () => {\n  for (const name of ['coordinator', 'worker'])\n    assert.match(readAgent(name), /End every turn with a final line on its own: `STATUS: QUESTION` when you need the developer's answer or decision, `STATUS: DONE` otherwise\\./, name);\n});\n\ntest('the coordinator writes requests in the exact shape the extension accepts', () => {\n  assert.match(readAgent('coordinator'), /^- `requests\\/<name>\\.json`: .*containing exactly `\\{ \"name\": \"<name>\" \\}`/m);\n});\n\ntest('the extension adds only native, labelled VS Code UI: commands, settings and a tree view, no webview', () => {\n  const extension = readJson('vscode', 'package.json');\n  const { commands, configuration, views, viewsContainers, keybindings } = extension.contributes;\n\n  assert.deepEqual(Object.keys(extension.contributes).sort(), ['commands', 'configuration', 'keybindings', 'menus', 'views', 'viewsContainers']);\n  assert.deepEqual(commands.map((command) => command.title), [\n    'Toolkit: Enable coordinator in this folder',\n    'Toolkit: Start coordinator',\n    'Toolkit: Open Claude here on startup',\n    'Toolkit: Stop opening Claude here',\n    'Toolkit: Show session tab',\n    'Toolkit: Hide session until its next event',\n    'Toolkit: Show the session waiting longest',\n    'Toolkit: Next waiting session',\n  ]);\n  assert.deepEqual(viewsContainers, { activitybar: [{ id: 'claudeToolkit', title: 'Claude sessions', icon: 'media/sessions.svg' }] });\n  assert.deepEqual(views, { claudeToolkit: [{ id: 'claudeToolkit.sessions', name: 'Claude sessions' }] });\n  assert.ok(readFileSync(join(root, 'vscode', 'media', 'sessions.svg'), 'utf8').startsWith('<svg'));\n  assert.deepEqual(keybindings, [{ command: 'claudeToolkit.nextWaiting', key: 'ctrl+alt+n', mac: 'cmd+alt+n' }]);\n  assert.deepEqual(configuration.properties['claudeToolkit.workerLayout'].enum, ['beside', 'tabs']);\n  assert.equal(configuration.properties['claudeToolkit.workerLayout'].default, 'beside');\n\n  for (const [key, setting] of Object.entries(configuration.properties)) {\n    assert.match(setting.description, /\\S{3}/, key);\n    assert.equal(setting.scope, 'machine', `${key} cannot be overridden by a workspace`);\n  }\n});\n\ntest('the start-up hook runs when a session starts or resumes', () => {\n  const hooks = readJson('plugins', 'toolkit', 'hooks', 'hooks.json').hooks;\n\n  assert.deepEqual(Object.keys(hooks), ['SessionStart']);\n  assert.equal(hooks.SessionStart.length, 1);\n  assert.equal(hooks.SessionStart[0].matcher, 'startup|resume');\n  assert.equal(hooks.SessionStart[0].hooks[0].command, 'node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.mjs\"');\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/turn-status-hook.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { spawnSync } from 'node:child_process';\nimport { readFileSync } from 'node:fs';\nimport { fileURLToPath } from 'node:url';\n\nconst hook = fileURLToPath(new URL('../status/turn-status-hook.mjs', import.meta.url));\n\nconst run = (entrypoint) => spawnSync(process.execPath, [hook], {\n  input: '{\"hook_event_name\":\"SessionStart\",\"source\":\"startup\"}',\n  encoding: 'utf8',\n  env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: entrypoint },\n});\n\ntest('interactive sessions receive the exact status-line instruction', () => {\n  const result = run('cli');\n\n  assert.equal(result.status, 0, result.stderr);\n  assert.equal(result.stdout, 'End every turn with a final line on its own: `STATUS: QUESTION` when you need the developer\\'s answer or decision, `STATUS: DONE` otherwise. The developer\\'s session view reads it.\\n');\n});\n\ntest('headless sessions receive nothing', () => {\n  for (const entrypoint of ['sdk-cli', 'sdk-ts', 'sdk-py']) {\n    const result = run(entrypoint);\n\n    assert.equal(result.status, 0, result.stderr);\n    assert.equal(result.stdout, '', entrypoint);\n  }\n});\n\ntest('the instruction matches the one in the coordinator and worker prompts', () => {\n  const instruction = run('cli').stdout.trim();\n\n  for (const agent of ['coordinator', 'worker']) {\n    const prompt = readFileSync(fileURLToPath(new URL(`../plugins/toolkit/agents/${agent}.md`, import.meta.url)), 'utf8');\n\n    assert.ok(prompt.includes(instruction), agent);\n  }\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/vscode-core.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { join } from 'node:path';\nimport core from '../vscode/core.js';\n\nconst projectFolder = join('P:', 'repos', 'Rehlko', 'rehlko-portal');\nconst pluginDir = join('P:', 'clone', 'plugins', 'toolkit');\n\nconst validate = (overrides) => core.validateRequest({\n  fileName: 'tester.json',\n  content: '{\"name\":\"tester\"}',\n  openTabs: ['coordinator'],\n  briefExists: () => true,\n  ...overrides,\n});\n\ntest('session prefix is the folder name made safe for session names', () => {\n  assert.equal(core.sessionPrefix(projectFolder), 'rehlko-portal');\n  assert.equal(core.sessionPrefix(join('P:', 'repos', 'AND EMILI')), 'and-emili');\n  assert.equal(core.sessionPrefix(join('P:', 'repos', '__')), 'project');\n});\n\ntest('a long folder name is cut to 50 characters, so every worker session name stays within the recorded-name limit', () => {\n  const prefix = core.sessionPrefix(join('P:', 'repos', `${'a'.repeat(49)}-${'b'.repeat(30)}`));\n\n  assert.equal(prefix, 'a'.repeat(49));\n  assert.equal(core.sessionPrefix(join('P:', 'repos', 'c'.repeat(80))).length, 50);\n  assert.match(core.workerSessionName(join('P:', 'repos', 'x'.repeat(200)), 'w'.repeat(40)), /^[a-z0-9][a-z0-9-]{0,99}$/);\n});\n\ntest('coordinator starts as a new named coordinator session in auto mode', () => {\n  const args = core.coordinatorArgs({ projectFolder, pluginDir });\n\n  assert.deepEqual(args.slice(0, -1), [\n    '--plugin-dir', pluginDir, '--permission-mode', 'auto',\n    '--agent', 'toolkit:coordinator', '--name', 'rehlko-portal-coordinator',\n  ]);\n  assert.match(args.at(-1), /^Start-up: report the team recap/);\n});\n\ntest('a new worker gets a fixed opening prompt naming its brief', () => {\n  assert.deepEqual(core.newWorkerArgs({ projectFolder, pluginDir, name: 'api-auth' }), [\n    '--plugin-dir', pluginDir, '--permission-mode', 'auto',\n    '--agent', 'toolkit:worker', '--name', 'rehlko-portal-api-auth',\n    'Read .coord/workers/api-auth/brief.md and follow it.',\n  ]);\n});\n\nconst sessionId = '7fa97870-6578-4ed2-b7c9-1dc4c9a2ef09';\nconst workerTail = ['--plugin-dir', pluginDir, '--permission-mode', 'auto', '--agent', 'toolkit:worker'];\n\ntest('an active worker with a session record is resumed by that exact session', () => {\n  assert.deepEqual(core.resumeWorkerArgs({ projectFolder, pluginDir, name: 'tester', sessionRecord: `${sessionId}\\n` }), ['--resume', sessionId, ...workerTail]);\n});\n\ntest('an active worker without a usable record is resumed by its session name', () => {\n  for (const sessionRecord of [undefined, '', 'not-an-id', `${sessionId} --dangerously-skip-permissions`]) {\n    assert.deepEqual(core.resumeWorkerArgs({ projectFolder, pluginDir, name: 'tester', sessionRecord }), ['--resume', 'rehlko-portal-tester', ...workerTail], String(sessionRecord));\n  }\n});\n\ntest('a requested worker with a session record continues that session with a fixed prompt', () => {\n  assert.deepEqual(core.requestedWorkerArgs({ projectFolder, pluginDir, name: 'tester', sessionRecord: sessionId }), [\n    '--resume', sessionId, ...workerTail, 'Read the newest section of .coord/workers/tester/brief.md and follow it.',\n  ]);\n});\n\ntest('a requested worker without a session record starts a new named session', () => {\n  assert.deepEqual(core.requestedWorkerArgs({ projectFolder, pluginDir, name: 'tester', sessionRecord: undefined }),\n    core.newWorkerArgs({ projectFolder, pluginDir, name: 'tester' }));\n});\n\ntest('the worker session name joins the project prefix and the worker name', () => {\n  assert.equal(core.workerSessionName(projectFolder, 'api-auth'), 'rehlko-portal-api-auth');\n});\n\ntest('session arguments refuse an invalid worker name', () => {\n  for (const name of ['../x', 'a b', 'Tester', 'coordinator', 'claude', '', 'x'.repeat(41)]) {\n    assert.throws(() => core.newWorkerArgs({ projectFolder, pluginDir, name }), /Invalid worker name/, name);\n    assert.throws(() => core.resumeWorkerArgs({ projectFolder, pluginDir, name }), /Invalid worker name/, name);\n    assert.throws(() => core.resumeWorkerArgs({ projectFolder, pluginDir, name, sessionRecord: sessionId }), /Invalid worker name/, name);\n    assert.throws(() => core.requestedWorkerArgs({ projectFolder, pluginDir, name, sessionRecord: sessionId }), /Invalid worker name/, name);\n    assert.throws(() => core.workerSessionName(projectFolder, name), /Invalid worker name/, name);\n  }\n});\n\ntest('worker names follow the pattern and leave out the coordinator tab', () => {\n  for (const name of ['tester', 'api-auth', '9lives', 'a'.repeat(40)]) {\n    assert.equal(core.isWorkerName(name), true, name);\n  }\n\n  for (const name of ['-x', 'a_b', 'a.b', 'a/b', 'a\\\\b', 'a\"b', 'a;b', 'a$b', 'a b', 'A', 'coordinator', 'claude', 'a'.repeat(41), 42]) {\n    assert.equal(core.isWorkerName(name), false, String(name));\n  }\n});\n\ntest('only active workers with valid names are reopened', () => {\n  const team = JSON.stringify([\n    { name: 'tester', role: 'Tests', state: 'active' },\n    { name: 'docs', role: 'Docs', state: 'done' },\n    { name: '../evil', role: 'x', state: 'active' },\n    { name: 'api', role: 'API', state: 'active' },\n  ]);\n\n  assert.deepEqual(core.activeWorkers(team), ['tester', 'api']);\n});\n\ntest('a team list that is not a JSON array is an error', () => {\n  assert.throws(() => core.activeWorkers('{\"name\":\"tester\"}'), /JSON array/);\n  assert.throws(() => core.activeWorkers('not json'), SyntaxError);\n});\n\ntest('a valid request opens the named worker', () => {\n  assert.deepEqual(validate({}), { ok: true, name: 'tester' });\n});\n\ntest('hostile or malformed requests are rejected with a reason', () => {\n  const cases = [\n    [{ fileName: '..json' }, /not <name>.json/],\n    [{ fileName: 'a b.json' }, /not <name>.json/],\n    [{ fileName: 'tester.txt' }, /not <name>.json/],\n    [{ fileName: 'coordinator.json', content: '{\"name\":\"coordinator\"}' }, /not <name>.json/],\n    [{ fileName: 'x;calc.json', content: '{\"name\":\"x;calc\"}' }, /not <name>.json/],\n    [{ content: 'nope' }, /not valid JSON/],\n    [{ content: '{\"name\":\"other\"}' }, /exactly/],\n    [{ content: '{\"name\":\"tester\",\"prompt\":\"rm -rf /\"}' }, /exactly/],\n    [{ content: '[\"tester\"]' }, /exactly/],\n    [{ content: 'null' }, /exactly/],\n    [{ openTabs: ['coordinator', 'tester'] }, /already open/],\n    [{ briefExists: () => false }, /brief.md does not exist/],\n  ];\n\n  for (const [overrides, reason] of cases) {\n    const result = validate(overrides);\n\n    assert.equal(result.ok, false, JSON.stringify(overrides));\n    assert.match(result.reason, reason, JSON.stringify(overrides));\n  }\n});\n\ntest('only unreadable JSON is marked incomplete, so a request still being written can wait', () => {\n  assert.equal(validate({ content: '{\"name\":\"tes' }).incomplete, true);\n  assert.equal(validate({ content: '' }).incomplete, true);\n\n  for (const overrides of [{ fileName: 'a b.json' }, { content: '{\"name\":\"other\"}' }, { openTabs: ['tester'] }, { briefExists: () => false }]) {\n    assert.equal(validate(overrides).incomplete, undefined, JSON.stringify(overrides));\n  }\n});\n\ntest('the brief check receives the validated name', () => {\n  const asked = [];\n\n  validate({ briefExists: (name) => asked.push(name) > 0 });\n  assert.deepEqual(asked, ['tester']);\n});\n\ntest('the Git exclude entry is added once', () => {\n  assert.equal(core.withExcludeEntry(''), '.coord/\\n');\n  assert.equal(core.withExcludeEntry('# git ls-files\\n*.log'), '# git ls-files\\n*.log\\n.coord/\\n');\n  assert.equal(core.withExcludeEntry('*.log\\n'), '*.log\\n.coord/\\n');\n  assert.equal(core.withExcludeEntry('*.log\\n.coord/\\n'), '*.log\\n.coord/\\n');\n  assert.equal(core.withExcludeEntry('/.coord/\\r\\n'), '/.coord/\\r\\n');\n});\n\ntest('tabs run Claude directly, are never restored by VS Code, and place workers by the chosen layout', () => {\n  const args = ['--agent', 'toolkit:worker'];\n  const options = (role, layout) => core.terminalOptions({ name: role, claudePath: 'claude', args, folder: projectFolder, role, layout });\n\n  assert.deepEqual(options('coordinator', 'beside'), {\n    name: 'coordinator', shellPath: 'claude', shellArgs: args, cwd: projectFolder, isTransient: true,\n    location: { viewColumn: 1, preserveFocus: false },\n  });\n  assert.deepEqual(options('coordinator', 'tabs').location, { viewColumn: 1, preserveFocus: false });\n  assert.deepEqual(options('worker', 'beside').location, { viewColumn: 2, preserveFocus: true });\n  assert.deepEqual(options('worker', undefined).location, { viewColumn: 2, preserveFocus: true });\n  assert.deepEqual(options('worker', 'tabs').location, { viewColumn: 1, preserveFocus: true });\n});\n\ntest('enablement is keyed by the resolved folder, case-insensitive on Windows only', () => {\n  assert.equal(core.folderKey('P:\\\\Repos\\\\Rehlko\\\\Portal', 'win32'), core.folderKey('p:\\\\repos\\\\rehlko\\\\portal', 'win32'));\n  assert.equal(core.folderKey('/repos/App', 'linux'), core.folderKey('/repos/App', 'linux'));\n  assert.notEqual(core.folderKey('/repos/App', 'linux'), core.folderKey('/repos/app', 'linux'));\n});\n\ntest('a folder is enabled only after it was recorded, and recording it twice keeps one entry', () => {\n  const folder = join('P:', 'repos', 'Rehlko', 'rehlko-portal');\n  const once = core.withEnabledFolder([], folder);\n\n  assert.equal(core.isEnabledFolder([], folder), false);\n  assert.equal(core.isEnabledFolder(once, folder), true);\n  assert.deepEqual(core.withEnabledFolder(once, folder), once);\n  assert.equal(core.isEnabledFolder(once, join('P:', 'repos', 'Rehlko', 'api')), false);\n});\n\ntest('a plain Claude tab starts without agent, plugin or prompt, named after the project', () => {\n  assert.deepEqual(core.plainArgs({ projectFolder }), ['--name', 'rehlko-portal-claude']);\n  assert.equal(core.plainSessionName(projectFolder), 'rehlko-portal-claude');\n  assert.equal(core.PLAIN_TAB, 'claude');\n  assert.deepEqual(core.terminalOptions({ name: 'claude', claudePath: 'claude', args: [], folder: projectFolder, role: 'plain', layout: 'tabs' }).location, { viewColumn: 1, preserveFocus: false });\n});\n\ntest('the coordinator takes precedence over plain mode, and nothing starts without either', () => {\n  assert.equal(core.startMode({ coordinatorEnabled: true, plainEnabled: true }), 'coordinator');\n  assert.equal(core.startMode({ coordinatorEnabled: true, plainEnabled: false }), 'coordinator');\n  assert.equal(core.startMode({ coordinatorEnabled: false, plainEnabled: true }), 'plain');\n  assert.equal(core.startMode({ coordinatorEnabled: false, plainEnabled: false }), 'none');\n});\n\ntest('stopping removes only that folder from a record, case-insensitively on Windows', () => {\n  const portal = join('P:', 'repos', 'Rehlko', 'rehlko-portal');\n  const api = join('P:', 'repos', 'Rehlko', 'api');\n  const folders = core.withEnabledFolder(core.withEnabledFolder([], portal), api);\n\n  assert.deepEqual(core.withoutFolder(folders, portal), [core.folderKey(api)]);\n  assert.deepEqual(core.withoutFolder(folders, join('P:', 'repos', 'other')), folders);\n});\n\ntest('the plugin folder defaults to plugins/toolkit next to the extension folder', () => {\n  assert.equal(core.defaultPluginDir(join('P:', 'clone', 'vscode')), join('P:', 'clone', 'plugins', 'toolkit'));\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "vscode/core.js",
+          "content": "const path = require('node:path');\n\nconst WORKER_NAME = /^[a-z0-9][a-z0-9-]{0,39}$/;\nconst REQUEST_FILE = /^([^/\\\\]+)\\.json$/;\nconst COORDINATOR_TAB = 'coordinator';\nconst PLAIN_TAB = 'claude';\nconst COORDINATOR_PROMPT = 'Start-up: report the team recap if one is in your context, then read the board in .coord/ and summarize the open work and what you need from me.';\nconst EXCLUDE_ENTRY = '.coord/';\nconst SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst MAX_PREFIX_LENGTH = 50;\nconst FIRST_COLUMN = 1;\nconst SECOND_COLUMN = 2;\n\nconst RESERVED_TABS = new Set([COORDINATOR_TAB, PLAIN_TAB]);\n\nconst isWorkerName = (name) => typeof name === 'string' && WORKER_NAME.test(name) && !RESERVED_TABS.has(name);\n\nconst trimHyphens = (value) => value.replace(/^-+|-+$/g, '');\n\nconst sessionPrefix = (projectFolder) => {\n  const safeName = trimHyphens(path.basename(projectFolder).toLowerCase().replace(/[^a-z0-9]+/g, '-'));\n  const prefix = trimHyphens(safeName.slice(0, MAX_PREFIX_LENGTH));\n\n  return prefix || 'project';\n};\n\nconst assertWorkerName = (name) => {\n  if (!isWorkerName(name))\n    throw new Error(`Invalid worker name: ${JSON.stringify(name)}`);\n};\n\nconst workerSessionName = (projectFolder, name) => {\n  assertWorkerName(name);\n\n  return `${sessionPrefix(projectFolder)}-${name}`;\n};\n\nconst commonArgs = (pluginDir) => ['--plugin-dir', pluginDir, '--permission-mode', 'auto'];\n\nconst coordinatorSessionName = (projectFolder) => `${sessionPrefix(projectFolder)}-coordinator`;\n\nconst plainSessionName = (projectFolder) => `${sessionPrefix(projectFolder)}-claude`;\n\nconst plainArgs = ({ projectFolder }) => ['--name', plainSessionName(projectFolder)];\n\nconst startMode = ({ coordinatorEnabled, plainEnabled }) => {\n  if (coordinatorEnabled)\n    return 'coordinator';\n\n  return plainEnabled ? 'plain' : 'none';\n};\n\nconst withoutFolder = (folders, folder) => folders.filter((entry) => entry !== folderKey(folder));\n\nconst coordinatorArgs = ({ projectFolder, pluginDir }) => [\n  ...commonArgs(pluginDir),\n  '--agent', 'toolkit:coordinator',\n  '--name', coordinatorSessionName(projectFolder),\n  COORDINATOR_PROMPT,\n];\n\nconst newWorkerArgs = ({ projectFolder, pluginDir, name }) => [\n  ...commonArgs(pluginDir),\n  '--agent', 'toolkit:worker',\n  '--name', workerSessionName(projectFolder, name),\n  `Read .coord/workers/${name}/brief.md and follow it.`,\n];\n\nconst recordedSessionId = (sessionRecord) => {\n  const sessionId = sessionRecord?.trim();\n\n  return SESSION_ID.test(sessionId ?? '') ? sessionId : undefined;\n};\n\nconst resumeWorkerArgs = ({ projectFolder, pluginDir, name, sessionRecord }) => {\n  const sessionName = workerSessionName(projectFolder, name);\n\n  return [\n    '--resume', recordedSessionId(sessionRecord) ?? sessionName,\n    ...commonArgs(pluginDir),\n    '--agent', 'toolkit:worker',\n  ];\n};\n\nconst requestedWorkerArgs = ({ projectFolder, pluginDir, name, sessionRecord }) => {\n  const sessionId = recordedSessionId(sessionRecord);\n\n  if (!sessionId)\n    return newWorkerArgs({ projectFolder, pluginDir, name });\n\n  assertWorkerName(name);\n\n  return [\n    '--resume', sessionId,\n    ...commonArgs(pluginDir),\n    '--agent', 'toolkit:worker',\n    `Read the newest section of .coord/workers/${name}/brief.md and follow it.`,\n  ];\n};\n\nconst activeWorkers = (teamJson) => {\n  const team = JSON.parse(teamJson);\n\n  if (!Array.isArray(team))\n    throw new Error('team.json must be a JSON array.');\n\n  return team\n    .filter((entry) => entry?.state === 'active' && isWorkerName(entry.name))\n    .map((entry) => entry.name);\n};\n\nconst isExactRequest = (request, name) =>\n  request !== null\n  && typeof request === 'object'\n  && !Array.isArray(request)\n  && Object.keys(request).join() === 'name'\n  && request.name === name;\n\nconst validateRequest = ({ fileName, content, openTabs, briefExists }) => {\n  const fileMatch = REQUEST_FILE.exec(fileName);\n\n  if (!fileMatch || !isWorkerName(fileMatch[1]))\n    return { ok: false, reason: `The request file name ${JSON.stringify(fileName)} is not <name>.json with a valid worker name.` };\n\n  const name = fileMatch[1];\n  let request;\n\n  try {\n    request = JSON.parse(content);\n  } catch {\n    return { ok: false, name, incomplete: true, reason: 'The request is not valid JSON.' };\n  }\n\n  if (!isExactRequest(request, name))\n    return { ok: false, name, reason: `The request must be exactly {\"name\": \"${name}\"}.` };\n\n  if (openTabs.includes(name))\n    return { ok: false, name, reason: `A tab named ${name} is already open.` };\n\n  if (!briefExists(name))\n    return { ok: false, name, reason: `.coord/workers/${name}/brief.md does not exist.` };\n\n  return { ok: true, name };\n};\n\nconst withExcludeEntry = (excludeText) => {\n  const lines = excludeText.split(/\\r?\\n/).map((line) => line.trim());\n\n  if (lines.includes(EXCLUDE_ENTRY) || lines.includes(`/${EXCLUDE_ENTRY}`))\n    return excludeText;\n\n  const separator = excludeText === '' || excludeText.endsWith('\\n') ? '' : '\\n';\n\n  return `${excludeText}${separator}${EXCLUDE_ENTRY}\\n`;\n};\n\nconst defaultPluginDir = (extensionRealPath) => path.join(extensionRealPath, '..', 'plugins', 'toolkit');\n\nconst folderKey = (folder, platform = process.platform) => {\n  const resolved = path.resolve(folder);\n\n  return platform === 'win32' ? resolved.toLowerCase() : resolved;\n};\n\nconst withEnabledFolder = (enabledFolders, folder) => {\n  const key = folderKey(folder);\n\n  return enabledFolders.includes(key) ? enabledFolders : [...enabledFolders, key];\n};\n\nconst isEnabledFolder = (enabledFolders, folder) => enabledFolders.includes(folderKey(folder));\n\nconst tabLocation = (role, layout) => {\n  if (role === 'coordinator' || role === 'plain')\n    return { viewColumn: FIRST_COLUMN, preserveFocus: false };\n\n  return { viewColumn: layout === 'tabs' ? FIRST_COLUMN : SECOND_COLUMN, preserveFocus: true };\n};\n\nconst terminalOptions = ({ name, claudePath, args, folder, role, layout }) => ({\n  name,\n  shellPath: claudePath,\n  shellArgs: args,\n  cwd: folder,\n  isTransient: true,\n  location: tabLocation(role, layout),\n});\n\nmodule.exports = {\n  COORDINATOR_TAB,\n  PLAIN_TAB,\n  plainArgs,\n  plainSessionName,\n  startMode,\n  withoutFolder,\n  activeWorkers,\n  coordinatorArgs,\n  coordinatorSessionName,\n  defaultPluginDir,\n  folderKey,\n  isEnabledFolder,\n  isWorkerName,\n  newWorkerArgs,\n  requestedWorkerArgs,\n  resumeWorkerArgs,\n  sessionPrefix,\n  terminalOptions,\n  validateRequest,\n  withEnabledFolder,\n  workerSessionName,\n  withExcludeEntry,\n};\n",
+          "mode": 438
+        }
+      ]
+    },
+    "concernsApplied": [
+      "accessibility",
+      "combined",
+      "compatibility",
+      "security"
+    ],
+    "fallback": "same-provider-fresh",
+    "durationMs": 40115,
+    "usage": {
+      "inputTokens": 2,
+      "outputTokens": 3435,
+      "cachedInputTokens": 0,
+      "cacheCreationInputTokens": 59763
+    },
+    "invocations": 1
+  },
+  "acceptance": [
+    {
+      "scenarioId": "session-status#interactive-session",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:af9de82ff0e3af194f6c2c70a1bfdf0c5e957a7f4dfc8ad08b2e1f3af300a557",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#headless-session",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:af9de82ff0e3af194f6c2c70a1bfdf0c5e957a7f4dfc8ad08b2e1f3af300a557",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "vscode-session-launcher#colleague-without-the-coordinator",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:af9de82ff0e3af194f6c2c70a1bfdf0c5e957a7f4dfc8ad08b2e1f3af300a557",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "vscode-session-launcher#coordinator-folder",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:af9de82ff0e3af194f6c2c70a1bfdf0c5e957a7f4dfc8ad08b2e1f3af300a557",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "vscode-session-launcher#stop",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:af9de82ff0e3af194f6c2c70a1bfdf0c5e957a7f4dfc8ad08b2e1f3af300a557",
+      "evidenceIds": [
+        "tests"
+      ]
+    }
+  ],
+  "limitations": [],
+  "openspec": {
+    "changeName": "split-sessions-package",
+    "artifactsReady": true,
+    "tasksComplete": true,
+    "scenariosCovered": true,
+    "scenarioCount": 5,
+    "scenarioDigest": "sha256:f2de6f5183c0cf36affbdfabc6f25964d9abdb7666a19cde1ffca0fb069b0ab9",
+    "guidanceDigest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "validationDigest": "sha256:03b3528c4afd6b46525e7698e50b9576a2b5c6de7d7e45144399b5ee003c5852"
+  },
+  "applicability": {
+    "requiredValidationLanes": [
+      "accessibility",
+      "security",
+      "test"
+    ],
+    "reviewConcerns": [
+      "accessibility",
+      "combined",
+      "compatibility",
+      "security"
+    ]
+  },
+  "continuation": {
+    "baseline": {
+      "schemaVersion": 2,
+      "base": "2b9e9abdd5029df650e00f2b50d53acafdfee3b6",
+      "unrelatedPaths": [],
+      "unrelatedDigest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "remediationCycles": 1,
+    "history": [
+      {
+        "resultDigest": "sha256:dabffec3dc8fd14f908f368b35e4b1cbc836bacf87d2f807edc1c53ac0b2a6fe",
+        "sourceDigest": "sha256:583f32ea1808de01cbcb7354da43ba3a7d2c96629d8316507da2f51435f72a8c",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:0c6add4ba44277113047536a14367af609a828530e10d00d200e226fcf057238",
+        "sourceDigest": "sha256:583f32ea1808de01cbcb7354da43ba3a7d2c96629d8316507da2f51435f72a8c",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:f604b0693c4a5b8b075aa9c7acf2c87a6dece93812d601d66bcdef84d6bf24d0",
+        "sourceDigest": "sha256:583f32ea1808de01cbcb7354da43ba3a7d2c96629d8316507da2f51435f72a8c",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "plain-tab-worker-name-collision",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "vscode/core.js: PLAIN_TAB 'claude' and plainSessionName '<prefix>-claude' are not reserved by isWorkerName (only COORDINATOR_TAB is). A worker named 'claude' gets the same tab name and session name as the plain tab. If a folder used plain mode and later enables the coordinator, a 'claude' worker request is rejected as 'already open' while the plain tab is open. Without a session record, resumeWorkerArgs falls back to --resume <prefix>-claude and attaches the worker agent to the plain chat's conversation. Fix: exclude PLAIN_TAB in isWorkerName as COORDINATOR_TAB is, and extend the invalid-name tests in tests/vscode-core.test.mjs."
+          },
+          {
+            "id": "coordinator-instruction-parity-test",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "AGENTS.md says tests/turn-status-hook.test.mjs keeps the STATUS instruction identical in both agent prompts and the hook, but the test compares the full hook output only with worker.md. coordinator.md is checked only for the first sentence (toolkit.test.mjs), so drift in the trailing 'The developer's session view reads it.' would go undetected. Check coordinator.md too."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:e5b866675b50cf666f4bac04b9810bb1d92cb1f3b9b1ebea476a5d810bcf2b9b",
+        "sourceDigest": "sha256:583f32ea1808de01cbcb7354da43ba3a7d2c96629d8316507da2f51435f72a8c",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "plain-tab-worker-name-collision",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "vscode/core.js: PLAIN_TAB 'claude' and plainSessionName '<prefix>-claude' are not reserved by isWorkerName (only COORDINATOR_TAB is). A worker named 'claude' gets the same tab name and session name as the plain tab. If a folder used plain mode and later enables the coordinator, a 'claude' worker request is rejected as 'already open' while the plain tab is open. Without a session record, resumeWorkerArgs falls back to --resume <prefix>-claude and attaches the worker agent to the plain chat's conversation. Fix: exclude PLAIN_TAB in isWorkerName as COORDINATOR_TAB is, and extend the invalid-name tests in tests/vscode-core.test.mjs."
+          },
+          {
+            "id": "coordinator-instruction-parity-test",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "AGENTS.md says tests/turn-status-hook.test.mjs keeps the STATUS instruction identical in both agent prompts and the hook, but the test compares the full hook output only with worker.md. coordinator.md is checked only for the first sentence (toolkit.test.mjs), so drift in the trailing 'The developer's session view reads it.' would go undetected. Check coordinator.md too."
+          }
+        ],
+        "checks": 1,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:d83982d1eb99660ffd20d660e1bb9385414d8c5f72301803f11b67af1894e934",
+        "sourceDigest": "sha256:af9de82ff0e3af194f6c2c70a1bfdf0c5e957a7f4dfc8ad08b2e1f3af300a557",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      }
+    ],
+    "historyCount": 5,
+    "historyDigest": "sha256:8c644adcf93bfca5ea07ef8035841966703969ddfc8c8d54b9824b8fbaaa0dc7"
+  },
+  "schemaVersion": 2,
+  "createdAt": "2026-11-18T14:49:09.953Z",
+  "definitionOfDone": {
+    "status": "PASS",
+    "blockers": []
+  },
+  "status": "complete",
+  "nextAction": "No further SDD action is required."
+}

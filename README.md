@@ -4,25 +4,23 @@ Personal Claude Code plugins, laid out as a private plugin marketplace. A proof 
 
 ## What it does
 
-Open a project in VS Code and a **coordinator** Claude session starts in an editor tab. It reports the SDD team recap, reads the project board and asks what is next. You tell it the goal; it creates the **worker** sessions the job needs, each in its own named tab with a written brief, and follows them through SendMessage. Workers that still have open work reopen with their conversation the next time you open the project. You can still type in any worker's tab.
+Two parts, installable separately. **[INSTALL.md](INSTALL.md) is the setup guide** (written so Claude Code can follow it for you).
+
+1. **Claude sessions**: a "Claude sessions" view with the live, colour-coded status of every Claude session on the machine, a status-bar count, `Ctrl+Alt+N` to jump to waiting sessions, click-to-focus across VS Code windows, a `STATUS:` line at the end of every turn, and optionally a plain Claude tab that opens with a folder ("Toolkit: Open Claude here on startup"). Needs only the extension link and the status hooks.
+2. **Coordinator**: open a project and a **coordinator** Claude session starts in an editor tab. It reports the SDD team recap, reads the project board and asks what is next. You tell it the goal; it creates the **worker** sessions the job needs, each in its own named tab with a written brief, and follows them through SendMessage. Workers that still have open work reopen with their conversation the next time you open the project. You can still type in any worker's tab.
 
 | Part | Where |
 |---|---|
+| Status hooks (session events, `STATUS:` line instruction) and their installer | `status/` |
 | `toolkit:coordinator` and `toolkit:worker` agents | `plugins/toolkit/agents/` |
 | Start-up hook: runs SDD's team-mailbox pull for the coordinator only | `plugins/toolkit/hooks/` |
-| VS Code extension: starts the coordinator, reopens active workers, opens requested workers | `vscode/` |
+| VS Code extension: session view, plain Claude tab, coordinator and worker tabs | `vscode/` |
 
-One project at a time; coordinating several projects is planned.
+One project per coordinator; coordinating several projects is planned.
 
-## Set up (once per machine)
+## Coordinator sessions
 
-Link the extension into VS Code, then reload VS Code (Command Palette → "Developer: Reload Window"):
-
-```
-New-Item -ItemType Junction -Path "$env:USERPROFILE\.vscode\extensions\dserri.claude-toolkit-0.0.1" -Target "<clone>\vscode"
-```
-
-The extension starts every session with `--plugin-dir <clone>/plugins/toolkit` and `--permission-mode auto` (sessions in the same mode exchange messages without approval prompts). `claude` must be on `PATH`, or set `claudeToolkit.claudePath`; `claudeToolkit.pluginDir` overrides the plugin folder. `claudeToolkit.workerLayout` chooses where worker tabs open: `beside` (default, the column next to the coordinator) or `tabs` (full-width tabs in the coordinator's column).
+The extension starts every coordinator and worker session with `--plugin-dir <clone>/plugins/toolkit` and `--permission-mode auto` (sessions in the same mode exchange messages without approval prompts). `claude` must be on `PATH`, or set `claudeToolkit.claudePath`; `claudeToolkit.pluginDir` overrides the plugin folder. `claudeToolkit.workerLayout` chooses where worker tabs open: `beside` (default, the column next to the coordinator) or `tabs` (full-width tabs in the coordinator's column).
 
 ## Enable a project
 
@@ -55,14 +53,9 @@ The "Claude sessions" view (its own icon in the Activity Bar, the same in every 
 
 Cards are grouped by project folder (the most urgent project first; each group shows how many of its sessions wait) and sorted by urgency inside each group (longest waiting first) and show the time in that status, the last tool used ("after Bash"; only finished tool calls are recorded) or the tool asking for permission, and the last line of the last message. Click a card to focus its tab, in any VS Code window: each window lists the session tabs it opened in `~/.agent-status/windows/<pid>.json`, and a click on a session held by another window brings that window to the front (by opening its folder) and asks it, through `~/.agent-status/focus/<pid>.json`, to show the tab. A card's tooltip says where its session runs; a session started by hand outside the toolkit's tabs only gets a message. Hide a card with its eye icon until the session's next event. Closing a tab hides its card.
 
-Install the hooks once (they back up `~/.claude/settings.json` first and add only their own entries):
+The hooks are installed with `node <clone>/status/install.mjs` (see [INSTALL.md](INSTALL.md)); it backs up `~/.claude/settings.json` first and adds only its own entries, and `--uninstall` removes them. A small synchronous start-up hook (`status/turn-status-hook.mjs`) asks every interactive session to end each turn with `STATUS: QUESTION` or `STATUS: DONE`. "Toolkit: Open Claude here on startup" opens a plain `claude` tab (session `<project>-claude`, no agent, plugin or prompt) whenever the folder opens; "Toolkit: Stop opening Claude here" turns off both the plain tab and the coordinator for the folder.
 
-```
-node <clone>/status/install.mjs
-node <clone>/status/install.mjs --uninstall
-```
-
-The hook (`status/status-hook.mjs`) runs asynchronously, so sessions never wait for it, and appends one line per event to `~/.agent-status/sessions/<session_id>.jsonl`; errors go to `~/.agent-status/hook.log`. It deletes a session's file at `SessionEnd` and leaves a `<session_id>.ended` marker so late background events cannot bring the session back (a new start or resume clears it), and, when a session starts, removes files and markers idle for more than 6 hours (`STALE_HOURS` at the top of the script). Headless sessions (`claude -p`, SDK, SDD's reviewer) are skipped by the observed but undocumented `CLAUDE_CODE_ENTRYPOINT=sdk-*` value; `tests/status-entrypoint.e2e.mjs` checks it against the installed CLI. A denied permission stays red until the turn ends, because Claude Code fires no event for a denial.
+The event hook (`status/status-hook.mjs`) runs asynchronously, so sessions never wait for it, and appends one line per event to `~/.agent-status/sessions/<session_id>.jsonl`; errors go to `~/.agent-status/hook.log`. It deletes a session's file at `SessionEnd` and leaves a `<session_id>.ended` marker so late background events cannot bring the session back (a new start or resume clears it), and, when a session starts, removes files and markers idle for more than 6 hours (`STALE_HOURS` at the top of the script). Headless sessions (`claude -p`, SDK, SDD's reviewer) are skipped by the observed but undocumented `CLAUDE_CODE_ENTRYPOINT=sdk-*` value; `tests/status-entrypoint.e2e.mjs` checks it against the installed CLI. A denied permission stays red until the turn ends, because Claude Code fires no event for a denial.
 
 ## Plugin delivery
 

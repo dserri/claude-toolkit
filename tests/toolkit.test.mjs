@@ -71,6 +71,8 @@ test('the extension adds only native, labelled VS Code UI: commands, settings an
   assert.deepEqual(commands.map((command) => command.title), [
     'Toolkit: Enable coordinator in this folder',
     'Toolkit: Start coordinator',
+    'Toolkit: Open Claude here on startup',
+    'Toolkit: Stop opening Claude here',
     'Toolkit: Show session tab',
     'Toolkit: Hide session until its next event',
     'Toolkit: Show the session waiting longest',

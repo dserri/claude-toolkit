@@ -3,6 +3,7 @@ const path = require('node:path');
 const WORKER_NAME = /^[a-z0-9][a-z0-9-]{0,39}$/;
 const REQUEST_FILE = /^([^/\\]+)\.json$/;
 const COORDINATOR_TAB = 'coordinator';
+const PLAIN_TAB = 'claude';
 const COORDINATOR_PROMPT = 'Start-up: report the team recap if one is in your context, then read the board in .coord/ and summarize the open work and what you need from me.';
 const EXCLUDE_ENTRY = '.coord/';
 const SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -10,7 +11,9 @@ const MAX_PREFIX_LENGTH = 50;
 const FIRST_COLUMN = 1;
 const SECOND_COLUMN = 2;
 
-const isWorkerName = (name) => typeof name === 'string' && WORKER_NAME.test(name) && name !== COORDINATOR_TAB;
+const RESERVED_TABS = new Set([COORDINATOR_TAB, PLAIN_TAB]);
+
+const isWorkerName = (name) => typeof name === 'string' && WORKER_NAME.test(name) && !RESERVED_TABS.has(name);
 
 const trimHyphens = (value) => value.replace(/^-+|-+$/g, '');
 
@@ -35,6 +38,19 @@ const workerSessionName = (projectFolder, name) => {
 const commonArgs = (pluginDir) => ['--plugin-dir', pluginDir, '--permission-mode', 'auto'];
 
 const coordinatorSessionName = (projectFolder) => `${sessionPrefix(projectFolder)}-coordinator`;
+
+const plainSessionName = (projectFolder) => `${sessionPrefix(projectFolder)}-claude`;
+
+const plainArgs = ({ projectFolder }) => ['--name', plainSessionName(projectFolder)];
+
+const startMode = ({ coordinatorEnabled, plainEnabled }) => {
+  if (coordinatorEnabled)
+    return 'coordinator';
+
+  return plainEnabled ? 'plain' : 'none';
+};
+
+const withoutFolder = (folders, folder) => folders.filter((entry) => entry !== folderKey(folder));
 
 const coordinatorArgs = ({ projectFolder, pluginDir }) => [
   ...commonArgs(pluginDir),
@@ -155,7 +171,7 @@ const withEnabledFolder = (enabledFolders, folder) => {
 const isEnabledFolder = (enabledFolders, folder) => enabledFolders.includes(folderKey(folder));
 
 const tabLocation = (role, layout) => {
-  if (role === 'coordinator')
+  if (role === 'coordinator' || role === 'plain')
     return { viewColumn: FIRST_COLUMN, preserveFocus: false };
 
   return { viewColumn: layout === 'tabs' ? FIRST_COLUMN : SECOND_COLUMN, preserveFocus: true };
@@ -172,6 +188,11 @@ const terminalOptions = ({ name, claudePath, args, folder, role, layout }) => ({
 
 module.exports = {
   COORDINATOR_TAB,
+  PLAIN_TAB,
+  plainArgs,
+  plainSessionName,
+  startMode,
+  withoutFolder,
   activeWorkers,
   coordinatorArgs,
   coordinatorSessionName,

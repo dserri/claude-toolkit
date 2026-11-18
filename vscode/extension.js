@@ -11,12 +11,17 @@ let sessionsView;
 let watching = false;
 
 const ENABLED_FOLDERS = 'enabledFolders';
+const PLAIN_FOLDERS = 'plainFolders';
 
 const coordDir = (folder) => path.join(folder, '.coord');
 
 const enabledFolders = (context) => context.globalState.get(ENABLED_FOLDERS, []);
 
+const plainFolders = (context) => context.globalState.get(PLAIN_FOLDERS, []);
+
 const isEnabled = (context, folder) => core.isEnabledFolder(enabledFolders(context), folder) && fs.existsSync(coordDir(folder));
+
+const isPlain = (context, folder) => core.isEnabledFolder(plainFolders(context), folder);
 
 const settings = (context) => {
   const config = vscode.workspace.getConfiguration('claudeToolkit');
@@ -209,19 +214,61 @@ const startEnabled = (context, folder) => {
   start(context, folder);
 };
 
+const startPlain = (context, folder) => {
+  const { claudePath } = settings(context);
+
+  openTab({
+    name: core.PLAIN_TAB,
+    sessionName: core.plainSessionName(folder),
+    args: core.plainArgs({ projectFolder: folder }),
+    folder,
+    claudePath,
+    role: 'plain',
+  });
+};
+
+const openOnStartup = async (context, folder) => {
+  await context.globalState.update(PLAIN_FOLDERS, core.withEnabledFolder(plainFolders(context), folder));
+
+  if (isEnabled(context, folder)) {
+    void vscode.window.showInformationMessage('Claude Toolkit: this folder starts the coordinator, which takes precedence over the plain Claude tab.');
+
+    return;
+  }
+
+  startPlain(context, folder);
+};
+
+const stopOpening = async (context, folder) => {
+  await context.globalState.update(PLAIN_FOLDERS, core.withoutFolder(plainFolders(context), folder));
+  await context.globalState.update(ENABLED_FOLDERS, core.withoutFolder(enabledFolders(context), folder));
+  void vscode.window.showInformationMessage('Claude Toolkit: Claude will no longer open automatically in this folder.');
+};
+
+const startForMode = (context, folder) => {
+  const mode = core.startMode({ coordinatorEnabled: isEnabled(context, folder), plainEnabled: isPlain(context, folder) });
+
+  if (mode === 'coordinator')
+    start(context, folder);
+  else if (mode === 'plain')
+    startPlain(context, folder);
+};
+
 const activate = (context) => {
   output = vscode.window.createOutputChannel('Claude Toolkit');
   context.subscriptions.push(
     output,
     vscode.commands.registerCommand('claudeToolkit.enable', withFolder((folder) => enable(context, folder))),
     vscode.commands.registerCommand('claudeToolkit.start', withFolder((folder) => startEnabled(context, folder))),
+    vscode.commands.registerCommand('claudeToolkit.openOnStartup', withFolder((folder) => openOnStartup(context, folder))),
+    vscode.commands.registerCommand('claudeToolkit.stopOpening', withFolder((folder) => stopOpening(context, folder))),
   );
   sessionsView = registerSessionsView(context, tabsBySession);
 
   const folder = projectFolder();
 
-  if (folder && isEnabled(context, folder))
-    start(context, folder);
+  if (folder)
+    startForMode(context, folder);
 };
 
 const deactivate = () => {};

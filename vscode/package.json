@@ -23,6 +23,14 @@
         "title": "Toolkit: Start coordinator"
       },
       {
+        "command": "claudeToolkit.openOnStartup",
+        "title": "Toolkit: Open Claude here on startup"
+      },
+      {
+        "command": "claudeToolkit.stopOpening",
+        "title": "Toolkit: Stop opening Claude here"
+      },
+      {
         "command": "claudeToolkit.focusSession",
         "title": "Toolkit: Show session tab"
       },
