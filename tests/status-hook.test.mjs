@@ -84,6 +84,21 @@ test('session start and prompts record the Claude process id; invalid values are
   }
 });
 
+test('the project folder is the last segment of Windows and POSIX paths on every platform', () => {
+  for (const [cwd, expected] of [['C:\\repos\\Rehlko\\rehlko-portal', 'rehlko-portal'], ['/Users/dev/repos/api/', 'api'], ['/home/dev/web', 'web']]) {
+    withHome((home) => {
+      const result = spawnSync(process.execPath, [hook], {
+        input: JSON.stringify(event('SessionStart', { cwd })),
+        encoding: 'utf8',
+        env: { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_CODE_ENTRYPOINT: 'cli', CLAUDE_PROJECT_DIR: '' },
+      });
+
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(lines(home)[0].folder, expected, cwd);
+    });
+  }
+});
+
 test('a new prompt keeps only the first line and the new turn', () => {
   withHome((home) => {
     runQuietly(home, event('SessionStart', { session_title: 'portal' }));

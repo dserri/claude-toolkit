@@ -50,6 +50,8 @@ class SessionsProvider {
     this.globalState = globalState;
     this.sessions = [];
     this.allSessions = [];
+    this.unreadableIds = new Set();
+    this.appliedTabNames = new WeakMap();
     this.hiddenSessions = [];
     this.groups = [];
     this.windows = [];
@@ -70,9 +72,10 @@ class SessionsProvider {
     const { sessions, unreadableIds } = readSessions(now, stuckMs);
     const all = status.latestPerProcess(status.latestPerTitle(status.dropEnded(sessions, isAlive)));
     const stored = this.storedHidden();
+    const hidden = status.pruneHidden(stored, all, unreadableIds);
 
     this.allSessions = all;
-    const hidden = status.pruneHidden(stored, all, unreadableIds);
+    this.unreadableIds = unreadableIds;
 
     if (Object.keys(hidden).length !== Object.keys(stored).length)
       this.globalState.update(HIDDEN_SESSIONS, hidden).then(undefined, reportStorageError);
@@ -139,7 +142,7 @@ class SessionsProvider {
       return;
 
     const order = this.globalState.get(SESSION_ORDER, {});
-    const keys = status.pruneOrderKeys(status.mergeOrder(group.sessions.map(status.sessionKey), order.sessions?.[project] ?? []), this.allSessions);
+    const keys = status.pruneOrderKeys(status.mergeOrder(group.sessions.map(status.sessionKey), order.sessions?.[project] ?? []), this.allSessions, this.unreadableIds);
 
     this.persist(SESSION_ORDER, { ...order, sessions: { ...order.sessions, [project]: status.moveBefore(keys, moved, target) } });
   }
@@ -155,6 +158,9 @@ class SessionsProvider {
   }
 
   move(element, step) {
+    if (!element)
+      return;
+
     if (element.sessions) {
       const projects = this.groups.map((group) => group.project);
       const target = status.stepTarget(projects, element.project, step);
@@ -204,7 +210,17 @@ class SessionsProvider {
       return;
 
     const pid = [...this.tabPids].find(([, candidate]) => candidate === terminal)?.[0];
-    const name = status.plainTabRename(terminal.name, pid, sessions);
+    const sessionName = pid === undefined ? undefined : sessions.find((session) => session.pid === pid)?.name;
+    const name = status.plainTabRename({
+      sessionName,
+      lastApplied: this.appliedTabNames.get(terminal),
+      tabName: terminal.name,
+      otherTabNames: vscode.window.terminals.filter((candidate) => candidate !== terminal).map((candidate) => candidate.name),
+      defaultSessionName: [...this.tabsBySession].find(([, candidate]) => candidate === terminal)?.[0],
+    });
+
+    if (sessionName)
+      this.appliedTabNames.set(terminal, sessionName);
 
     if (!name || vscode.window.activeTerminal !== terminal)
       return;

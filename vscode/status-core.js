@@ -239,19 +239,19 @@ const byGroupUrgency = (first, second) => byUrgency(first.top, second.top) || fi
 
 const dropEnded = (sessions, isAlive) => sessions.filter((session) => session.pid === undefined || isAlive(session.pid));
 
-const pruneOrderKeys = (keys, sessions) => {
-  const ids = new Set(sessions.map((session) => `id:${session.id}`));
+const pruneOrderKeys = (keys, sessions, unreadableIds = new Set()) => {
+  const ids = new Set([...sessions.map((session) => session.id), ...unreadableIds].map((id) => `id:${id}`));
 
   return keys.filter((key) => !key.startsWith('id:') || ids.has(key));
 };
 
-const plainTabRename = (tabName, tabPid, sessions) => {
-  if (tabPid === undefined)
+const RESERVED_TAB_NAMES = ['coordinator', 'claude'];
+
+const plainTabRename = ({ sessionName, lastApplied, tabName, otherTabNames, defaultSessionName }) => {
+  if (!sessionName || sessionName === lastApplied || sessionName === tabName || sessionName === defaultSessionName)
     return null;
 
-  const session = sessions.find((candidate) => candidate.pid === tabPid);
-
-  return session && session.name !== tabName ? session.name : null;
+  return RESERVED_TAB_NAMES.includes(sessionName) || otherTabNames.includes(sessionName) ? null : sessionName;
 };
 
 const latestPerProcess = (sessions) => {

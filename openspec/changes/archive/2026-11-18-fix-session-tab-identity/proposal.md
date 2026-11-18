@@ -22,4 +22,4 @@ None.
 
 ## Impact
 
-`status/status-hook.mjs`, `vscode/status-core.js`, `vscode/sessions-view.js`, tests.
+`status/status-hook.mjs`, `vscode/status-core.js`, `vscode/sessions-view.js`, `vscode/core.js`, `vscode/extension.js`, tests.

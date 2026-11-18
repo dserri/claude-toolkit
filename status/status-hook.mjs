@@ -20,6 +20,8 @@ const log = (message) => {
   }
 };
 
+const folderName = (folderPath) => String(folderPath).split(/[\\/]/).filter(Boolean).at(-1) ?? '';
+
 const isHeadless = () => (process.env.CLAUDE_CODE_ENTRYPOINT ?? '').startsWith('sdk');
 
 const messageLines = (message) => String(message ?? '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
@@ -42,7 +44,7 @@ const eventRecord = (input) => {
   if (input.hook_event_name === 'SessionStart' || input.hook_event_name === 'UserPromptSubmit') {
     const pid = Number(process.env.CLAUDE_PID);
 
-    record.folder = basename(process.env.CLAUDE_PROJECT_DIR || input.cwd || '');
+    record.folder = folderName(process.env.CLAUDE_PROJECT_DIR || input.cwd || '');
 
     if (Number.isInteger(pid) && pid > 0)
       record.pid = pid;

@@ -197,13 +197,28 @@ test('order pruning drops ids of sessions that no longer exist and keeps titled 
   assert.deepEqual(status.pruneOrderKeys(['id:a', 'rehlko-portal-tester', 'id:gone', 'id:b', 'api-coordinator'], sessions), ['id:a', 'rehlko-portal-tester', 'id:b', 'api-coordinator']);
 });
 
-test('a plain tab is renamed to the session now running in its process, and only then', () => {
-  const sessions = [{ name: 'test-chat', pid: 7 }, { name: 'api-coordinator', pid: 9 }];
+test('order pruning keeps sessions whose files were briefly unreadable', () => {
+  assert.deepEqual(status.pruneOrderKeys(['id:a', 'id:flaky', 'id:gone'], [{ id: 'a' }], new Set(['flaky'])), ['id:a', 'id:flaky']);
+});
 
-  assert.equal(status.plainTabRename('claude', 7, sessions), 'test-chat');
-  assert.equal(status.plainTabRename('test-chat', 7, sessions), null);
-  assert.equal(status.plainTabRename('claude', 99, sessions), null);
-  assert.equal(status.plainTabRename('claude', undefined, sessions), null);
+test('the plain tab follows a new session but keeps a name the developer typed', () => {
+  const rename = (sessionName, lastApplied, tabName, otherTabNames = []) => status.plainTabRename({ sessionName, lastApplied, tabName, otherTabNames });
+
+  assert.equal(rename('test-chat', undefined, 'claude'), 'test-chat');
+  assert.equal(rename('test-chat', 'test-chat', 'my own name'), null);
+  assert.equal(rename('other-chat', 'test-chat', 'my own name'), 'other-chat');
+  assert.equal(rename('test-chat', undefined, 'test-chat'), null);
+  assert.equal(rename(undefined, undefined, 'claude'), null);
+  assert.equal(status.plainTabRename({ sessionName: 'backoffices-claude', lastApplied: undefined, tabName: 'claude', otherTabNames: [], defaultSessionName: 'backoffices-claude' }), null);
+});
+
+test('the plain tab never takes a reserved name or the name of another open tab', () => {
+  const rename = (sessionName, otherTabNames = []) => status.plainTabRename({ sessionName, lastApplied: 'old', tabName: 'old', otherTabNames });
+
+  assert.equal(rename('coordinator'), null);
+  assert.equal(rename('claude'), null);
+  assert.equal(rename('tester', ['coordinator', 'tester']), null);
+  assert.equal(rename('test-chat', ['coordinator', 'tester']), 'test-chat');
 });
 
 test('a session is located by its process first, then by name', () => {

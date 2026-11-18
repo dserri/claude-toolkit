@@ -24,4 +24,4 @@ None.
 
 ## Impact
 
-`vscode/status-core.js`, `vscode/sessions-view.js`, `vscode/package.json`, tests, README.
+`vscode/status-core.js`, `vscode/sessions-view.js`, `vscode/session-files.js`, `vscode/package.json`, tests, README.
