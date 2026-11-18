@@ -56,6 +56,19 @@ test('session start records the name and folder, tool events append', () => {
   });
 });
 
+test('the project folder comes from CLAUDE_PROJECT_DIR, not the current folder', () => {
+  withHome((home) => {
+    const result = spawnSync(process.execPath, [hook], {
+      input: JSON.stringify(event('UserPromptSubmit', { prompt_id: 'p1', cwd: 'P:\\repos\\Rehlko\\rehlko-portal\\.coord' })),
+      encoding: 'utf8',
+      env: { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_CODE_ENTRYPOINT: 'cli', CLAUDE_PROJECT_DIR: 'P:/repos/Rehlko/rehlko-portal' },
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(lines(home)[0].folder, 'rehlko-portal');
+  });
+});
+
 test('a new prompt keeps only the first line and the new turn', () => {
   withHome((home) => {
     runQuietly(home, event('SessionStart', { session_title: 'portal' }));
@@ -101,6 +114,37 @@ test('session end deletes the session file', () => {
     runQuietly(home, event('SessionStart'));
     runQuietly(home, event('SessionEnd', { reason: 'prompt_input_exit' }));
     assert.equal(existsSync(sessionFile(home)), false);
+  });
+});
+
+test('events arriving after session end do not bring the session back, a new start does', () => {
+  withHome((home) => {
+    runQuietly(home, event('SessionStart'));
+    runQuietly(home, event('SessionEnd', { reason: 'other' }));
+    runQuietly(home, event('Stop', { prompt_id: 'p1', last_assistant_message: 'late' }));
+    runQuietly(home, event('PostToolUse', { prompt_id: 'p1', tool_name: 'Bash' }));
+
+    assert.equal(existsSync(sessionFile(home)), false);
+
+    runQuietly(home, event('SessionStart', { source: 'resume' }));
+
+    assert.equal(existsSync(sessionFile(home)), true);
+    assert.equal(existsSync(join(home, '.agent-status', 'sessions', `${sessionId}.ended`)), false);
+  });
+});
+
+test('ended markers are removed with the other stale files', () => {
+  withHome((home) => {
+    const sessions = join(home, '.agent-status', 'sessions');
+    const marker = join(sessions, '33333333-3333-3333-3333-333333333333.ended');
+    const sevenHoursAgo = (Date.now() - 7 * 3_600_000) / 1000;
+
+    mkdirSync(sessions, { recursive: true });
+    writeFileSync(marker, '');
+    utimesSync(marker, sevenHoursAgo, sevenHoursAgo);
+    runQuietly(home, event('SessionStart'));
+
+    assert.equal(existsSync(marker), false);
   });
 });
 

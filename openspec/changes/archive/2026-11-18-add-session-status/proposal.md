@@ -8,7 +8,7 @@ With many Claude Code sessions open in parallel, the developer loses track of wh
 
 - Add a status hook registered at user level for every interactive Claude Code session (headless `claude -p` and SDK sessions are skipped). It runs asynchronously, so sessions never wait for it, and records each relevant event in a per-session file under `~/.agent-status/sessions/`.
 - Add an installer that backs up `~/.claude/settings.json` and adds or removes only the toolkit's hook entries.
-- Extend the VS Code extension with a "Claude sessions" view and a status-bar count: one card per session with a colour-coded status, how long it has been in it, the last line of its last message and the running tool, sorted by urgency; clicking a card focuses its tab when the tab belongs to this window; a card can be hidden until the session's next event.
+- Extend the VS Code extension with a "Claude sessions" view and a status-bar count: one card per session with a colour-coded status, how long it has been in it, the last line of its last message and the last tool used, sorted by urgency; clicking a card focuses its tab when the tab belongs to this window; a card can be hidden until the session's next event.
 - Add a closing `STATUS: QUESTION` / `STATUS: DONE` line to the coordinator and worker prompts only; other sessions use the `AskUserQuestion` event and a question-mark heuristic.
 - No server, no listening port, no background process. The coordinator does not read the state yet.
 

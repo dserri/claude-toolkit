@@ -7,6 +7,7 @@ const core = require('./core');
 const { registerSessionsView } = require('./sessions-view');
 
 let output;
+let sessionsView;
 let watching = false;
 
 const ENABLED_FOLDERS = 'enabledFolders';
@@ -36,6 +37,7 @@ const openTab = ({ name, sessionName, args, folder, claudePath, beside }) => {
 
   output.appendLine(`Opening ${name}: ${claudePath} ${JSON.stringify(args)}`);
   tabsBySession.set(sessionName, vscode.window.createTerminal(core.terminalOptions({ name, claudePath, args, folder, beside })));
+  sessionsView?.publishWindow();
 };
 
 const readSessionRecord = (folder, name) => {
@@ -212,7 +214,7 @@ const activate = (context) => {
     vscode.commands.registerCommand('claudeToolkit.enable', withFolder((folder) => enable(context, folder))),
     vscode.commands.registerCommand('claudeToolkit.start', withFolder((folder) => startEnabled(context, folder))),
   );
-  registerSessionsView(context, tabsBySession);
+  sessionsView = registerSessionsView(context, tabsBySession);
 
   const folder = projectFolder();
 

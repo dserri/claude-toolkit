@@ -53,7 +53,7 @@ The "Claude sessions" view (Explorer sidebar) and the status-bar item show every
 | green | working | a prompt or a tool result |
 | grey | idle | session started, no prompt yet |
 
-Cards are grouped by project folder (the most urgent project first; each group shows how many of its sessions wait) and sorted by urgency inside each group (longest waiting first) and show the time in that status, the last tool used ("after Bash"; only finished tool calls are recorded) or the tool asking for permission, and the last line of the last message. Click a card to focus its tab when the tab is one this window opened; hide a card with its eye icon until the session's next event. Closing a tab hides its card.
+Cards are grouped by project folder (the most urgent project first; each group shows how many of its sessions wait) and sorted by urgency inside each group (longest waiting first) and show the time in that status, the last tool used ("after Bash"; only finished tool calls are recorded) or the tool asking for permission, and the last line of the last message. Click a card to focus its tab, in any VS Code window: each window lists the session tabs it opened in `~/.agent-status/windows/<pid>.json`, and a click on a session held by another window brings that window to the front (by opening its folder) and asks it, through `~/.agent-status/focus/<pid>.json`, to show the tab. A card's tooltip says where its session runs; a session started by hand outside the toolkit's tabs only gets a message. Hide a card with its eye icon until the session's next event. Closing a tab hides its card.
 
 Install the hooks once (they back up `~/.claude/settings.json` first and add only their own entries):
 
@@ -62,7 +62,7 @@ node <clone>/status/install.mjs
 node <clone>/status/install.mjs --uninstall
 ```
 
-The hook (`status/status-hook.mjs`) runs asynchronously, so sessions never wait for it, and appends one line per event to `~/.agent-status/sessions/<session_id>.jsonl`; errors go to `~/.agent-status/hook.log`. It deletes a session's file at `SessionEnd` and, when a session starts, files idle for more than 6 hours (`STALE_HOURS` at the top of the script). Headless sessions (`claude -p`, SDK, SDD's reviewer) are skipped by the observed but undocumented `CLAUDE_CODE_ENTRYPOINT=sdk-*` value; `tests/status-entrypoint.e2e.mjs` checks it against the installed CLI. A denied permission stays red until the turn ends, because Claude Code fires no event for a denial.
+The hook (`status/status-hook.mjs`) runs asynchronously, so sessions never wait for it, and appends one line per event to `~/.agent-status/sessions/<session_id>.jsonl`; errors go to `~/.agent-status/hook.log`. It deletes a session's file at `SessionEnd` and leaves a `<session_id>.ended` marker so late background events cannot bring the session back (a new start or resume clears it), and, when a session starts, removes files and markers idle for more than 6 hours (`STALE_HOURS` at the top of the script). Headless sessions (`claude -p`, SDK, SDD's reviewer) are skipped by the observed but undocumented `CLAUDE_CODE_ENTRYPOINT=sdk-*` value; `tests/status-entrypoint.e2e.mjs` checks it against the installed CLI. A denied permission stays red until the turn ends, because Claude Code fires no event for a denial.
 
 ## Plugin delivery
 

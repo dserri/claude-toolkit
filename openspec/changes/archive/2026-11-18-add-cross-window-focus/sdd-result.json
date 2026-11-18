@@ -1,0 +1,456 @@
+{
+  "route": "full",
+  "request": {
+    "digest": "sha256:708fb634850094ee0b9f276d36e7c12960596aa1e9e81fa331a06db6d2be83ee",
+    "route": "full",
+    "changeName": "add-cross-window-focus",
+    "kind": "feature",
+    "summary": "Window registry: each window writes ~/.agent-status/windows/<extension host pid>.json {pid, folder, sessions: names of the tabs it opened}, rewritten when a tab opens or closes and deleted on dispose; readers keep only well-formed entries whose pid is alive (process.kill(pid, 0), EPERM counts as alive) and delete the rest. Click routing (status-core sessionLocation): own tab -> terminal.show; another window -> write ~/.agent-status/focus/<target pid>.json {session, at} and run vscode.openFolder on that window's folder with forceNewWindow (VS Code focuses the existing window); none -> information message. Each window watches only its own focus file, deletes it, and shows a tab only if the session name matches one of its own tabs; the target pid and folder come from the registry, never from the request. Tooltip names the location. Hook: SessionEnd writes <id>.ended and later non-SessionStart events record nothing; SessionStart (including resume) clears it; stale cleanup removes markers. Hook records the project folder from CLAUDE_PROJECT_DIR (stable when the agent cds into .coord), and the fold takes the first recorded folder; the view keeps only the latest session per titled session name (older ones were killed by window reloads without SessionEnd), never merging untitled sessions. Tests: node --test (unit, hook on temp home, black-box) plus the existing e2e. Developer acceptance in VS Code with two windows: clicking a card of the other window brings it to the front with the right tab; hand-started sessions only get a message; duplicates and the .coord group are gone. UI stays native VS Code (tree view tooltip text, information message).",
+    "surfaces": [
+      "accessibility",
+      "data",
+      "security",
+      "ui"
+    ],
+    "acceptance": [
+      "session-status#two-windows",
+      "session-status#crashed-window",
+      "session-status#session-in-another-window",
+      "session-status#session-not-in-any-window",
+      "session-status#tooltip",
+      "session-status#agent-changes-folder",
+      "session-status#restarted-coordinator",
+      "session-status#late-event-after-the-end"
+    ]
+  },
+  "repository": {
+    "baseDigest": "sha256:be66ad7efce6765d9fac5a649c90b68149fb9fbf247b06c3d65b5e97e900fc5f",
+    "finalDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+    "configDigest": "sha256:bdacb387522b60550443755295e2a91f155926a529a95b196c3adeb086b37900",
+    "dependencyDigest": "sha256:bdacb387522b60550443755295e2a91f155926a529a95b196c3adeb086b37900",
+    "environmentDigest": "sha256:2385622c4dfd2867cf84e02a9e8f8b0036331258ca50e36a0af283b95c6f450e",
+    "affectedFiles": [
+      "README.md",
+      "openspec/changes/add-cross-window-focus/.openspec.yaml",
+      "openspec/changes/add-cross-window-focus/design.md",
+      "openspec/changes/add-cross-window-focus/proposal.md",
+      "openspec/changes/add-cross-window-focus/specs/session-status/spec.md",
+      "openspec/changes/add-cross-window-focus/tasks.md",
+      "openspec/changes/archive/2026-11-18-add-session-status/proposal.md",
+      "status/status-hook.mjs",
+      "tests/status-blackbox.test.mjs",
+      "tests/status-core.test.mjs",
+      "tests/status-hook.test.mjs",
+      "tests/window-blackbox.test.mjs",
+      "vscode/extension.js",
+      "vscode/sessions-view.js",
+      "vscode/status-core.js"
+    ],
+    "unrelatedWorkPreserved": true,
+    "recoverable": true
+  },
+  "implementation": {
+    "summary": "Window registry: each window writes ~/.agent-status/windows/<extension host pid>.json {pid, folder, sessions: names of the tabs it opened}, rewritten when a tab opens or closes and deleted on dispose; readers keep only well-formed entries whose pid is alive (process.kill(pid, 0), EPERM counts as alive) and delete the rest. Click routing (status-core sessionLocation): own tab -> terminal.show; another window -> write ~/.agent-status/focus/<target pid>.json {session, at} and run vscode.openFolder on that window's folder with forceNewWindow (VS Code focuses the existing window); none -> information message. Each window watches only its own focus file, deletes it, and shows a tab only if the session name matches one of its own tabs; the target pid and folder come from the registry, never from the request. Tooltip names the location. Hook: SessionEnd writes <id>.ended and later non-SessionStart events record nothing; SessionStart (including resume) clears it; stale cleanup removes markers. Hook records the project folder from CLAUDE_PROJECT_DIR (stable when the agent cds into .coord), and the fold takes the first recorded folder; the view keeps only the latest session per titled session name (older ones were killed by window reloads without SessionEnd), never merging untitled sessions. Tests: node --test (unit, hook on temp home, black-box) plus the existing e2e. Developer acceptance in VS Code with two windows: clicking a card of the other window brings it to the front with the right tab; hand-started sessions only get a message; duplicates and the .coord group are gone. UI stays native VS Code (tree view tooltip text, information message).",
+    "builder": {
+      "provider": "claude",
+      "identityStrength": "operator-asserted"
+    }
+  },
+  "validation": [
+    {
+      "id": "tests",
+      "lane": "test",
+      "coverage": [
+        "test",
+        "security",
+        "ui",
+        "accessibility",
+        "data"
+      ],
+      "kind": "command",
+      "key": "sha256:44a2b033b67cb5f4a7001b20beaeeab7b8978e82218ffd5f3620225a682ae51c",
+      "codeDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          "README.md",
+          "status/status-hook.mjs",
+          "vscode/extension.js",
+          "vscode/sessions-view.js",
+          "vscode/status-core.js",
+          "tests/status-blackbox.test.mjs",
+          "tests/status-core.test.mjs",
+          "tests/status-hook.test.mjs",
+          "tests/window-blackbox.test.mjs"
+        ]
+      },
+      "summary": "✔ marketplace.json exists at the repository root and parses (2.6323ms)\n✔ marketplace is named claude-toolkit with an owner and plugins (0.5601ms)\n✔ marketplace lists exactly one plugin named toolkit (0.3494ms)\n✔ every plugin source is a relative path inside the repository root (0.8135ms)\n✔ source containment check rejects escaping and absolute sources (0.5607ms)\n✔ toolkit source is a directory with plugin.json named toolkit (0.8585ms)\n✔ every listed plugin source has a plugin.json whose name matches its listing (0.6003ms)\n✔ toolkit plugin.json declares no version (0.5348ms)\n✔ toolkit marketplace entry declares no version (0.4844ms)\n✔ the listed plugins ship no skills yet (0.989ms)\n✔ every SKILL.md frontmatter name matches its directory and none is sdd (0.4275ms)\n✔ no listed plugin ships an sdd skill directory or agent file (0.6335ms)\n✔ claude plugin validate accepts the marketplace and the toolkit plugin (2654.0306ms)\n▶ isWorkerName\n  ✔ accepts valid names (1.3091ms)\n  ✔ rejects invalid names (0.2378ms)\n✔ isWorkerName (3.0616ms)\n▶ sessionPrefix\n  ✔ normalises the base name (0.4738ms)\n  ✔ uses project when nothing remains (0.1843ms)\n✔ sessionPrefix (0.8235ms)\n▶ workerSessionName\n  ✔ joins prefix and name (0.31ms)\n  ✔ throws for invalid names (0.8458ms)\n✔ workerSessionName (1.3917ms)\n▶ coordinatorArgs\n  ✔ contains the required flags and a fixed prompt (0.6427ms)\n✔ coordinatorArgs (0.8361ms)\n▶ newWorkerArgs\n  ✔ contains the requi\n[... diagnostic truncated ...]\nnState without title or folder (0.2249ms)\n✔ hook records events with folder from cwd (380.542ms)\n✔ hook prefers CLAUDE_PROJECT_DIR for folder (366.8008ms)\n✔ SessionEnd deletes the file, leaves a marker and blocks later events (1146.1445ms)\n✔ SessionStart after SessionEnd removes the marker and records (778.102ms)\n✔ SessionStart removes files older than six hours, including markers (189.0982ms)\nℹ tests 170\nℹ suites 18\nℹ pass 170\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 6930.7782\n",
+      "exitCode": 0,
+      "durationMs": 7075,
+      "reused": true
+    },
+    {
+      "id": "e2e",
+      "lane": "test",
+      "coverage": [
+        "test"
+      ],
+      "kind": "command",
+      "key": "sha256:b612f358633a70be133f32d55aafe0782c96d6a4802629b9c966cad92979925d",
+      "codeDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          "tests/status-entrypoint.e2e.mjs",
+          "status/status-hook.mjs"
+        ]
+      },
+      "summary": "✔ the installed Claude Code tells hooks of a headless session that its entrypoint is sdk-* (15666.8593ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 16679.49\n",
+      "exitCode": 0,
+      "durationMs": 16842
+    }
+  ],
+  "review": {
+    "verdict": "PASS",
+    "reviewedDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+    "concerns": [
+      "accessibility: location is tooltip-only; keyboard/screen-reader users reach it less easily (1.3.1/4.1.2); consider adding it to the item's accessibility label or description (advisory)",
+      "combined: cross-window click and focus-request paths in sessions-view.js have no automated tests; evidence is developer acceptance plus the pending e2e",
+      "data: latestPerTitle also collapses hand-started sessions that share a user-set title, hiding the older one"
+    ],
+    "findings": [
+      {
+        "id": "registry-cleanup-by-content-pid",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "vscode/sessions-view.js readWindows deletes `${entry.pid}.json` using the pid inside the file, not the file name it read. A file whose name and content disagree can delete another window's registry file, and malformed files are never removed. Simpler: delete by the file name you just read."
+      },
+      {
+        "id": "pid-reuse-liveness",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "isAlive (process.kill(pid,0)) treats a crashed window's leftover entry as live if the OS reuses its pid. A click then runs vscode.openFolder for that folder, which opens a new window instead of showing the 'not a toolkit tab' message. This is rare and the design accepts it; residual risk only."
+      },
+      {
+        "id": "focus-request-nonatomic-write",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "SessionsProvider.focus writes focus/<pid>.json in place. If the receiver's watcher sees the file before its content is written, receiveFocusRequest reads nothing and deletes the file, so the click silently does nothing. Writing to a temp file and renaming (as the hook's startTurn does) removes the race."
+      },
+      {
+        "id": "doc-test-drift",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "tasks.md 2.1 lists 'registry entry' and 'focus target' helpers that status-core.js does not contain. tests/window-blackbox.test.mjs creates temp homes with makeHome and never removes them."
+      },
+      {
+        "id": "sessions-view-untested",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "No automated tests cover sessions-view.js routing (here/other/none), receiveFocusRequest matching against own tabs, or readWindows cleanup. The evidence is the developer's two-window acceptance and the pending e2e; a test with a stubbed vscode module would guard against regressions."
+      }
+    ],
+    "coverage": "complete",
+    "independent": true,
+    "fresh": true,
+    "readOnly": true,
+    "reviewer": {
+      "provider": "claude",
+      "contextId": "1057361b-a871-4253-abec-7e521a54eae8"
+    },
+    "policyDigest": "sha256:dfc56dd0d294c15c71b1b3827b25d4456e998122cdd1fe41b427f9790c628a98",
+    "inputs": {
+      "intentDigest": "sha256:7efda201fd8c732c084d7047dcc1aca4314af399b14d68d8bb29ea167fa3e873",
+      "files": {
+        "README.md": "sha256:666bab5a24baa2e3ee7f851b0b5abaf9c436a2f6b5582fed094a5e5b79b1ce57",
+        "openspec/changes/add-cross-window-focus/.openspec.yaml": "sha256:76428be3fb1fda189c43c306c1b639ae85922103e2dbb92e17a8012a746adeae",
+        "openspec/changes/add-cross-window-focus/design.md": "sha256:86b454d31544d5da512b516190e7d714d1f38fe7ec08ed2ef1975bb7e37ff33d",
+        "openspec/changes/add-cross-window-focus/proposal.md": "sha256:389c5cb01ede172d5a5af2e10489e67f6217923780bc128414a0e8944c5ad385",
+        "openspec/changes/add-cross-window-focus/specs/session-status/spec.md": "sha256:504694f63d6ac6026e3500ff7627f420e3cda61f4dd3e6e8a6aac88074b14450",
+        "openspec/changes/add-cross-window-focus/tasks.md": "sha256:748348f687670ecfb0478ddf630633a19651efd5136553064c101d4b543f5c0d",
+        "openspec/changes/archive/2026-11-18-add-session-status/proposal.md": "sha256:9c8efafbf6a497c5a64e0af4801c9c2cb636af12afb563de6f0c9985a2cfc897",
+        "status/status-hook.mjs": "sha256:3237cf5b98d8205ec4d017dde106790ea797135d2a935be63554209b67c72b1d",
+        "tests/status-blackbox.test.mjs": "sha256:e4b9f169b12712c92615023e83719ac336e1695452d4f1042dfe5c5b277f8a5e",
+        "tests/status-core.test.mjs": "sha256:072a176c75c39e42fd510e8c993f0d7a72ee7c5975cf0054da361457a7324779",
+        "tests/status-hook.test.mjs": "sha256:c4973e46233e18f2d5de0dd7a641c1e326eb8d68e2d6fb0565441ea8ef522e12",
+        "tests/window-blackbox.test.mjs": "sha256:5c13aacd653d5a8ffa2ee92c7775e5324fb5896e00eb210ef766c2493ded520a",
+        "vscode/extension.js": "sha256:ca39c85957bab236f62d4d49c121879e2ae994b5dd2bc5bd8d2eabe3bf4aa4fd",
+        "vscode/sessions-view.js": "sha256:71750b0c812c04ef43885f696d17b99d45f479af856bb74449add9bebca1c7d6",
+        "vscode/status-core.js": "sha256:251f852191b8182b38643dc3d9829cbd6e3562d4475bfffb4095b64e3c67be38"
+      },
+      "sources": [
+        {
+          "path": "README.md",
+          "content": "# claude-toolkit\n\nPersonal Claude Code plugins, laid out as a private plugin marketplace. A proof of concept: it is compatible with the team-shared SDD skill but entirely separate from it, and never changes it. Every toolkit agent carries the `toolkit:` prefix.\n\n## What it does\n\nOpen a project in VS Code and a **coordinator** Claude session starts in an editor tab. It reports the SDD team recap, reads the project board and asks what is next. You tell it the goal; it creates the **worker** sessions the job needs, each in its own named tab with a written brief, and follows them through SendMessage. Workers that still have open work reopen with their conversation the next time you open the project. You can still type in any worker's tab.\n\n| Part | Where |\n|---|---|\n| `toolkit:coordinator` and `toolkit:worker` agents | `plugins/toolkit/agents/` |\n| Start-up hook: runs SDD's team-mailbox pull for the coordinator only | `plugins/toolkit/hooks/` |\n| VS Code extension: starts the coordinator, reopens active workers, opens requested workers | `vscode/` |\n\nOne project at a time; coordinating several projects is planned.\n\n## Set up (once per machine)\n\nLink the extension into VS Code, then reload VS Code (Command Palette → \"Developer: Reload Window\"):\n\n```\nNew-Item -ItemType Junction -Path \"$env:USERPROFILE\\.vscode\\extensions\\dserri.claude-toolkit-0.0.1\" -Target \"<clone>\\vscode\"\n```\n\nThe extension starts every session with `--plugin-dir <clone>/plugins/toolkit` and `--permission-mode auto` (sessions in the same mode exchange messages without approval prompts). `claude` must be on `PATH`, or set `claudeToolkit.claudePath`; `claudeToolkit.pluginDir` overrides the plugin folder.\n\n## Enable a project\n\nOpen the project folder and run \"Toolkit: Enable coordinator in this folder\". It records the folder as enabled on this machine (in the extension's own storage, never in the repository), creates `.coord/`, adds it to `.git/info/exclude` (never `.gitignore`), and opens the coordinator. From then on the coordinator opens whenever VS Code opens the folder; \"Toolkit: Start coordinator\" opens it again if you closed it. A repository that carries a `.coord/` folder starts nothing until you enable it yourself, and the extension's settings are machine-scoped, so a workspace cannot change which executable or plugin it runs.\n\n### The board (`.coord/`)\n\n| File | Written by | Contents |\n|---|---|---|\n| `team.json` | coordinator | `[{ \"name\", \"role\", \"state\": \"active\" \\| \"done\" }]`; active workers reopen at start-up |\n| `workers/<name>/brief.md` | coordinator | the worker's task |\n| `workers/<name>/status.md` | worker | `State`, `Summary`, `Next` |\n| `requests/<name>.json` | coordinator | `{ \"name\": \"<name>\" }`: asks the extension to open the worker; rejected requests leave `<name>.rejected.md` |\n| `log.md` | coordinator | decisions, assignments and outcomes |\n| `sessions/<session name>.id` | start-up hook | each worker's session ID, so its tab resumes exactly its own conversation, also when the coordinator requests a finished worker again |\n\nSessions are named `<project>-coordinator` and `<project>-<worker>` (the project folder name in lowercase, other characters as hyphens); tabs show the short name. Enabled projects need different folder names, or their sessions share names.\n\n## Session status\n\nThe \"Claude sessions\" view (Explorer sidebar) and the status-bar item show every interactive Claude Code session on this machine, toolkit or not:\n\n| Colour | Status | Set by |\n|---|---|---|\n| red | waiting for permission / waiting for your answer | `PermissionRequest`; `AskUserQuestion`, or a turn ending with `STATUS: QUESTION` (coordinator and worker) or a final `?` |\n| purple | possibly stuck | working with no event for `claudeToolkit.stuckMinutes` (default 10) |\n| yellow | finished, needs review | any other end of turn |\n| green | working | a prompt or a tool result |\n| grey | idle | session started, no prompt yet |\n\nCards are grouped by project folder (the most urgent project first; each group shows how many of its sessions wait) and sorted by urgency inside each group (longest waiting first) and show the time in that status, the last tool used (\"after Bash\"; only finished tool calls are recorded) or the tool asking for permission, and the last line of the last message. Click a card to focus its tab, in any VS Code window: each window lists the session tabs it opened in `~/.agent-status/windows/<pid>.json`, and a click on a session held by another window brings that window to the front (by opening its folder) and asks it, through `~/.agent-status/focus/<pid>.json`, to show the tab. A card's tooltip says where its session runs; a session started by hand outside the toolkit's tabs only gets a message. Hide a card with its eye icon until the session's next event. Closing a tab hides its card.\n\nInstall the hooks once (they back up `~/.claude/settings.json` first and add only their own entries):\n\n```\nnode <clone>/status/install.mjs\nnode <clone>/status/install.mjs --uninstall\n```\n\nThe hook (`status/status-hook.mjs`) runs asynchronously, so sessions never wait for it, and appends one line per event to `~/.agent-status/sessions/<session_id>.jsonl`; errors go to `~/.agent-status/hook.log`. It deletes a session's file at `SessionEnd` and leaves a `<session_id>.ended` marker so late background events cannot bring the session back (a new start or resume clears it), and, when a session starts, removes files and markers idle for more than 6 hours (`STALE_HOURS` at the top of the script). Headless sessions (`claude -p`, SDK, SDD's reviewer) are skipped by the observed but undocumented `CLAUDE_CODE_ENTRYPOINT=sdk-*` value; `tests/status-entrypoint.e2e.mjs` checks it against the installed CLI. A denied permission stays red until the turn ends, because Claude Code fires no event for a denial.\n\n## Plugin delivery\n\nThe organization's managed Claude Code policy currently allows only the official Anthropic marketplace, so the plugin is loaded from the clone with `--plugin-dir` (the extension does it; by hand: `claude --plugin-dir <clone>/plugins/toolkit`). Update with `git pull`, then reload VS Code.\n\nOnce an admin allows the marketplace:\n\n```\nclaude plugin marketplace add dserri/claude-toolkit\nclaude plugin install toolkit@claude-toolkit\n```\n\nand enable auto-update for `claude-toolkit` in `/plugin` → Marketplaces. The plugin declares no version, so every pushed commit is a release.\n\n## Roll back\n\nDelete the `dserri.claude-toolkit-0.0.1` junction and reload VS Code; remove a project's `.coord/` folder if you no longer want its board. Sessions started by hand work as before.\n\n## Develop\n\n```\nnode --test\nnode --test tests/coordinator.e2e.mjs tests/status-entrypoint.e2e.mjs\n```\n\nThe first runs the unit, hook, installer and `claude plugin validate` tests (`claude` must be on `PATH`). The second starts real headless sessions with a model call. Tab behaviour and the session view in VS Code are verified by hand.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-cross-window-focus/.openspec.yaml",
+          "content": "schema: spec-driven\ncreated: 2026-11-18\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-cross-window-focus/design.md",
+          "content": "# Design\n\n## Context\n\nSee proposal.md. Verified on this machine: running `code <folder>` for a folder already open in a window brings that window to the front, and Windows allows it. Each window's extension already tracks the session names of the tabs it opened (`tabsBySession`). Session files hold only the folder name, not the path. The previous review left three advisory findings: a late async event after SessionEnd recreates the session file; the card itself does not say where a session runs; the archived proposal says \"running tool\".\n\n## Goals / Non-Goals\n\n**Goals:** one click reaches the right tab in any window; no server or background process.\n\n**Non-Goals:** focusing sessions running outside the extension's tabs (hand-started terminals, other apps); the supervisor.\n\n## Decisions\n\n- **Window registry files** instead of session-level paths: `~/.agent-status/windows/<pid>.json` = `{ pid, folder, sessions: [names] }`, written on start and on every tab open/close, deleted on deactivate. A file whose pid no longer runs (`process.kill(pid, 0)` throws) is ignored and removed by the next window that reads it. This tells exactly which window holds a session, so a click never opens a window for a session that has none.\n- **Raising the window:** `vscode.commands.executeCommand('vscode.openFolder', Uri.file(folder), { forceNewWindow: true })`; VS Code focuses the window that already has the folder open instead of opening another. If that check fails in acceptance, fall back to running the VS Code CLI with the folder, which was verified directly.\n- **Showing the tab:** the clicking window writes `~/.agent-status/focus/<target pid>.json` = `{ session, at }`; each window watches only its own file, shows the tab whose session name matches one of its own tabs, and deletes the file. Nothing in the request reaches a command line or path except the target pid, which comes from the registry, not from the request.\n- **Ended marker:** at SessionEnd the hook deletes the session file and writes `<session_id>.ended`; any later event finding that marker records nothing. The marker is removed by the existing stale cleanup (6 hours).\n- **Project from the project root** (found in acceptance: coordinators working in `.coord/` were grouped under `.coord`): the hook records the folder name of `CLAUDE_PROJECT_DIR`, which Claude Code sets for hooks and which does not follow the agent's `cd`, falling back to `cwd`.\n- **Latest session per title** (found in acceptance: a window reload kills its tabs without SessionEnd, and the in-memory \"closed tab\" hiding is lost with the reload): toolkit session names are unique by design, so an older session with the same title is dead or superseded; the view keeps only the latest. Sessions without a title are named after their folder and are never merged.\n- **Card location in the tooltip**, from the registry: \"in this window\", \"in window <folder>\", or \"not in a toolkit tab\".\n- **Archived wording:** correct \"running tool\" to \"last tool used\" in the archived `add-session-status` proposal.\n\n## Risks / Trade-offs\n\n- [`vscode.openFolder` might open a second window instead of focusing] → verified in acceptance; CLI fallback ready.\n- [Two windows with the same folder] → the registry names the pid, so the request reaches the right window; raising by folder may bring the other one forward, a rare case left as is.\n- [Registry left behind by a crash] → pid liveness check.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-cross-window-focus/proposal.md",
+          "content": "# Proposal\n\n## Why\n\nThe session view shows sessions from every VS Code window, but a click only focuses tabs of the window it is in. With several projects open in several windows, the developer sees a red card and still has to hunt for the window. Opening a folder that is already open brings its window to the front (verified on this machine), so a click can reach any window without a server.\n\n## What Changes\n\n- Each VS Code window publishes which session tabs it holds in `~/.agent-status/windows/<pid>.json`, and removes the file when it closes.\n- Clicking a card of a session held by another window asks that window to show the tab (a request file it watches) and brings the window to the front by opening its folder.\n- A card says where its session runs (this window, another window by folder, or not a toolkit tab) in its tooltip.\n- Fixes from the previous review: a late event after SessionEnd no longer recreates an ended session's card; the archived proposal's \"running tool\" wording is corrected.\n\n## Capabilities\n\n### New Capabilities\n\nNone.\n\n### Modified Capabilities\n\n- `session-status`: focusing reaches tabs in other VS Code windows, cards say where their session runs, and ended sessions stay ended.\n\n## Impact\n\n- `vscode/` (view, window registry, focus requests), `status/status-hook.mjs` (ended marker), tests, README.\n- New files under `~/.agent-status/windows/` and `~/.agent-status/focus/`.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-cross-window-focus/specs/session-status/spec.md",
+          "content": "# Spec Delta\n\n## ADDED Requirements\n\n### Requirement: Window registry\n\nEach VS Code window running the extension SHALL publish `~/.agent-status/windows/<process id>.json` with its folder and the session names of the tabs it opened, update it whenever such a tab opens or closes, and delete it when the window closes. Entries of windows whose process no longer runs SHALL be ignored.\n\n#### Scenario: Two windows\n\n- **WHEN** one window holds `rehlko-portal-coordinator` and another holds `api-coordinator`\n- **THEN** each window's file lists only its own sessions and folder\n\n#### Scenario: Crashed window\n\n- **WHEN** a window's file remains after its process has ended\n- **THEN** no window treats its sessions as focusable there\n\n### Requirement: Cross-window focus\n\nClicking a card whose session is held by another window SHALL bring that window to the front by opening its folder and SHALL ask it, through `~/.agent-status/focus/<process id>.json`, to show the tab; the receiving window SHALL show the tab and delete the request. Requests SHALL carry only a session name, which the receiver matches against its own tabs.\n\n#### Scenario: Session in another window\n\n- **WHEN** the developer clicks the red card of `api-tester`, held by the `api` window\n- **THEN** the `api` window comes to the front with the `tester` tab shown\n\n#### Scenario: Session not in any window\n\n- **WHEN** the developer clicks the card of a session started by hand outside the extension's tabs\n- **THEN** no window opens and a message says the session is not a toolkit tab\n\n### Requirement: Card location\n\nEach card's tooltip SHALL say where its session runs: in this window, in another window (by folder), or not in a toolkit tab.\n\n#### Scenario: Tooltip\n\n- **WHEN** the developer hovers the card of a session held by the `api` window\n- **THEN** the tooltip names the `api` window\n\n### Requirement: One card per session name, in its project\n\nA card's project SHALL be the first project folder recorded for the session, taken from its project root (`CLAUDE_PROJECT_DIR`, else the working folder), so moving into a subfolder does not move the card. When several sessions carry the same session title, only the one with the latest event SHALL be shown; sessions without a title are never merged.\n\n#### Scenario: Agent changes folder\n\n- **WHEN** a coordinator started in `rehlko-portal` runs commands inside `.coord/`\n- **THEN** its card stays in the `rehlko-portal` group\n\n#### Scenario: Restarted coordinator\n\n- **WHEN** an earlier `rehlko-portal-coordinator` session was killed by a window reload and a new one started\n- **THEN** only the new session's card is shown\n\n### Requirement: Ended sessions stay ended\n\nAfter SessionEnd, later events of the same session SHALL NOT recreate its card; the ended marker SHALL be removed with the other stale files.\n\n#### Scenario: Late event after the end\n\n- **WHEN** a Stop of a session is recorded after its SessionEnd\n- **THEN** no card for that session appears\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-cross-window-focus/tasks.md",
+          "content": "# Tasks\n\n## 1. Hook\n\n- [x] 1.1 Write an `.ended` marker at SessionEnd and record nothing for a session that has one; remove markers with the stale cleanup; verify with hook tests\n\n## 2. Window registry and focus\n\n- [x] 2.1 Add pure helpers (registry entry, live-window filter, location label, focus target) to `vscode/status-core.js` with tests\n- [x] 2.2 Publish and remove the window file, watch the window's own focus request, and route clicks to this window, another window or a message in `sessions-view.js`; verify VS Code loads it without errors\n- [x] 2.3 Correct the archived proposal wording and document cross-window focus in README\n\n## 3. Acceptance\n\n- [x] 3.1 With the developer and two VS Code windows, click a card held by the other window and verify the window comes to the front with the right tab; click a hand-started session and verify only a message appears\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/archive/2026-11-18-add-session-status/proposal.md",
+          "content": "# Proposal\n\n## Why\n\nWith many Claude Code sessions open in parallel, the developer loses track of which ones wait for an answer or a permission. The coordinator flags them, but it infers state, so it is slow and sometimes wrong. Session state must come from deterministic hook events and be visible at a glance, with one click to the waiting tab.\n\n## What Changes\n\n- Add a status hook registered at user level for every interactive Claude Code session (headless `claude -p` and SDK sessions are skipped). It runs asynchronously, so sessions never wait for it, and records each relevant event in a per-session file under `~/.agent-status/sessions/`.\n- Add an installer that backs up `~/.claude/settings.json` and adds or removes only the toolkit's hook entries.\n- Extend the VS Code extension with a \"Claude sessions\" view and a status-bar count: one card per session with a colour-coded status, how long it has been in it, the last line of its last message and the last tool used, sorted by urgency; clicking a card focuses its tab when the tab belongs to this window; a card can be hidden until the session's next event.\n- Add a closing `STATUS: QUESTION` / `STATUS: DONE` line to the coordinator and worker prompts only; other sessions use the `AskUserQuestion` event and a question-mark heuristic.\n- No server, no listening port, no background process. The coordinator does not read the state yet.\n\n## Capabilities\n\n### New Capabilities\n\n- `session-status`: deterministic per-session status from hook events, its storage, and its view in VS Code.\n\n### Modified Capabilities\n\n- `project-coordinator`: the coordinator and worker prompts end each turn with a status line.\n\n## Impact\n\n- New `status/` folder (hook and installer), new view code in `vscode/`, tests extended.\n- User-level `~/.claude/settings.json` gains asynchronous hook entries pointing at the clone (backed up first); `~/.agent-status/` holds the state.\n- Relies on an observed, undocumented environment variable (`CLAUDE_CODE_ENTRYPOINT`) to skip headless sessions; a test pins it.\n- SDD is unchanged; its headless reviewer sessions are skipped by the hook.\n",
+          "mode": 438
+        },
+        {
+          "path": "status/status-hook.mjs",
+          "content": "import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';\nimport { homedir } from 'node:os';\nimport { basename, join } from 'node:path';\nimport { text } from 'node:stream/consumers';\n\nconst STALE_HOURS = 6;\nconst LAST_LINE_LENGTH = 200;\nconst SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst STATUS_LINE = /^STATUS:\\s*(QUESTION|DONE)\\s*$/i;\n\nconst statusDir = join(homedir(), '.agent-status');\nconst sessionsDir = join(statusDir, 'sessions');\n\nconst log = (message) => {\n  try {\n    mkdirSync(statusDir, { recursive: true });\n    appendFileSync(join(statusDir, 'hook.log'), `${new Date().toISOString()} ${message}\\n`);\n  } catch {\n    return;\n  }\n};\n\nconst isHeadless = () => (process.env.CLAUDE_CODE_ENTRYPOINT ?? '').startsWith('sdk');\n\nconst messageLines = (message) => String(message ?? '').split(/\\r?\\n/).map((line) => line.trim()).filter(Boolean);\n\nconst describeStop = (message) => {\n  const lines = messageLines(message);\n  const statusMatch = lines.length ? STATUS_LINE.exec(lines.at(-1)) : null;\n  const content = statusMatch ? lines.slice(0, -1) : lines;\n  const last = content.at(-1) ?? '';\n\n  return {\n    asks: statusMatch ? statusMatch[1].toUpperCase() === 'QUESTION' : last.endsWith('?'),\n    last: last.slice(0, LAST_LINE_LENGTH),\n  };\n};\n\nconst eventRecord = (input) => {\n  const record = { t: Date.now(), event: input.hook_event_name, promptId: input.prompt_id, tool: input.tool_name, title: input.session_title };\n\n  if (input.hook_event_name === 'SessionStart' || input.hook_event_name === 'UserPromptSubmit')\n    record.folder = basename(process.env.CLAUDE_PROJECT_DIR || input.cwd || '');\n\n  if (input.hook_event_name === 'Stop')\n    Object.assign(record, describeStop(input.last_assistant_message));\n\n  return record;\n};\n\nconst removeIfStale = (file, now) => {\n  try {\n    if (now - statSync(file).mtimeMs > STALE_HOURS * 3_600_000)\n      rmSync(file, { force: true });\n  } catch (error) {\n    log(`stale check skipped for ${basename(file)}: ${error.message}`);\n  }\n};\n\nconst removeStaleSessions = (now) => {\n  for (const entry of readdirSync(sessionsDir))\n    removeIfStale(join(sessionsDir, entry), now);\n};\n\nconst startTurn = (file, line) => {\n  let firstLine = '';\n\n  try {\n    firstLine = readFileSync(file, 'utf8').split('\\n')[0];\n  } catch {\n    firstLine = '';\n  }\n\n  const temporary = `${file}.${process.pid}.tmp`;\n\n  try {\n    writeFileSync(temporary, firstLine ? `${firstLine}\\n${line}` : line);\n    renameSync(temporary, file);\n  } catch (error) {\n    rmSync(temporary, { force: true });\n    log(`compaction skipped for ${basename(file)}: ${error.message}`);\n    appendFileSync(file, line);\n  }\n};\n\nconst record = (input) => {\n  if (!SESSION_ID.test(input.session_id ?? '')) {\n    log(`ignored ${input.hook_event_name}: missing or invalid session_id`);\n\n    return;\n  }\n\n  const file = join(sessionsDir, `${input.session_id}.jsonl`);\n  const endedMarker = join(sessionsDir, `${input.session_id}.ended`);\n\n  mkdirSync(sessionsDir, { recursive: true });\n\n  if (input.hook_event_name === 'SessionEnd') {\n    rmSync(file, { force: true });\n    writeFileSync(endedMarker, '');\n\n    return;\n  }\n\n  if (input.hook_event_name === 'SessionStart')\n    rmSync(endedMarker, { force: true });\n  else if (existsSync(endedMarker))\n    return;\n\n  const line = `${JSON.stringify(eventRecord(input))}\\n`;\n\n  if (input.hook_event_name === 'SessionStart')\n    removeStaleSessions(Date.now());\n\n  if (input.hook_event_name === 'UserPromptSubmit')\n    startTurn(file, line);\n  else\n    appendFileSync(file, line);\n};\n\nconst main = async () => {\n  if (isHeadless())\n    return;\n\n  try {\n    record(JSON.parse(await text(process.stdin)));\n  } catch (error) {\n    log(`error: ${error.message}`);\n  }\n};\n\nawait main();\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/status-blackbox.test.mjs",
+          "content": "import { test, describe } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { spawnSync } from 'node:child_process';\nimport { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, utimesSync, rmSync } from 'node:fs';\nimport { tmpdir } from 'node:os';\nimport { join, dirname } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nimport status from '../vscode/status-core.js';\n\nconst repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));\nconst hookPath = join(repoRoot, 'status', 'status-hook.mjs');\nconst sid = '11111111-2222-4333-8444-555555555555';\nconst otherSid = '66666666-7777-4888-9999-aaaaaaaaaaaa';\n\nfunction makeHome() {\n  return mkdtempSync(join(tmpdir(), 'status-bb-'));\n}\n\nfunction sessionsDir(home) {\n  return join(home, '.agent-status', 'sessions');\n}\n\nfunction sessionFile(home, id = sid) {\n  return join(sessionsDir(home), `${id}.jsonl`);\n}\n\nfunction runHook(home, input, entrypoint = 'cli') {\n  const env = { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_CODE_ENTRYPOINT: entrypoint };\n  const raw = typeof input === 'string' ? input : JSON.stringify(input);\n  const result = spawnSync(process.execPath, [hookPath], { input: raw, env, encoding: 'utf8' });\n  assert.equal(result.status, 0, `exit code with stderr: ${result.stderr}`);\n  assert.equal(result.stdout, '');\n  return result;\n}\n\nfunction readLines(home, id = sid) {\n  return readFileSync(sessionFile(home, id), 'utf8').split('\\n').filter((l) => l.trim()).map((l) => JSON.parse(l));\n}\n\nfunction event(name, extra = {}) {\n  return { session_id: sid, hook_event_name: name, cwd: join('C:', 'work', 'my-project'), ...extra };\n}\n\nfunction stopWith(home, message) {\n  runHook(home, event('Stop', { prompt_id: 'p1', last_assistant_message: message }));\n  const lines = readLines(home);\n  return lines[lines.length - 1];\n}\n\ndescribe('status-hook', () => {\n  test('SessionStart writes a line with t, event, promptId, tool, title and folder', () => {\n    const home = makeHome();\n    runHook(home, event('SessionStart', { session_title: 'My title' }));\n    const lines = readLines(home);\n    assert.equal(lines.length, 1);\n    const [line] = lines;\n    assert.equal(typeof line.t, 'number');\n    assert.ok(Math.abs(line.t - Date.now()) < 60000);\n    assert.equal(line.event, 'SessionStart');\n    assert.equal(line.promptId, undefined);\n    assert.equal(line.tool, undefined);\n    assert.equal(line.title, 'My title');\n    assert.equal(line.folder, 'my-project');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('other events append one line each with tool and promptId', () => {\n    const home = makeHome();\n    runHook(home, event('SessionStart'));\n    runHook(home, event('PreToolUse', { prompt_id: 'p1', tool_name: 'Bash' }));\n    runHook(home, event('PostToolUse', { prompt_id: 'p1', tool_name: 'Bash' }));\n    const lines = readLines(home);\n    assert.equal(lines.length, 3);\n    assert.equal(lines[1].event, 'PreToolUse');\n    assert.equal(lines[1].tool, 'Bash');\n    assert.equal(lines[1].promptId, 'p1');\n    assert.equal(lines[2].event, 'PostToolUse');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('UserPromptSubmit keeps only the first line plus the new line, with folder', () => {\n    const home = makeHome();\n    runHook(home, event('SessionStart'));\n    runHook(home, event('UserPromptSubmit', { prompt_id: 'p1' }));\n    runHook(home, event('PreToolUse', { prompt_id: 'p1', tool_name: 'Read' }));\n    runHook(home, event('Stop', { prompt_id: 'p1', last_assistant_message: 'ok' }));\n    runHook(home, event('UserPromptSubmit', { prompt_id: 'p2' }));\n    const lines = readLines(home);\n    assert.equal(lines.length, 2);\n    assert.equal(lines[0].event, 'SessionStart');\n    assert.equal(lines[1].event, 'UserPromptSubmit');\n    assert.equal(lines[1].promptId, 'p2');\n    assert.equal(lines[1].folder, 'my-project');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('Stop with STATUS: DONE excludes the marker and does not ask', () => {\n    const home = makeHome();\n    const line = stopWith(home, 'Work done.\\nShall I continue?\\nSTATUS: DONE');\n    assert.equal(line.event, 'Stop');\n    assert.equal(line.asks, false);\n    assert.equal(line.last, 'Shall I continue?');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('Stop with STATUS: QUESTION asks', () => {\n    const home = makeHome();\n    const line = stopWith(home, 'Pick one of the options.\\nSTATUS: QUESTION');\n    assert.equal(line.asks, true);\n    assert.equal(line.last, 'Pick one of the options.');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('Stop without marker asks exactly when the last non-empty line ends with ?', () => {\n    const home = makeHome();\n    const asking = stopWith(home, 'Done.\\nShould I push?\\n\\n  \\n');\n    assert.equal(asking.asks, true);\n    assert.equal(asking.last, 'Should I push?');\n    const telling = stopWith(home, 'Is this fine?\\nAll tests pass.');\n    assert.equal(telling.asks, false);\n    assert.equal(telling.last, 'All tests pass.');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('hostile STATUS text in the middle of a message does not count', () => {\n    const home = makeHome();\n    const notAsking = stopWith(home, 'STATUS: QUESTION\\nAll done.');\n    assert.equal(notAsking.asks, false);\n    assert.equal(notAsking.last, 'All done.');\n    const asking = stopWith(home, 'STATUS: DONE\\nReady to merge?');\n    assert.equal(asking.asks, true);\n    assert.equal(asking.last, 'Ready to merge?');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('Stop last is cut to 200 characters', () => {\n    const home = makeHome();\n    const long = 'x'.repeat(500);\n    const line = stopWith(home, `intro\\n${long}`);\n    assert.equal(typeof line.last, 'string');\n    assert.ok(line.last.length <= 200);\n    assert.ok(line.last.length > 0);\n    assert.ok(long.startsWith(line.last.replace(/[.…]+$/, '')));\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('SessionEnd deletes the session file', () => {\n    const home = makeHome();\n    runHook(home, event('SessionStart'));\n    assert.ok(existsSync(sessionFile(home)));\n    runHook(home, event('SessionEnd'));\n    assert.ok(!existsSync(sessionFile(home)));\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('SessionStart deletes other session files older than 6 hours only', () => {\n    const home = makeHome();\n    mkdirSync(sessionsDir(home), { recursive: true });\n    const oldFile = sessionFile(home, otherSid);\n    const freshId = 'bbbbbbbb-cccc-4ddd-8eee-ffffffffffff';\n    const freshFile = sessionFile(home, freshId);\n    const line = JSON.stringify({ t: Date.now(), event: 'SessionStart' }) + '\\n';\n    writeFileSync(oldFile, line);\n    writeFileSync(freshFile, line);\n    const old = new Date(Date.now() - 7 * 3600 * 1000);\n    utimesSync(oldFile, old, old);\n    const recent = new Date(Date.now() - 5 * 3600 * 1000);\n    utimesSync(freshFile, recent, recent);\n    runHook(home, event('SessionStart'));\n    assert.ok(!existsSync(oldFile));\n    assert.ok(existsSync(freshFile));\n    assert.ok(existsSync(sessionFile(home)));\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('headless sessions record nothing and create no files', () => {\n    for (const entrypoint of ['sdk-cli', 'sdk-ts']) {\n      const home = makeHome();\n      runHook(home, event('SessionStart'), entrypoint);\n      runHook(home, event('UserPromptSubmit', { prompt_id: 'p1' }), entrypoint);\n      assert.deepEqual(readdirSync(home), []);\n      rmSync(home, { recursive: true, force: true });\n    }\n  });\n\n  test('missing or invalid session_id writes no session file and logs', () => {\n    for (const bad of [undefined, 'not-a-uuid', '']) {\n      const home = makeHome();\n      const input = event('SessionStart');\n      if (bad === undefined) {\n        delete input.session_id;\n      } else {\n        input.session_id = bad;\n      }\n      runHook(home, input);\n      const dir = sessionsDir(home);\n      assert.ok(!existsSync(dir) || readdirSync(dir).length === 0);\n      const log = join(home, '.agent-status', 'hook.log');\n      assert.ok(existsSync(log));\n      assert.ok(readFileSync(log, 'utf8').trim().length > 0);\n      rmSync(home, { recursive: true, force: true });\n    }\n  });\n\n  test('path-traversal session ids create no files outside the sessions folder', () => {\n    for (const bad of ['../../evil', '..\\\\..\\\\evil', '../evil', `${sid}/../../evil`]) {\n      const home = makeHome();\n      const input = event('SessionStart');\n      input.session_id = bad;\n      runHook(home, input);\n      assert.deepEqual(readdirSync(home), ['.agent-status']);\n      const entries = readdirSync(join(home, '.agent-status')).sort();\n      assert.ok(entries.every((e) => e === 'hook.log' || e === 'sessions'), entries.join(','));\n      assert.ok(entries.includes('hook.log'));\n      const dir = sessionsDir(home);\n      assert.ok(!existsSync(dir) || readdirSync(dir).length === 0);\n      assert.ok(!existsSync(join(dirname(home), 'evil.jsonl')));\n      rmSync(home, { recursive: true, force: true });\n    }\n  });\n\n  test('unreadable stdin writes no session file and appends to the log twice', () => {\n    const home = makeHome();\n    runHook(home, '{not json');\n    runHook(home, '');\n    const log = join(home, '.agent-status', 'hook.log');\n    assert.ok(existsSync(log));\n    assert.ok(readFileSync(log, 'utf8').split('\\n').filter((l) => l.trim()).length >= 2);\n    const dir = sessionsDir(home);\n    assert.ok(!existsSync(dir) || readdirSync(dir).length === 0);\n    rmSync(home, { recursive: true, force: true });\n  });\n});\n\nconst T0 = 1_700_000_000_000;\n\nfunction ev(offsetMs, name, extra = {}) {\n  return { t: T0 + offsetMs, event: name, ...extra };\n}\n\nfunction state(events, nowOffset = 1000, stuckMs = 10 * 60 * 1000) {\n  return status.sessionState({ id: sid, events, now: T0 + nowOffset, stuckMs });\n}\n\ndescribe('status-core parseEvents', () => {\n  test('skips unreadable and incomplete lines and sorts by t', () => {\n    const text = [\n      JSON.stringify({ t: 30, event: 'Stop' }),\n      'garbage {',\n      JSON.stringify({ t: '10', event: 'X' }),\n      JSON.stringify({ t: 5 }),\n      JSON.stringify({ t: 6, event: 7 }),\n      '',\n      JSON.stringify({ t: 10, event: 'SessionStart' }),\n      JSON.stringify({ t: 20, event: 'UserPromptSubmit', promptId: 'p' })\n    ].join('\\n');\n    const events = status.parseEvents(text);\n    assert.deepEqual(events.map((e) => e.t), [10, 20, 30]);\n    assert.deepEqual(events.map((e) => e.event), ['SessionStart', 'UserPromptSubmit', 'Stop']);\n  });\n});\n\ndescribe('status-core sessionState', () => {\n  test('returns the documented fields', () => {\n    const s = state([ev(0, 'SessionStart', { folder: 'proj' })]);\n    for (const key of ['id', 'name', 'project', 'status', 'since', 'lastEventAt', 'tool', 'last']) {\n      assert.ok(key in s, key);\n    }\n    assert.equal(s.id, sid);\n    assert.equal(s.status, 'idle');\n    assert.equal(s.since, T0);\n    assert.equal(s.lastEventAt, T0);\n  });\n\n  test('name and project fallbacks', () => {\n    const titled = state([ev(0, 'SessionStart', { folder: 'a' }), ev(10, 'UserPromptSubmit', { folder: 'b', title: 'T1', promptId: 'p' }), ev(20, 'PostToolUse', { title: 'T2', promptId: 'p' })]);\n    assert.equal(titled.name, 'T2');\n    assert.equal(titled.project, 'a');\n    const foldered = state([ev(0, 'SessionStart', { folder: 'a' }), ev(10, 'UserPromptSubmit', { folder: 'b', promptId: 'p' })]);\n    assert.equal(foldered.name, 'a');\n    const bare = state([ev(0, 'SessionStart')]);\n    assert.equal(bare.name, sid.slice(0, 8));\n    assert.equal(bare.project, 'unknown project');\n  });\n\n  test('turn transitions', () => {\n    const base = [ev(0, 'SessionStart'), ev(100, 'UserPromptSubmit', { promptId: 'p1' })];\n    let s = state(base);\n    assert.equal(s.status, 'working');\n    assert.equal(s.since, T0 + 100);\n    s = state([...base, ev(200, 'PreToolUse', { promptId: 'p1', tool: 'AskUserQuestion' })]);\n    assert.equal(s.status, 'question');\n    assert.equal(s.since, T0 + 200);\n    s = state([...base, ev(200, 'PermissionRequest', { promptId: 'p1', tool: 'Bash' })]);\n    assert.equal(s.status, 'permission');\n    assert.equal(s.tool, 'Bash');\n    s = state([...base, ev(200, 'PermissionRequest', { promptId: 'p1', tool: 'Bash' }), ev(300, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]);\n    assert.equal(s.status, 'working');\n    assert.equal(s.tool, 'Bash');\n    s = state([...base, ev(200, 'PermissionRequest', { promptId: 'p1', tool: 'Edit' }), ev(300, 'PostToolUseFailure', { promptId: 'p1', tool: 'Edit' })]);\n    assert.equal(s.status, 'working');\n    assert.equal(s.tool, 'Edit');\n    s = state([...base, ev(300, 'Stop', { promptId: 'p1', asks: true, last: 'Go?' })]);\n    assert.equal(s.status, 'question');\n    assert.equal(s.last, 'Go?');\n    s = state([...base, ev(300, 'Stop', { promptId: 'p1', asks: false, last: 'Done.' })]);\n    assert.equal(s.status, 'finished');\n    assert.equal(s.since, T0 + 300);\n  });\n\n  test('events sorted out of order are evaluated in time order', () => {\n    const s = state([ev(300, 'Stop', { promptId: 'p1', asks: false }), ev(0, 'SessionStart'), ev(100, 'UserPromptSubmit', { promptId: 'p1' })]);\n    assert.equal(s.status, 'finished');\n  });\n\n  test('a PostToolUse after its turn Stop does not reopen it', () => {\n    const s = state([\n      ev(0, 'SessionStart'),\n      ev(100, 'UserPromptSubmit', { promptId: 'p1' }),\n      ev(200, 'Stop', { promptId: 'p1', asks: false }),\n      ev(300, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })\n    ]);\n    assert.equal(s.status, 'finished');\n    assert.equal(s.since, T0 + 200);\n  });\n\n  test('a PermissionRequest of an earlier turn after a new prompt does not change status', () => {\n    const s = state([\n      ev(0, 'SessionStart'),\n      ev(100, 'UserPromptSubmit', { promptId: 'p1' }),\n      ev(200, 'UserPromptSubmit', { promptId: 'p2' }),\n      ev(300, 'PermissionRequest', { promptId: 'p1', tool: 'Bash' })\n    ]);\n    assert.equal(s.status, 'working');\n    assert.notEqual(s.tool, 'Bash');\n  });\n\n  test('working beyond stuckMs becomes stuck since the last event', () => {\n    const events = [ev(0, 'SessionStart'), ev(100, 'UserPromptSubmit', { promptId: 'p1' }), ev(200, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })];\n    const stuck = status.sessionState({ id: sid, events, now: T0 + 200 + 5001, stuckMs: 5000 });\n    assert.equal(stuck.status, 'stuck');\n    assert.equal(stuck.since, T0 + 200);\n    const fine = status.sessionState({ id: sid, events, now: T0 + 200 + 4000, stuckMs: 5000 });\n    assert.equal(fine.status, 'working');\n    const finished = status.sessionState({ id: sid, events: [...events, ev(300, 'Stop', { promptId: 'p1', asks: false })], now: T0 + 1e9, stuckMs: 5000 });\n    assert.equal(finished.status, 'finished');\n  });\n});\n\nfunction session(id, project, st, since, lastEventAt = since) {\n  return { id, name: id, project, status: st, since, lastEventAt, tool: null, last: '' };\n}\n\ndescribe('status-core ordering and grouping', () => {\n  test('byUrgency orders by status then older since first', () => {\n    const list = [\n      session('idle', 'p', 'idle', 1),\n      session('working', 'p', 'working', 1),\n      session('finished', 'p', 'finished', 1),\n      session('stuck', 'p', 'stuck', 1),\n      session('questionNew', 'p', 'question', 50),\n      session('permissionOld', 'p', 'permission', 10)\n    ];\n    const sorted = [...list].sort(status.byUrgency).map((s) => s.id);\n    assert.deepEqual(sorted, ['permissionOld', 'questionNew', 'stuck', 'finished', 'working', 'idle']);\n    const ties = [session('b', 'p', 'working', 20), session('a', 'p', 'working', 10)].sort(status.byUrgency).map((s) => s.id);\n    assert.deepEqual(ties, ['a', 'b']);\n  });\n\n  test('waitingCount counts permission and question', () => {\n    const list = [session('a', 'p', 'permission', 1), session('b', 'p', 'question', 1), session('c', 'p', 'stuck', 1), session('d', 'p', 'finished', 1)];\n    assert.equal(status.waitingCount(list), 2);\n    assert.equal(status.waitingCount([]), 0);\n  });\n\n  test('groupByProject sorts sessions and groups', () => {\n    const list = [\n      session('z1', 'zeta', 'idle', 1),\n      session('a1', 'alpha', 'working', 1),\n      session('a2', 'alpha', 'question', 5),\n      session('b1', 'beta', 'working', 1),\n      session('m1', 'mu', 'idle', 1)\n    ];\n    const groups = status.groupByProject(list);\n    assert.deepEqual(groups.map((g) => g.project), ['alpha', 'beta', 'mu', 'zeta']);\n    const alpha = groups[0];\n    assert.deepEqual(alpha.sessions.map((s) => s.id), ['a2', 'a1']);\n    assert.equal(alpha.top.id, 'a2');\n    assert.equal(alpha.waiting, 1);\n    assert.equal(groups[1].waiting, 0);\n  });\n\n  test('groupDescription', () => {\n    const groups = status.groupByProject([\n      session('a1', 'alpha', 'question', 1),\n      session('a2', 'alpha', 'permission', 1),\n      session('a3', 'alpha', 'idle', 1),\n      session('b1', 'beta', 'idle', 1),\n      session('c1', 'gamma', 'working', 1),\n      session('c2', 'gamma', 'idle', 1)\n    ]);\n    const byName = Object.fromEntries(groups.map((g) => [g.project, g]));\n    assert.equal(status.groupDescription(byName.alpha), '2 waiting · 3 sessions');\n    assert.equal(status.groupDescription(byName.beta), '1 session');\n    assert.equal(status.groupDescription(byName.gamma), '2 sessions');\n  });\n});\n\ndescribe('status-core formatting', () => {\n  test('formatDuration', () => {\n    assert.equal(status.formatDuration(45 * 1000), '45s');\n    assert.equal(status.formatDuration(12 * 60 * 1000), '12m');\n    assert.equal(status.formatDuration((2 * 60 + 5) * 60 * 1000), '2h 05m');\n    assert.equal(status.formatDuration(-5000), '0s');\n  });\n\n  test('cardDescription labels, tool and duration', () => {\n    const now = T0 + 45 * 1000;\n    const make = (st, tool) => ({ ...session('x', 'p', st, T0), tool });\n    assert.equal(status.cardDescription(make('working', 'Bash'), now), 'working · after Bash · 45s');\n    assert.equal(status.cardDescription(make('stuck', 'Bash'), now), 'possibly stuck · after Bash · 45s');\n    assert.equal(status.cardDescription(make('permission', 'Edit'), now), 'waiting for permission · Edit · 45s');\n    assert.equal(status.cardDescription(make('question', 'Bash'), now), 'waiting for your answer · 45s');\n    assert.equal(status.cardDescription(make('finished', 'Bash'), now), 'finished, needs review · 45s');\n    assert.equal(status.cardDescription(make('idle', 'Bash'), now), 'idle · 45s');\n  });\n\n  test('isVisible', () => {\n    const s = session('x', 'p', 'idle', 1, 100);\n    assert.equal(status.isVisible(s, undefined), true);\n    assert.equal(status.isVisible(s, 99), true);\n    assert.equal(status.isVisible(s, 100), false);\n    assert.equal(status.isVisible(s, 200), false);\n  });\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/status-core.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport status from '../vscode/status-core.js';\n\nconst now = 1_000_000_000;\nconst stuckMs = 10 * 60_000;\nconst id = '7fa97870-6578-4ed2-b7c9-1dc4c9a2ef09';\n\nconst at = (secondsAgo, event, extra = {}) => ({ t: now - secondsAgo * 1000, event, ...extra });\nconst stateOf = (events) => status.sessionState({ id, events: [...events].sort((first, second) => first.t - second.t), now, stuckMs });\n\ntest('a fresh session is idle and named after its title, else its folder', () => {\n  assert.equal(stateOf([at(60, 'SessionStart', { title: 'portal-tester', folder: 'rehlko-portal' })]).name, 'portal-tester');\n\n  const session = stateOf([at(60, 'SessionStart', { folder: 'rehlko-portal' })]);\n\n  assert.equal(session.name, 'rehlko-portal');\n  assert.equal(session.status, 'idle');\n});\n\ntest('a prompt and its tools mean working, with the current tool', () => {\n  const session = stateOf([\n    at(90, 'SessionStart'),\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(30, 'PostToolUse', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'working');\n  assert.equal(session.tool, 'Bash');\n  assert.equal(session.since, now - 60_000);\n});\n\ntest('a permission request waits for the developer, and the next tool result returns to working', () => {\n  const waiting = [at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(40, 'PermissionRequest', { promptId: 'p1', tool: 'Edit' })];\n\n  assert.equal(stateOf(waiting).status, 'permission');\n  assert.equal(stateOf([...waiting, at(10, 'PostToolUse', { promptId: 'p1', tool: 'Edit' })]).status, 'working');\n});\n\ntest('AskUserQuestion and asking stops wait for an answer; other stops need review', () => {\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'PreToolUse', { promptId: 'p1', tool: 'AskUserQuestion' })]).status, 'question');\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'Stop', { promptId: 'p1', asks: true, last: 'Which one?' })]).status, 'question');\n\n  const finished = stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'Stop', { promptId: 'p1', asks: false, last: 'All tests pass.' })]);\n\n  assert.equal(finished.status, 'finished');\n  assert.equal(finished.last, 'All tests pass.');\n});\n\ntest('a tool event of a turn recorded after its stop does not reopen it', () => {\n  const session = stateOf([\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(20, 'Stop', { promptId: 'p1', asks: false, last: 'Done.' }),\n    at(19, 'PostToolUse', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'finished');\n});\n\ntest('late events of an earlier turn do not change the current one', () => {\n  const session = stateOf([\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(30, 'UserPromptSubmit', { promptId: 'p2' }),\n    at(20, 'PermissionRequest', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'working');\n});\n\ntest('a working session without events past the threshold is possibly stuck, keeping its tool', () => {\n  const session = stateOf([at(1200, 'UserPromptSubmit', { promptId: 'p1' }), at(700, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]);\n\n  assert.equal(session.status, 'stuck');\n  assert.equal(session.tool, 'Bash');\n  assert.equal(status.cardDescription(session, now), 'possibly stuck · after Bash · 11m');\n  assert.equal(status.cardDescription({ status: 'permission', tool: 'Edit', since: now - 5000 }, now), 'waiting for permission · Edit · 5s');\n  assert.equal(status.cardDescription({ status: 'finished', tool: 'Bash', since: now - 5000 }, now), 'finished, needs review · 5s');\n  assert.equal(stateOf([at(1200, 'UserPromptSubmit', { promptId: 'p1' }), at(500, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).status, 'working');\n});\n\ntest('unreadable lines are skipped and lines are ordered by time', () => {\n  const events = status.parseEvents('{\"t\":2,\"event\":\"Stop\"}\\nnot json\\n\\n{\"t\":1,\"event\":\"SessionStart\"}\\n{\"event\":\"NoTime\"}\\n');\n\n  assert.deepEqual(events.map((event) => event.event), ['SessionStart', 'Stop']);\n});\n\ntest('cards are sorted with waiting sessions first, longest waiting first, then stuck, finished, working, idle', () => {\n  const card = (name, sessionStatus, since) => ({ name, status: sessionStatus, since });\n  const sorted = [\n    card('idle', 'idle', 1),\n    card('working', 'working', 1),\n    card('question-new', 'question', 50),\n    card('finished', 'finished', 1),\n    card('permission-old', 'permission', 10),\n    card('stuck', 'stuck', 1),\n  ].sort(status.byUrgency);\n\n  assert.deepEqual(sorted.map((session) => session.name), ['permission-old', 'question-new', 'stuck', 'finished', 'working', 'idle']);\n  assert.equal(status.waitingCount(sorted), 2);\n});\n\ntest('sessions are grouped by project, the most urgent project first, each sorted by urgency', () => {\n  const card = (name, project, sessionStatus, since) => ({ name, project, status: sessionStatus, since });\n  const groups = status.groupByProject([\n    card('api-worker', 'api', 'working', 5),\n    card('portal-idle', 'rehlko-portal', 'idle', 1),\n    card('portal-asks', 'rehlko-portal', 'question', 20),\n    card('api-done', 'api', 'finished', 3),\n    card('portal-perm', 'rehlko-portal', 'permission', 10),\n  ]);\n\n  assert.deepEqual(groups.map((group) => group.project), ['rehlko-portal', 'api']);\n  assert.deepEqual(groups[0].sessions.map((session) => session.name), ['portal-perm', 'portal-asks', 'portal-idle']);\n  assert.deepEqual(groups[1].sessions.map((session) => session.name), ['api-done', 'api-worker']);\n  assert.equal(groups[0].top.name, 'portal-perm');\n  assert.equal(status.groupDescription(groups[0]), '2 waiting · 3 sessions');\n  assert.equal(status.groupDescription({ sessions: [card('a', 'x', 'working', 1)], waiting: 0 }), '1 session');\n});\n\ntest('a session takes its project from the first folder recorded, or a placeholder', () => {\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1', folder: 'rehlko-portal' })]).project, 'rehlko-portal');\n  assert.equal(stateOf([\n    at(90, 'SessionStart', { folder: 'rehlko-portal', title: 'rehlko-portal-coordinator' }),\n    at(60, 'UserPromptSubmit', { promptId: 'p1', folder: '.coord' }),\n  ]).project, 'rehlko-portal');\n  assert.equal(stateOf([at(60, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).project, 'unknown project');\n});\n\ntest('only the latest session per title is kept; untitled sessions are never merged', () => {\n  const session = (sessionId, name, titled, lastEventAt) => ({ id: sessionId, name, titled, lastEventAt });\n  const kept = status.latestPerTitle([\n    session('old', 'rehlko-portal-coordinator', true, 100),\n    session('new', 'rehlko-portal-coordinator', true, 200),\n    session('tester', 'rehlko-portal-tester', true, 50),\n    session('plain-1', 'rehlko-portal', false, 10),\n    session('plain-2', 'rehlko-portal', false, 20),\n  ]);\n\n  assert.deepEqual(kept.map((entry) => entry.id), ['new', 'tester', 'plain-1', 'plain-2']);\n});\n\ntest('a titled session reports it, a folder-named one does not', () => {\n  assert.equal(stateOf([at(60, 'SessionStart', { title: 'portal-tester', folder: 'portal' })]).titled, true);\n  assert.equal(stateOf([at(60, 'SessionStart', { folder: 'portal' })]).titled, false);\n});\n\ntest('only well-formed entries of running windows count', () => {\n  const entries = [\n    { pid: 10, folder: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal', sessions: ['rehlko-portal-coordinator'] },\n    { pid: 20, folder: 'P:\\\\repos\\\\Rehlko\\\\api', sessions: ['api-coordinator'] },\n    { pid: 30, folder: 'P:\\\\repos\\\\gone', sessions: [] },\n    { pid: '40', folder: 'x', sessions: [] },\n    { pid: 50, sessions: [] },\n    null,\n  ];\n\n  assert.deepEqual(status.liveWindows(entries, (pid) => pid !== 30).map((entry) => entry.pid), [10, 20]);\n});\n\ntest('a session is located in this window, another window, or none', () => {\n  const windows = [\n    { pid: 10, folder: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal', sessions: ['rehlko-portal-coordinator', 'rehlko-portal-tester'] },\n    { pid: 20, folder: 'P:\\\\repos\\\\Rehlko\\\\api', sessions: ['api-coordinator'] },\n  ];\n  const here = status.sessionLocation('rehlko-portal-tester', 10, windows);\n  const other = status.sessionLocation('api-coordinator', 10, windows);\n  const none = status.sessionLocation('vs-code skill upgrade', 10, windows);\n\n  assert.equal(here.kind, 'here');\n  assert.equal(other.kind, 'other');\n  assert.equal(other.window.pid, 20);\n  assert.equal(none.kind, 'none');\n  assert.equal(status.locationLabel(here), 'in this window');\n  assert.equal(status.locationLabel(other), 'in window api');\n  assert.equal(status.locationLabel({ kind: 'other', window: { folder: '/home/dev/app/' } }), 'in window app');\n  assert.equal(status.locationLabel(none), 'not in a toolkit tab');\n});\n\ntest('durations read as seconds, minutes, then hours and minutes', () => {\n  assert.equal(status.formatDuration(45_000), '45s');\n  assert.equal(status.formatDuration(12 * 60_000), '12m');\n  assert.equal(status.formatDuration((2 * 60 + 5) * 60_000), '2h 05m');\n  assert.equal(status.formatDuration(-5), '0s');\n});\n\ntest('a hidden card comes back only with a newer event', () => {\n  assert.equal(status.isVisible({ lastEventAt: 100 }, undefined), true);\n  assert.equal(status.isVisible({ lastEventAt: 100 }, 100), false);\n  assert.equal(status.isVisible({ lastEventAt: 101 }, 100), true);\n});\n\ntest('every status has a label and a theme colour', () => {\n  for (const [name, look] of Object.entries(status.STATUS)) {\n    assert.match(look.label, /\\w/, name);\n    assert.match(look.color, /^[a-zA-Z.]+$/, name);\n  }\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/status-hook.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { spawnSync } from 'node:child_process';\nimport { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';\nimport { tmpdir } from 'node:os';\nimport { join } from 'node:path';\nimport { fileURLToPath } from 'node:url';\n\nconst hook = fileURLToPath(new URL('../status/status-hook.mjs', import.meta.url));\nconst sessionId = '7fa97870-6578-4ed2-b7c9-1dc4c9a2ef09';\n\nconst withHome = (run) => {\n  const home = mkdtempSync(join(tmpdir(), 'toolkit-status-'));\n\n  try {\n    return run(home);\n  } finally {\n    rmSync(home, { recursive: true, force: true });\n  }\n};\n\nconst runHook = (home, input, entrypoint = 'cli') => spawnSync(process.execPath, [hook], {\n  input: typeof input === 'string' ? input : JSON.stringify(input),\n  encoding: 'utf8',\n  env: { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_CODE_ENTRYPOINT: entrypoint },\n});\n\nconst sessionFile = (home, id = sessionId) => join(home, '.agent-status', 'sessions', `${id}.jsonl`);\nconst lines = (home) => readFileSync(sessionFile(home), 'utf8').trim().split('\\n').map((line) => JSON.parse(line));\n\nconst event = (name, extra = {}) => ({ session_id: sessionId, hook_event_name: name, cwd: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal', ...extra });\n\nconst runQuietly = (home, input, entrypoint) => {\n  const result = runHook(home, input, entrypoint);\n\n  assert.equal(result.status, 0, result.stderr);\n  assert.equal(result.stdout, '');\n\n  return result;\n};\n\ntest('session start records the name and folder, tool events append', () => {\n  withHome((home) => {\n    runQuietly(home, event('SessionStart', { session_title: 'rehlko-portal-tester', source: 'startup' }));\n    runQuietly(home, event('PostToolUse', { prompt_id: 'p1', tool_name: 'Bash' }));\n\n    const [start, tool] = lines(home);\n\n    assert.equal(start.event, 'SessionStart');\n    assert.equal(start.title, 'rehlko-portal-tester');\n    assert.equal(start.folder, 'rehlko-portal');\n    assert.equal(tool.event, 'PostToolUse');\n    assert.equal(tool.promptId, 'p1');\n    assert.equal(tool.tool, 'Bash');\n    assert.equal(typeof tool.t, 'number');\n  });\n});\n\ntest('the project folder comes from CLAUDE_PROJECT_DIR, not the current folder', () => {\n  withHome((home) => {\n    const result = spawnSync(process.execPath, [hook], {\n      input: JSON.stringify(event('UserPromptSubmit', { prompt_id: 'p1', cwd: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal\\\\.coord' })),\n      encoding: 'utf8',\n      env: { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_CODE_ENTRYPOINT: 'cli', CLAUDE_PROJECT_DIR: 'P:/repos/Rehlko/rehlko-portal' },\n    });\n\n    assert.equal(result.status, 0, result.stderr);\n    assert.equal(lines(home)[0].folder, 'rehlko-portal');\n  });\n});\n\ntest('a new prompt keeps only the first line and the new turn', () => {\n  withHome((home) => {\n    runQuietly(home, event('SessionStart', { session_title: 'portal' }));\n    runQuietly(home, event('PostToolUse', { prompt_id: 'p1', tool_name: 'Read' }));\n    runQuietly(home, event('Stop', { prompt_id: 'p1', last_assistant_message: 'done' }));\n    runQuietly(home, event('UserPromptSubmit', { prompt_id: 'p2', session_title: 'portal' }));\n\n    assert.deepEqual(lines(home).map((line) => line.event), ['SessionStart', 'UserPromptSubmit']);\n    assert.equal(lines(home)[1].folder, 'rehlko-portal');\n  });\n});\n\ntest('stop records the last line and whether the agent asks, honouring the STATUS line', () => {\n  const cases = [\n    ['Here is the plan.\\nShall I start?\\nSTATUS: DONE', false, 'Shall I start?'],\n    ['Tests pass.\\nSTATUS: QUESTION', true, 'Tests pass.'],\n    ['Which branch should I use?', true, 'Which branch should I use?'],\n    ['All done.\\n\\n', false, 'All done.'],\n    ['', false, ''],\n  ];\n\n  for (const [message, asks, last] of cases) {\n    withHome((home) => {\n      runQuietly(home, event('Stop', { prompt_id: 'p1', last_assistant_message: message }));\n\n      const [stop] = lines(home);\n\n      assert.equal(stop.asks, asks, message);\n      assert.equal(stop.last, last, message);\n    });\n  }\n});\n\ntest('the last line is cut to 200 characters', () => {\n  withHome((home) => {\n    runQuietly(home, event('Stop', { prompt_id: 'p1', last_assistant_message: 'x'.repeat(500) }));\n    assert.equal(lines(home)[0].last.length, 200);\n  });\n});\n\ntest('session end deletes the session file', () => {\n  withHome((home) => {\n    runQuietly(home, event('SessionStart'));\n    runQuietly(home, event('SessionEnd', { reason: 'prompt_input_exit' }));\n    assert.equal(existsSync(sessionFile(home)), false);\n  });\n});\n\ntest('events arriving after session end do not bring the session back, a new start does', () => {\n  withHome((home) => {\n    runQuietly(home, event('SessionStart'));\n    runQuietly(home, event('SessionEnd', { reason: 'other' }));\n    runQuietly(home, event('Stop', { prompt_id: 'p1', last_assistant_message: 'late' }));\n    runQuietly(home, event('PostToolUse', { prompt_id: 'p1', tool_name: 'Bash' }));\n\n    assert.equal(existsSync(sessionFile(home)), false);\n\n    runQuietly(home, event('SessionStart', { source: 'resume' }));\n\n    assert.equal(existsSync(sessionFile(home)), true);\n    assert.equal(existsSync(join(home, '.agent-status', 'sessions', `${sessionId}.ended`)), false);\n  });\n});\n\ntest('ended markers are removed with the other stale files', () => {\n  withHome((home) => {\n    const sessions = join(home, '.agent-status', 'sessions');\n    const marker = join(sessions, '33333333-3333-3333-3333-333333333333.ended');\n    const sevenHoursAgo = (Date.now() - 7 * 3_600_000) / 1000;\n\n    mkdirSync(sessions, { recursive: true });\n    writeFileSync(marker, '');\n    utimesSync(marker, sevenHoursAgo, sevenHoursAgo);\n    runQuietly(home, event('SessionStart'));\n\n    assert.equal(existsSync(marker), false);\n  });\n});\n\ntest('headless sessions are not recorded', () => {\n  withHome((home) => {\n    runQuietly(home, event('SessionStart'), 'sdk-cli');\n    runQuietly(home, event('UserPromptSubmit', { prompt_id: 'p1' }), 'sdk-ts');\n    assert.equal(existsSync(join(home, '.agent-status')), false);\n  });\n});\n\ntest('unreadable input and invalid session ids are logged, never printed, and record nothing', () => {\n  withHome((home) => {\n    runQuietly(home, 'not json');\n    runQuietly(home, event('SessionStart', { session_id: '../../evil' }));\n\n    const log = readFileSync(join(home, '.agent-status', 'hook.log'), 'utf8');\n\n    assert.match(log, /error: /);\n    assert.match(log, /invalid session_id/);\n    assert.equal(existsSync(join(home, '.agent-status', 'sessions')), false);\n  });\n});\n\ntest('a session start removes session files idle for more than six hours', () => {\n  withHome((home) => {\n    const sessions = join(home, '.agent-status', 'sessions');\n    const old = join(sessions, '11111111-1111-1111-1111-111111111111.jsonl');\n    const recent = join(sessions, '22222222-2222-2222-2222-222222222222.jsonl');\n    const sevenHoursAgo = (Date.now() - 7 * 3_600_000) / 1000;\n\n    mkdirSync(sessions, { recursive: true });\n    writeFileSync(old, '{}\\n');\n    writeFileSync(recent, '{}\\n');\n    utimesSync(old, sevenHoursAgo, sevenHoursAgo);\n    runQuietly(home, event('SessionStart'));\n\n    assert.equal(existsSync(old), false);\n    assert.equal(existsSync(recent), true);\n    assert.equal(existsSync(sessionFile(home)), true);\n  });\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "vscode/status-core.js",
+          "content": "const STATUS = {\n  permission: { rank: 0, label: 'waiting for permission', color: 'charts.red' },\n  question: { rank: 0, label: 'waiting for your answer', color: 'charts.red' },\n  stuck: { rank: 1, label: 'possibly stuck', color: 'charts.purple' },\n  finished: { rank: 2, label: 'finished, needs review', color: 'charts.yellow' },\n  working: { rank: 3, label: 'working', color: 'charts.green' },\n  idle: { rank: 4, label: 'idle', color: 'disabledForeground' },\n};\n\nconst WAITING = new Set(['permission', 'question']);\n\nconst parseEvents = (text) => text\n  .split('\\n')\n  .filter((line) => line.trim())\n  .flatMap((line) => {\n    try {\n      return [JSON.parse(line)];\n    } catch {\n      return [];\n    }\n  })\n  .filter((event) => typeof event?.t === 'number' && typeof event.event === 'string')\n  .sort((first, second) => first.t - second.t);\n\nconst belongsToCurrentTurn = (event, state) => {\n  if (!event.promptId)\n    return true;\n\n  if (state.closedPrompts.has(event.promptId))\n    return false;\n\n  return !state.currentPrompt || event.promptId === state.currentPrompt;\n};\n\nconst setStatus = (state, status, t) => {\n  if (state.status !== status)\n    state.since = t;\n\n  state.status = status;\n};\n\nconst applyEvent = (state, event) => {\n  if (event.title)\n    state.name = event.title;\n\n  if (event.folder)\n    state.folder ??= event.folder;\n\n  if (event.event === 'SessionStart') {\n    state.status ??= 'idle';\n    state.since ??= event.t;\n\n    return;\n  }\n\n  if (event.event === 'UserPromptSubmit') {\n    state.currentPrompt = event.promptId;\n    state.tool = undefined;\n    setStatus(state, 'working', event.t);\n\n    return;\n  }\n\n  if (!belongsToCurrentTurn(event, state))\n    return;\n\n  state.currentPrompt ??= event.promptId;\n\n  if (event.event === 'PreToolUse' && event.tool === 'AskUserQuestion') {\n    setStatus(state, 'question', event.t);\n\n    return;\n  }\n\n  if (event.event === 'PermissionRequest') {\n    state.tool = event.tool;\n    setStatus(state, 'permission', event.t);\n\n    return;\n  }\n\n  if (event.event === 'PostToolUse' || event.event === 'PostToolUseFailure') {\n    state.tool = event.tool;\n    setStatus(state, 'working', event.t);\n\n    return;\n  }\n\n  if (event.event === 'Stop') {\n    state.closedPrompts.add(event.promptId);\n    state.tool = undefined;\n    state.last = event.last;\n    setStatus(state, event.asks ? 'question' : 'finished', event.t);\n  }\n};\n\nconst sessionState = ({ id, events, now, stuckMs }) => {\n  const state = { id, closedPrompts: new Set() };\n  const ordered = [...events].sort((first, second) => first.t - second.t);\n\n  for (const event of ordered)\n    applyEvent(state, event);\n\n  const lastEventAt = ordered.at(-1)?.t;\n  const stuck = state.status === 'working' && lastEventAt !== undefined && now - lastEventAt > stuckMs;\n\n  return {\n    id,\n    titled: Boolean(state.name),\n    name: state.name || state.folder || id.slice(0, 8),\n    project: state.folder || 'unknown project',\n    status: stuck ? 'stuck' : state.status ?? 'idle',\n    since: stuck ? lastEventAt : state.since ?? lastEventAt ?? now,\n    lastEventAt: lastEventAt ?? now,\n    tool: state.tool,\n    last: state.last ?? '',\n  };\n};\n\nconst byUrgency = (first, second) => {\n  const rank = STATUS[first.status].rank - STATUS[second.status].rank;\n\n  return rank !== 0 ? rank : first.since - second.since;\n};\n\nconst formatDuration = (milliseconds) => {\n  const seconds = Math.max(0, Math.floor(milliseconds / 1000));\n\n  if (seconds < 60)\n    return `${seconds}s`;\n\n  const minutes = Math.floor(seconds / 60);\n\n  if (minutes < 60)\n    return `${minutes}m`;\n\n  return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}m`;\n};\n\nconst cardDescription = (session, now) => {\n  const parts = [STATUS[session.status].label];\n\n  if (session.tool && session.status === 'permission')\n    parts.push(session.tool);\n\n  if (session.tool && (session.status === 'working' || session.status === 'stuck'))\n    parts.push(`after ${session.tool}`);\n\n  parts.push(formatDuration(now - session.since));\n\n  return parts.join(' · ');\n};\n\nconst waitingCount = (sessions) => sessions.filter((session) => WAITING.has(session.status)).length;\n\nconst isVisible = (session, hiddenAt) => hiddenAt === undefined || session.lastEventAt > hiddenAt;\n\nconst latestPerTitle = (sessions) => {\n  const latest = new Map();\n\n  for (const session of sessions.filter((candidate) => candidate.titled)) {\n    const current = latest.get(session.name);\n\n    if (!current || session.lastEventAt > current.lastEventAt)\n      latest.set(session.name, session);\n  }\n\n  return sessions.filter((session) => !session.titled || latest.get(session.name) === session);\n};\n\nconst groupByProject = (sessions) => {\n  const groups = new Map();\n\n  for (const session of [...sessions].sort(byUrgency))\n    groups.set(session.project, [...(groups.get(session.project) ?? []), session]);\n\n  return [...groups.entries()]\n    .map(([project, members]) => ({ project, sessions: members, top: members[0], waiting: waitingCount(members) }))\n    .sort((first, second) => byUrgency(first.top, second.top) || first.project.localeCompare(second.project));\n};\n\nconst groupDescription = (group) => {\n  const count = `${group.sessions.length} session${group.sessions.length === 1 ? '' : 's'}`;\n\n  return group.waiting > 0 ? `${group.waiting} waiting · ${count}` : count;\n};\n\nconst liveWindows = (entries, isAlive) => entries.filter((entry) =>\n  Number.isInteger(entry?.pid)\n  && typeof entry.folder === 'string'\n  && Array.isArray(entry.sessions)\n  && isAlive(entry.pid));\n\nconst sessionLocation = (sessionName, ownPid, windows) => {\n  const holder = windows.find((entry) => entry.sessions.includes(sessionName));\n\n  if (!holder)\n    return { kind: 'none' };\n\n  return holder.pid === ownPid ? { kind: 'here', window: holder } : { kind: 'other', window: holder };\n};\n\nconst locationLabel = (location) => {\n  if (location.kind === 'here')\n    return 'in this window';\n\n  if (location.kind === 'other')\n    return `in window ${location.window.folder.split(/[\\\\/]/).filter(Boolean).at(-1) ?? location.window.folder}`;\n\n  return 'not in a toolkit tab';\n};\n\nmodule.exports = {\n  STATUS,\n  byUrgency,\n  cardDescription,\n  formatDuration,\n  groupByProject,\n  groupDescription,\n  isVisible,\n  latestPerTitle,\n  liveWindows,\n  locationLabel,\n  parseEvents,\n  sessionLocation,\n  sessionState,\n  waitingCount,\n};\n",
+          "mode": 438
+        }
+      ]
+    },
+    "concernsApplied": [
+      "accessibility",
+      "combined",
+      "data",
+      "security"
+    ],
+    "fallback": "same-provider-fresh",
+    "durationMs": 50215,
+    "usage": {
+      "inputTokens": 2,
+      "outputTokens": 4173,
+      "cachedInputTokens": 0,
+      "cacheCreationInputTokens": 65610
+    },
+    "invocations": 1
+  },
+  "acceptance": [
+    {
+      "scenarioId": "session-status#two-windows",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#crashed-window",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#session-in-another-window",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#session-not-in-any-window",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#tooltip",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#agent-changes-folder",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#restarted-coordinator",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#late-event-after-the-end",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    }
+  ],
+  "limitations": [],
+  "openspec": {
+    "changeName": "add-cross-window-focus",
+    "artifactsReady": true,
+    "tasksComplete": true,
+    "scenariosCovered": true,
+    "scenarioCount": 8,
+    "scenarioDigest": "sha256:9316f75ec4fa234587f1d9da1aa4c76bf5e6f0b123d33e34003b38c59519fcd6",
+    "guidanceDigest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "validationDigest": "sha256:c540f597d394636f32a0163305b45ef3561074be5e3f82875e60643fe8defd7f"
+  },
+  "applicability": {
+    "requiredValidationLanes": [
+      "accessibility",
+      "security",
+      "test"
+    ],
+    "reviewConcerns": [
+      "accessibility",
+      "combined",
+      "data",
+      "security"
+    ]
+  },
+  "continuation": {
+    "baseline": {
+      "schemaVersion": 2,
+      "base": "39b5b0f5955434b1d0b62035b428a4d584b0a848",
+      "unrelatedPaths": [],
+      "unrelatedDigest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "remediationCycles": 0,
+    "history": [
+      {
+        "resultDigest": "sha256:472331073f3f3b259b38fe5fb7133053ffb4fec357217d8970f53f6436fe7fb5",
+        "sourceDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:f69ce48a92f94e260e0167ce4baffb8e86912cde2c9d2e47d9338c5dd3316edc",
+        "sourceDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:63617046a1d3e67cc6bf0b473e6d565f5ff30dbc5725d13e6191699d793322d0",
+        "sourceDigest": "sha256:854c4ddb88e5617ff10eb9eb07ec4166561b86a8caefa5fb3f2341d582d70977",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "PASS",
+        "findings": [
+          {
+            "id": "registry-cleanup-by-content-pid",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "vscode/sessions-view.js readWindows deletes `${entry.pid}.json` using the pid inside the file, not the file name it read. A file whose name and content disagree can delete another window's registry file, and malformed files are never removed. Simpler: delete by the file name you just read."
+          },
+          {
+            "id": "pid-reuse-liveness",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "isAlive (process.kill(pid,0)) treats a crashed window's leftover entry as live if the OS reuses its pid. A click then runs vscode.openFolder for that folder, which opens a new window instead of showing the 'not a toolkit tab' message. This is rare and the design accepts it; residual risk only."
+          },
+          {
+            "id": "focus-request-nonatomic-write",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "SessionsProvider.focus writes focus/<pid>.json in place. If the receiver's watcher sees the file before its content is written, receiveFocusRequest reads nothing and deletes the file, so the click silently does nothing. Writing to a temp file and renaming (as the hook's startTurn does) removes the race."
+          },
+          {
+            "id": "doc-test-drift",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "tasks.md 2.1 lists 'registry entry' and 'focus target' helpers that status-core.js does not contain. tests/window-blackbox.test.mjs creates temp homes with makeHome and never removes them."
+          },
+          {
+            "id": "sessions-view-untested",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "No automated tests cover sessions-view.js routing (here/other/none), receiveFocusRequest matching against own tabs, or readWindows cleanup. The evidence is the developer's two-window acceptance and the pending e2e; a test with a stubbed vscode module would guard against regressions."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      }
+    ],
+    "historyCount": 3,
+    "historyDigest": "sha256:a82ba556611909bbd94b0884e7c706f1359ac541d9c08b7e0098b0eb4117076a"
+  },
+  "schemaVersion": 2,
+  "createdAt": "2026-11-18T13:50:21.760Z",
+  "definitionOfDone": {
+    "status": "PASS",
+    "blockers": []
+  },
+  "status": "complete",
+  "nextAction": "No further SDD action is required."
+}

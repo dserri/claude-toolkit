@@ -275,9 +275,9 @@ describe('status-core sessionState', () => {
   test('name and project fallbacks', () => {
     const titled = state([ev(0, 'SessionStart', { folder: 'a' }), ev(10, 'UserPromptSubmit', { folder: 'b', title: 'T1', promptId: 'p' }), ev(20, 'PostToolUse', { title: 'T2', promptId: 'p' })]);
     assert.equal(titled.name, 'T2');
-    assert.equal(titled.project, 'b');
+    assert.equal(titled.project, 'a');
     const foldered = state([ev(0, 'SessionStart', { folder: 'a' }), ev(10, 'UserPromptSubmit', { folder: 'b', promptId: 'p' })]);
-    assert.equal(foldered.name, 'b');
+    assert.equal(foldered.name, 'a');
     const bare = state([ev(0, 'SessionStart')]);
     assert.equal(bare.name, sid.slice(0, 8));
     assert.equal(bare.project, 'unknown project');

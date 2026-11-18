@@ -117,9 +117,63 @@ test('sessions are grouped by project, the most urgent project first, each sorte
   assert.equal(status.groupDescription({ sessions: [card('a', 'x', 'working', 1)], waiting: 0 }), '1 session');
 });
 
-test('a session takes its project from the folder of its latest prompt, or a placeholder', () => {
+test('a session takes its project from the first folder recorded, or a placeholder', () => {
   assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1', folder: 'rehlko-portal' })]).project, 'rehlko-portal');
+  assert.equal(stateOf([
+    at(90, 'SessionStart', { folder: 'rehlko-portal', title: 'rehlko-portal-coordinator' }),
+    at(60, 'UserPromptSubmit', { promptId: 'p1', folder: '.coord' }),
+  ]).project, 'rehlko-portal');
   assert.equal(stateOf([at(60, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).project, 'unknown project');
+});
+
+test('only the latest session per title is kept; untitled sessions are never merged', () => {
+  const session = (sessionId, name, titled, lastEventAt) => ({ id: sessionId, name, titled, lastEventAt });
+  const kept = status.latestPerTitle([
+    session('old', 'rehlko-portal-coordinator', true, 100),
+    session('new', 'rehlko-portal-coordinator', true, 200),
+    session('tester', 'rehlko-portal-tester', true, 50),
+    session('plain-1', 'rehlko-portal', false, 10),
+    session('plain-2', 'rehlko-portal', false, 20),
+  ]);
+
+  assert.deepEqual(kept.map((entry) => entry.id), ['new', 'tester', 'plain-1', 'plain-2']);
+});
+
+test('a titled session reports it, a folder-named one does not', () => {
+  assert.equal(stateOf([at(60, 'SessionStart', { title: 'portal-tester', folder: 'portal' })]).titled, true);
+  assert.equal(stateOf([at(60, 'SessionStart', { folder: 'portal' })]).titled, false);
+});
+
+test('only well-formed entries of running windows count', () => {
+  const entries = [
+    { pid: 10, folder: 'P:\\repos\\Rehlko\\rehlko-portal', sessions: ['rehlko-portal-coordinator'] },
+    { pid: 20, folder: 'P:\\repos\\Rehlko\\api', sessions: ['api-coordinator'] },
+    { pid: 30, folder: 'P:\\repos\\gone', sessions: [] },
+    { pid: '40', folder: 'x', sessions: [] },
+    { pid: 50, sessions: [] },
+    null,
+  ];
+
+  assert.deepEqual(status.liveWindows(entries, (pid) => pid !== 30).map((entry) => entry.pid), [10, 20]);
+});
+
+test('a session is located in this window, another window, or none', () => {
+  const windows = [
+    { pid: 10, folder: 'P:\\repos\\Rehlko\\rehlko-portal', sessions: ['rehlko-portal-coordinator', 'rehlko-portal-tester'] },
+    { pid: 20, folder: 'P:\\repos\\Rehlko\\api', sessions: ['api-coordinator'] },
+  ];
+  const here = status.sessionLocation('rehlko-portal-tester', 10, windows);
+  const other = status.sessionLocation('api-coordinator', 10, windows);
+  const none = status.sessionLocation('vs-code skill upgrade', 10, windows);
+
+  assert.equal(here.kind, 'here');
+  assert.equal(other.kind, 'other');
+  assert.equal(other.window.pid, 20);
+  assert.equal(none.kind, 'none');
+  assert.equal(status.locationLabel(here), 'in this window');
+  assert.equal(status.locationLabel(other), 'in window api');
+  assert.equal(status.locationLabel({ kind: 'other', window: { folder: '/home/dev/app/' } }), 'in window app');
+  assert.equal(status.locationLabel(none), 'not in a toolkit tab');
 });
 
 test('durations read as seconds, minutes, then hours and minutes', () => {

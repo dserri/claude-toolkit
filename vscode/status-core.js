@@ -44,7 +44,7 @@ const applyEvent = (state, event) => {
     state.name = event.title;
 
   if (event.folder)
-    state.folder = event.folder;
+    state.folder ??= event.folder;
 
   if (event.event === 'SessionStart') {
     state.status ??= 'idle';
@@ -106,6 +106,7 @@ const sessionState = ({ id, events, now, stuckMs }) => {
 
   return {
     id,
+    titled: Boolean(state.name),
     name: state.name || state.folder || id.slice(0, 8),
     project: state.folder || 'unknown project',
     status: stuck ? 'stuck' : state.status ?? 'idle',
@@ -154,6 +155,19 @@ const waitingCount = (sessions) => sessions.filter((session) => WAITING.has(sess
 
 const isVisible = (session, hiddenAt) => hiddenAt === undefined || session.lastEventAt > hiddenAt;
 
+const latestPerTitle = (sessions) => {
+  const latest = new Map();
+
+  for (const session of sessions.filter((candidate) => candidate.titled)) {
+    const current = latest.get(session.name);
+
+    if (!current || session.lastEventAt > current.lastEventAt)
+      latest.set(session.name, session);
+  }
+
+  return sessions.filter((session) => !session.titled || latest.get(session.name) === session);
+};
+
 const groupByProject = (sessions) => {
   const groups = new Map();
 
@@ -171,6 +185,31 @@ const groupDescription = (group) => {
   return group.waiting > 0 ? `${group.waiting} waiting · ${count}` : count;
 };
 
+const liveWindows = (entries, isAlive) => entries.filter((entry) =>
+  Number.isInteger(entry?.pid)
+  && typeof entry.folder === 'string'
+  && Array.isArray(entry.sessions)
+  && isAlive(entry.pid));
+
+const sessionLocation = (sessionName, ownPid, windows) => {
+  const holder = windows.find((entry) => entry.sessions.includes(sessionName));
+
+  if (!holder)
+    return { kind: 'none' };
+
+  return holder.pid === ownPid ? { kind: 'here', window: holder } : { kind: 'other', window: holder };
+};
+
+const locationLabel = (location) => {
+  if (location.kind === 'here')
+    return 'in this window';
+
+  if (location.kind === 'other')
+    return `in window ${location.window.folder.split(/[\\/]/).filter(Boolean).at(-1) ?? location.window.folder}`;
+
+  return 'not in a toolkit tab';
+};
+
 module.exports = {
   STATUS,
   byUrgency,
@@ -179,7 +218,11 @@ module.exports = {
   groupByProject,
   groupDescription,
   isVisible,
+  latestPerTitle,
+  liveWindows,
+  locationLabel,
   parseEvents,
+  sessionLocation,
   sessionState,
   waitingCount,
 };

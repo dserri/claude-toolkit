@@ -1,4 +1,4 @@
-import { appendFileSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
 import { text } from 'node:stream/consumers';
@@ -40,7 +40,7 @@ const eventRecord = (input) => {
   const record = { t: Date.now(), event: input.hook_event_name, promptId: input.prompt_id, tool: input.tool_name, title: input.session_title };
 
   if (input.hook_event_name === 'SessionStart' || input.hook_event_name === 'UserPromptSubmit')
-    record.folder = basename(input.cwd ?? '');
+    record.folder = basename(process.env.CLAUDE_PROJECT_DIR || input.cwd || '');
 
   if (input.hook_event_name === 'Stop')
     Object.assign(record, describeStop(input.last_assistant_message));
@@ -91,14 +91,21 @@ const record = (input) => {
   }
 
   const file = join(sessionsDir, `${input.session_id}.jsonl`);
+  const endedMarker = join(sessionsDir, `${input.session_id}.ended`);
+
+  mkdirSync(sessionsDir, { recursive: true });
 
   if (input.hook_event_name === 'SessionEnd') {
     rmSync(file, { force: true });
+    writeFileSync(endedMarker, '');
 
     return;
   }
 
-  mkdirSync(sessionsDir, { recursive: true });
+  if (input.hook_event_name === 'SessionStart')
+    rmSync(endedMarker, { force: true });
+  else if (existsSync(endedMarker))
+    return;
 
   const line = `${JSON.stringify(eventRecord(input))}\n`;
 

@@ -8,13 +8,36 @@ const VIEW_ID = 'claudeToolkit.sessions';
 const STALE_MS = 6 * 3_600_000;
 const REFRESH_MS = 15_000;
 
-const sessionsDir = () => path.join(os.homedir(), '.agent-status', 'sessions');
+const statusDir = () => path.join(os.homedir(), '.agent-status');
+const sessionsDir = () => path.join(statusDir(), 'sessions');
+const windowsDir = () => path.join(statusDir(), 'windows');
+const focusDir = () => path.join(statusDir(), 'focus');
+const ownWindowFile = () => path.join(windowsDir(), `${process.pid}.json`);
+const focusFile = (pid) => path.join(focusDir(), `${pid}.json`);
 
-const readSessionFile = (file) => {
+const readText = (file) => {
   try {
     return fs.readFileSync(file, 'utf8');
   } catch {
     return '';
+  }
+};
+
+const readJson = (file) => {
+  try {
+    return JSON.parse(readText(file));
+  } catch {
+    return undefined;
+  }
+};
+
+const isAlive = (pid) => {
+  try {
+    process.kill(pid, 0);
+
+    return true;
+  } catch (error) {
+    return error.code === 'EPERM';
   }
 };
 
@@ -28,11 +51,28 @@ const readSessions = (now, stuckMs) => {
     .filter((entry) => entry.endsWith('.jsonl'))
     .map((entry) => status.sessionState({
       id: entry.slice(0, -'.jsonl'.length),
-      events: status.parseEvents(readSessionFile(path.join(directory, entry))),
+      events: status.parseEvents(readText(path.join(directory, entry))),
       now,
       stuckMs,
     }))
     .filter((session) => now - session.lastEventAt <= STALE_MS);
+};
+
+const readWindows = () => {
+  const directory = windowsDir();
+
+  if (!fs.existsSync(directory))
+    return [];
+
+  const entries = fs.readdirSync(directory)
+    .filter((entry) => entry.endsWith('.json'))
+    .map((entry) => readJson(path.join(directory, entry)));
+  const live = status.liveWindows(entries, isAlive);
+
+  for (const entry of entries.filter((candidate) => Number.isInteger(candidate?.pid) && !live.includes(candidate)))
+    fs.rmSync(path.join(directory, `${entry.pid}.json`), { force: true });
+
+  return live;
 };
 
 class SessionsProvider {
@@ -41,6 +81,7 @@ class SessionsProvider {
     this.hidden = new Map();
     this.sessions = [];
     this.groups = [];
+    this.windows = [];
     this.changed = new vscode.EventEmitter();
     this.onDidChangeTreeData = this.changed.event;
     this.statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
@@ -52,10 +93,23 @@ class SessionsProvider {
     const stuckMs = vscode.workspace.getConfiguration('claudeToolkit').get('stuckMinutes', 10) * 60_000;
 
     this.now = now;
-    this.sessions = readSessions(now, stuckMs).filter((session) => status.isVisible(session, this.hidden.get(session.id)));
+    this.windows = readWindows();
+    this.sessions = status.latestPerTitle(readSessions(now, stuckMs)).filter((session) => status.isVisible(session, this.hidden.get(session.id)));
     this.groups = status.groupByProject(this.sessions);
     this.updateStatusBar();
     this.changed.fire();
+  }
+
+  publishWindow() {
+    const entry = {
+      pid: process.pid,
+      folder: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? '',
+      sessions: [...this.tabsBySession.keys()],
+    };
+
+    fs.mkdirSync(windowsDir(), { recursive: true });
+    fs.writeFileSync(ownWindowFile(), JSON.stringify(entry));
+    this.refresh();
   }
 
   updateStatusBar() {
@@ -79,16 +133,45 @@ class SessionsProvider {
     this.refresh();
   }
 
-  focus(session) {
-    const terminal = this.tabsBySession.get(session.name);
+  location(session) {
+    return status.sessionLocation(session.name, process.pid, this.windows);
+  }
 
-    if (terminal) {
+  showOwnTab(sessionName) {
+    const terminal = this.tabsBySession.get(sessionName);
+
+    if (terminal)
       terminal.show(false);
+  }
+
+  focus(session) {
+    const location = this.location(session);
+
+    if (location.kind === 'here') {
+      this.showOwnTab(session.name);
 
       return;
     }
 
-    void vscode.window.showInformationMessage(`${session.name} is not a tab of this window: it runs in another VS Code window or was started by hand.`);
+    if (location.kind === 'other') {
+      fs.mkdirSync(focusDir(), { recursive: true });
+      fs.writeFileSync(focusFile(location.window.pid), JSON.stringify({ session: session.name, at: Date.now() }));
+      void vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(location.window.folder), { forceNewWindow: true });
+
+      return;
+    }
+
+    void vscode.window.showInformationMessage(`${session.name} is not a toolkit tab in any VS Code window; it was started by hand.`);
+  }
+
+  receiveFocusRequest() {
+    const file = focusFile(process.pid);
+    const request = readJson(file);
+
+    fs.rmSync(file, { force: true });
+
+    if (typeof request?.session === 'string')
+      this.showOwnTab(request.session);
   }
 
   getTreeItem(element) {
@@ -108,11 +191,12 @@ class SessionsProvider {
   sessionItem(session) {
     const item = new vscode.TreeItem(session.name);
     const look = status.STATUS[session.status];
+    const where = status.locationLabel(this.location(session));
 
     item.id = `session:${session.id}`;
     item.description = status.cardDescription(session, this.now);
     item.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(look.color));
-    item.tooltip = session.last ? `${look.label}\n${session.last}` : look.label;
+    item.tooltip = [look.label, where, session.last].filter(Boolean).join('\n');
     item.contextValue = 'session';
     item.command = { command: 'claudeToolkit.focusSession', title: 'Show tab', arguments: [session] };
 
@@ -124,24 +208,30 @@ class SessionsProvider {
   }
 }
 
-const registerSessionsView = (context, tabsBySession) => {
-  const provider = new SessionsProvider(tabsBySession);
-  const directory = sessionsDir();
-
+const watch = (directory, pattern, onEvent) => {
   fs.mkdirSync(directory, { recursive: true });
 
-  const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(vscode.Uri.file(directory), '*.jsonl'));
+  const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(vscode.Uri.file(directory), pattern));
+
+  watcher.onDidCreate(onEvent);
+  watcher.onDidChange(onEvent);
+  watcher.onDidDelete(onEvent);
+
+  return watcher;
+};
+
+const registerSessionsView = (context, tabsBySession) => {
+  const provider = new SessionsProvider(tabsBySession);
   const refresh = () => provider.refresh();
   const timer = setInterval(refresh, REFRESH_MS);
 
-  watcher.onDidCreate(refresh);
-  watcher.onDidChange(refresh);
-  watcher.onDidDelete(refresh);
-
   context.subscriptions.push(
     provider.statusBar,
-    watcher,
+    watch(sessionsDir(), '*.jsonl', refresh),
+    watch(windowsDir(), '*.json', refresh),
+    watch(focusDir(), `${process.pid}.json`, () => provider.receiveFocusRequest()),
     { dispose: () => clearInterval(timer) },
+    { dispose: () => fs.rmSync(ownWindowFile(), { force: true }) },
     vscode.window.registerTreeDataProvider(VIEW_ID, provider),
     vscode.commands.registerCommand('claudeToolkit.focusSession', (session) => provider.focus(session)),
     vscode.commands.registerCommand('claudeToolkit.hideSession', (session) => provider.hide(session)),
@@ -152,11 +242,14 @@ const registerSessionsView = (context, tabsBySession) => {
 
         tabsBySession.delete(sessionName);
         provider.hideSessionNamed(sessionName);
+        provider.publishWindow();
       }
     }),
   );
 
-  provider.refresh();
+  provider.publishWindow();
+
+  return { publishWindow: () => provider.publishWindow() };
 };
 
 module.exports = { registerSessionsView };
