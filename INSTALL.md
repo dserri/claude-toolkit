@@ -80,7 +80,7 @@ All machine-scoped, under `claudeToolkit.` in VS Code settings:
 | Setting | Default | Meaning |
 |---|---|---|
 | `workerLayout` | `beside` | Coordinator workers open beside the coordinator, or `tabs` for full-width tabs |
-| `stuckMinutes` | `10` | Minutes without events before a working session shows as possibly stuck |
+| `stuckMinutes` | `15` | Minutes without events before a working session shows as possibly stuck (read-only tool calls such as Read or Grep produce no events) |
 | `claudePath` | `claude` from `PATH` | Claude Code executable |
 | `pluginDir` | `<clone>/plugins/toolkit` | Toolkit plugin folder (coordinator only) |
 
@@ -90,6 +90,8 @@ All machine-scoped, under `claudeToolkit.` in VS Code settings:
 git -C <clone> pull
 node <clone>/status/install.mjs
 ```
+
+Re-running the installer after a pull is required whenever the hook entries change; it replaces only the toolkit's own entries.
 
 Then reload VS Code windows.
 

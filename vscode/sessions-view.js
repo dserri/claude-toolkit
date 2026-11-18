@@ -64,7 +64,7 @@ class SessionsProvider {
 
   refresh() {
     const now = Date.now();
-    const stuckMs = vscode.workspace.getConfiguration('claudeToolkit').get('stuckMinutes', 10) * 60_000;
+    const stuckMs = vscode.workspace.getConfiguration('claudeToolkit').get('stuckMinutes', 15) * 60_000;
 
     this.now = now;
     this.windows = readWindows();

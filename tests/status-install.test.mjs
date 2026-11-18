@@ -5,7 +5,7 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { STATUS_EVENTS, hookEntries, scriptCommand, withStatusHooks, withoutStatusHooks } from '../status/install.mjs';
+import { EXCEPT_READ_ONLY, READ_ONLY_TOOLS, STATUS_EVENTS, hookEntries, scriptCommand, withStatusHooks, withoutStatusHooks } from '../status/install.mjs';
 
 const installer = fileURLToPath(new URL('../status/install.mjs', import.meta.url));
 const statusCommand = 'node "P:/clone/status/status-hook.mjs"';
@@ -42,6 +42,28 @@ test('install adds one asynchronous status entry per event, keeps existing entri
   }
 
   assert.deepEqual(withStatusHooks(installed, entries), installed);
+});
+
+test('tool result hooks skip read-only tools and still match every other tool', () => {
+  const matcher = new RegExp(STATUS_EVENTS.PostToolUse);
+
+  assert.equal(STATUS_EVENTS.PostToolUseFailure, STATUS_EVENTS.PostToolUse);
+
+  for (const tool of READ_ONLY_TOOLS)
+    assert.equal(matcher.test(tool), false, tool);
+
+  for (const tool of ['Bash', 'PowerShell', 'Edit', 'Write', 'MultiEdit', 'WebFetch', 'mcp__github__create_issue', 'Agent', 'ReadMe', 'Grepper'])
+    assert.equal(matcher.test(tool), true, tool);
+});
+
+test('re-running the installer upgrades the toolkit entries in place without duplicates', () => {
+  const previous = withStatusHooks(existing, entries.map((entry) => ({ ...entry, matcher: entry.event === 'PostToolUse' ? undefined : entry.matcher })));
+  const upgraded = withStatusHooks(previous, entries);
+
+  assert.equal(ownGroups(upgraded, 'PostToolUse', statusCommand).length, 1);
+  assert.equal(ownGroups(upgraded, 'PostToolUse', statusCommand)[0].matcher, EXCEPT_READ_ONLY);
+  assert.deepEqual(upgraded.hooks.Stop[0], existing.hooks.Stop[0]);
+  assert.deepEqual(withStatusHooks(upgraded, entries), upgraded);
 });
 
 test('the status-line hook is one synchronous SessionStart entry without matcher', () => {

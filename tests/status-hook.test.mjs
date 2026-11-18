@@ -132,6 +132,15 @@ test('stop records the last line and whether the agent asks, honouring the STATU
   }
 });
 
+test('stop records how many background tasks are still running', () => {
+  for (const [tasks, expected] of [[[{ status: 'running' }, { status: 'running' }, { status: 'completed' }], 2], [[], 0], [undefined, 0], ['junk', 0]]) {
+    withHome((home) => {
+      runQuietly(home, event('Stop', { prompt_id: 'p1', last_assistant_message: 'ok', background_tasks: tasks }));
+      assert.equal(lines(home)[0].background, expected, JSON.stringify(tasks));
+    });
+  }
+});
+
 test('the last line is cut to 200 characters', () => {
   withHome((home) => {
     runQuietly(home, event('Stop', { prompt_id: 'p1', last_assistant_message: 'x'.repeat(500) }));

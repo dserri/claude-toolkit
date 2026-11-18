@@ -153,9 +153,9 @@
         "claudeToolkit.stuckMinutes": {
           "type": "number",
           "scope": "machine",
-          "default": 10,
+          "default": 15,
           "minimum": 1,
-          "description": "Minutes without events after which a working session is shown as possibly stuck."
+          "description": "Minutes without events after which a working session is shown as possibly stuck. Read-only tool calls (Read, Grep, Glob) record no event."
         },
         "claudeToolkit.workerLayout": {
           "type": "string",

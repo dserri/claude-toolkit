@@ -4,6 +4,7 @@ const STATUS = {
   stuck: { rank: 1, label: 'possibly stuck', color: 'charts.purple' },
   finished: { rank: 2, label: 'finished, needs review', color: 'charts.yellow' },
   working: { rank: 3, label: 'working', color: 'charts.green' },
+  background: { rank: 3, label: 'working in background', color: 'charts.blue' },
   idle: { rank: 4, label: 'idle', color: 'disabledForeground' },
 };
 
@@ -37,6 +38,13 @@ const setStatus = (state, status, t) => {
     state.since = t;
 
   state.status = status;
+};
+
+const stopStatus = (event) => {
+  if (event.asks)
+    return 'question';
+
+  return event.background > 0 ? 'background' : 'finished';
 };
 
 const applyEvent = (state, event) => {
@@ -93,7 +101,8 @@ const applyEvent = (state, event) => {
     state.closedPrompts.add(event.promptId);
     state.tool = undefined;
     state.last = event.last;
-    setStatus(state, event.asks ? 'question' : 'finished', event.t);
+    state.background = event.asks ? 0 : event.background ?? 0;
+    setStatus(state, stopStatus(event), event.t);
   }
 };
 
@@ -117,6 +126,7 @@ const sessionState = ({ id, events, now, stuckMs }) => {
     since: stuck ? lastEventAt : state.since ?? lastEventAt ?? now,
     lastEventAt: lastEventAt ?? now,
     tool: state.tool,
+    background: state.status === 'background' ? state.background : 0,
     last: state.last ?? '',
   };
 };
@@ -149,6 +159,9 @@ const cardDescription = (session, now) => {
 
   if (session.tool && (session.status === 'working' || session.status === 'stuck'))
     parts.push(`after ${session.tool}`);
+
+  if (session.status === 'background')
+    parts.push(`${session.background} task${session.background === 1 ? '' : 's'}`);
 
   parts.push(formatDuration(now - session.since));
 

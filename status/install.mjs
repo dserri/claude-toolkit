@@ -3,13 +3,16 @@ import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+const READ_ONLY_TOOLS = ['Read', 'Grep', 'Glob', 'LS', 'NotebookRead', 'TodoWrite', 'TodoRead', 'ToolSearch'];
+const EXCEPT_READ_ONLY = `^(?!(${READ_ONLY_TOOLS.join('|')})$).*`;
+
 const STATUS_EVENTS = {
   SessionStart: undefined,
   UserPromptSubmit: undefined,
   PreToolUse: 'AskUserQuestion',
   PermissionRequest: undefined,
-  PostToolUse: undefined,
-  PostToolUseFailure: undefined,
+  PostToolUse: EXCEPT_READ_ONLY,
+  PostToolUseFailure: EXCEPT_READ_ONLY,
   Stop: undefined,
   SessionEnd: undefined,
 };
@@ -25,8 +28,6 @@ const hookEntries = () => [
   { event: 'SessionStart', command: scriptCommand('turn-status-hook.mjs'), async: false },
 ];
 
-const hasCommand = (group, command) => (group.hooks ?? []).some((hook) => hook.command === command);
-
 const hookGroup = ({ matcher, command, async }) => {
   const hook = async ? { type: 'command', command, async: true } : { type: 'command', command };
 
@@ -34,14 +35,11 @@ const hookGroup = ({ matcher, command, async }) => {
 };
 
 const withStatusHooks = (settings, entries) => {
-  const hooks = { ...(settings.hooks ?? {}) };
+  const commands = [...new Set(entries.map((entry) => entry.command))];
+  const hooks = { ...(withoutStatusHooks(settings, commands).hooks ?? {}) };
 
-  for (const entry of entries) {
-    const groups = hooks[entry.event] ?? [];
-
-    if (!groups.some((group) => hasCommand(group, entry.command)))
-      hooks[entry.event] = [...groups, hookGroup(entry)];
-  }
+  for (const entry of entries)
+    hooks[entry.event] = [...(hooks[entry.event] ?? []), hookGroup(entry)];
 
   return { ...settings, hooks };
 };
@@ -88,4 +86,4 @@ const run = (uninstall) => {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
   run(process.argv.includes('--uninstall'));
 
-export { STATUS_EVENTS, hookEntries, scriptCommand, withStatusHooks, withoutStatusHooks };
+export { EXCEPT_READ_ONLY, READ_ONLY_TOOLS, STATUS_EVENTS, hookEntries, scriptCommand, withStatusHooks, withoutStatusHooks };

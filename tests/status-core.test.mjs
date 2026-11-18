@@ -47,6 +47,38 @@ test('AskUserQuestion and asking stops wait for an answer; other stops need revi
   assert.equal(finished.last, 'All tests pass.');
 });
 
+test('a granted permission for a read-only tool stays waiting until the next recorded event (accepted limitation)', () => {
+  const waiting = [at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(40, 'PermissionRequest', { promptId: 'p1', tool: 'Read' })];
+
+  assert.equal(stateOf(waiting).status, 'permission');
+  assert.equal(stateOf([...waiting, at(10, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).status, 'working');
+  assert.equal(stateOf([...waiting, at(5, 'Stop', { promptId: 'p1', asks: false })]).status, 'finished');
+});
+
+test('a turn ending with running background tasks is working in background, never stuck', () => {
+  const session = stateOf([at(3600, 'UserPromptSubmit', { promptId: 'p1' }), at(3000, 'Stop', { promptId: 'p1', asks: false, background: 2, last: 'Server started.' })]);
+
+  assert.equal(session.status, 'background');
+  assert.equal(session.background, 2);
+  assert.equal(status.cardDescription(session, now), 'working in background · 2 tasks · 50m');
+  assert.equal(status.STATUS.background.rank, status.STATUS.working.rank);
+});
+
+test('a question wins over background tasks, and the wake-up turn after a task finishes ends as finished', () => {
+  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(30, 'Stop', { promptId: 'p1', asks: true, background: 1 })]).status, 'question');
+
+  const finished = stateOf([
+    at(90, 'UserPromptSubmit', { promptId: 'p1' }),
+    at(80, 'Stop', { promptId: 'p1', asks: false, background: 1 }),
+    at(20, 'UserPromptSubmit', { promptId: 'p2' }),
+    at(10, 'Stop', { promptId: 'p2', asks: false, background: 0 }),
+  ]);
+
+  assert.equal(finished.status, 'finished');
+  assert.equal(finished.background, 0);
+  assert.equal(status.cardDescription({ status: 'background', background: 1, since: now - 5000 }, now), 'working in background · 1 task · 5s');
+});
+
 test('a tool event of a turn recorded after its stop does not reopen it', () => {
   const session = stateOf([
     at(60, 'UserPromptSubmit', { promptId: 'p1' }),

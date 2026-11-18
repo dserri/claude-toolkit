@@ -50,8 +50,11 @@ const eventRecord = (input) => {
       record.pid = pid;
   }
 
-  if (input.hook_event_name === 'Stop')
-    Object.assign(record, describeStop(input.last_assistant_message));
+  if (input.hook_event_name === 'Stop') {
+    const background = Array.isArray(input.background_tasks) ? input.background_tasks.filter((task) => task?.status === 'running').length : 0;
+
+    Object.assign(record, describeStop(input.last_assistant_message), { background });
+  }
 
   return record;
 };
