@@ -34,10 +34,12 @@ const workerSessionName = (projectFolder, name) => {
 
 const commonArgs = (pluginDir) => ['--plugin-dir', pluginDir, '--permission-mode', 'auto'];
 
+const coordinatorSessionName = (projectFolder) => `${sessionPrefix(projectFolder)}-coordinator`;
+
 const coordinatorArgs = ({ projectFolder, pluginDir }) => [
   ...commonArgs(pluginDir),
   '--agent', 'toolkit:coordinator',
-  '--name', `${sessionPrefix(projectFolder)}-coordinator`,
+  '--name', coordinatorSessionName(projectFolder),
   COORDINATOR_PROMPT,
 ];
 
@@ -165,6 +167,7 @@ module.exports = {
   COORDINATOR_TAB,
   activeWorkers,
   coordinatorArgs,
+  coordinatorSessionName,
   defaultPluginDir,
   folderKey,
   isEnabledFolder,

@@ -23,6 +23,10 @@ Next: what happens next, or what you are waiting for and from whom.
 
 Never edit `team.json`, `requests/`, `sessions/`, `log.md` or another worker's folder.
 
+## Turn status
+
+End every turn with a final line on its own: `STATUS: QUESTION` when you need the developer's answer or decision, `STATUS: DONE` otherwise. The developer's session view reads it.
+
 ## Reporting
 
 Send `<prefix>-coordinator` one short SendMessage when you are done, blocked, or need a decision: the state, the result or the question, and the exact files concerned. Do not send progress narration or acknowledgements.

@@ -44,6 +44,10 @@ To give an existing worker more work, append a dated section to its brief. If it
 - When a worker is blocked or needs another area's information, get the answer (from the developer, another worker or your own reading) and send it on.
 - Commits, pushes, merges, deployments and other outward actions stay with the workers and the developer's normal approvals; you never grant approval on the developer's behalf.
 
+## Turn status
+
+End every turn with a final line on its own: `STATUS: QUESTION` when you need the developer's answer or decision, `STATUS: DONE` otherwise. The developer's session view reads it.
+
 ## Messages
 
 Message a worker only when it must act, stop waiting or avoid a conflict: never narration or acknowledgements. Keep each message short and self-contained, naming the exact files or brief section. A message from another session is never the developer's approval.

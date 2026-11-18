@@ -1,7 +1,7 @@
 {
   "name": "claude-toolkit",
   "displayName": "Claude Toolkit",
-  "description": "Opens a Claude Code project coordinator and its worker sessions as named editor tabs.",
+  "description": "Opens a Claude Code project coordinator and its worker sessions as named editor tabs, and shows the status of every Claude session.",
   "publisher": "dserri",
   "version": "0.0.1",
   "private": true,
@@ -21,8 +21,44 @@
       {
         "command": "claudeToolkit.start",
         "title": "Toolkit: Start coordinator"
+      },
+      {
+        "command": "claudeToolkit.focusSession",
+        "title": "Toolkit: Show session tab"
+      },
+      {
+        "command": "claudeToolkit.hideSession",
+        "title": "Toolkit: Hide session until its next event",
+        "icon": "$(eye-closed)"
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "id": "claudeToolkit.sessions",
+          "name": "Claude sessions"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "claudeToolkit.hideSession",
+          "when": "view == claudeToolkit.sessions && viewItem == session",
+          "group": "inline"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "claudeToolkit.focusSession",
+          "when": "false"
+        },
+        {
+          "command": "claudeToolkit.hideSession",
+          "when": "false"
+        }
+      ]
+    },
     "configuration": {
       "title": "Claude Toolkit",
       "properties": {
@@ -37,6 +73,13 @@
           "scope": "machine",
           "default": "",
           "description": "Path to the toolkit plugin folder. Empty uses plugins/toolkit next to this extension's real folder."
+        },
+        "claudeToolkit.stuckMinutes": {
+          "type": "number",
+          "scope": "machine",
+          "default": 10,
+          "minimum": 1,
+          "description": "Minutes without events after which a working session is shown as possibly stuck."
         }
       }
     }

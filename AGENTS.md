@@ -10,8 +10,9 @@ Private Claude Code plugin marketplace (`claude-toolkit`) with one plugin, `tool
 | `plugins/toolkit/.claude-plugin/plugin.json` | Plugin manifest; no `version`, so each pushed commit is a release |
 | `plugins/toolkit/agents/` | `coordinator` and `worker` agents; their prompts define the board protocol |
 | `plugins/toolkit/hooks/` | SessionStart hook: SDD team-mailbox pull for the coordinator only |
-| `vscode/` | VS Code extension, plain CommonJS with no dependencies or build: `core.js` (pure logic, tested), `extension.js` (VS Code glue) |
-| `tests/` | `node --test` (unit, hook, `claude plugin validate`); `tests/coordinator.e2e.mjs` starts a real session |
+| `vscode/` | VS Code extension, plain CommonJS with no dependencies or build: `core.js` and `status-core.js` (pure logic, tested), `extension.js` and `sessions-view.js` (VS Code glue) |
+| `status/` | Session status: `status-hook.mjs` (user-level async hook for every interactive session, writes `~/.agent-status/sessions/*.jsonl`) and `install.mjs` (adds/removes its entries in `~/.claude/settings.json` after a backup) |
+| `tests/` | `node --test` (unit, hooks, installer, `claude plugin validate`); `tests/*.e2e.mjs` start real headless sessions |
 | `openspec/` | OpenSpec specs and changes |
 
 ## Rules
@@ -20,5 +21,6 @@ Private Claude Code plugin marketplace (`claude-toolkit`) with one plugin, `tool
 - The board format lives in three places that must agree: the agent prompts, `vscode/core.js` and the README table. `tests/toolkit.test.mjs` pins the shared paths and the request shape.
 - The extension starts Claude without a shell (`shellPath` plus `shellArgs`) and only with validated worker names; never build a command line from request content.
 - The organization's managed policy blocks non-official marketplaces, so sessions load this clone with `--plugin-dir`: every saved file, committed or not, is live in the next session, and the extension after a VS Code reload.
+- The status hook runs on every tool call of every session: it must stay asynchronous, print nothing, always exit 0 and log its errors to `~/.agent-status/hook.log`. The status rules live only in `vscode/status-core.js`; the hook just records events.
 - Run `node --test` before committing.
 - `.gitattributes` keeps LF line endings so checkouts on Windows stay byte-identical.

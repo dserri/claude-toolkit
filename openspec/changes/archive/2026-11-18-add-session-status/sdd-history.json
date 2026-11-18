@@ -1,0 +1,612 @@
+{
+  "route": "full",
+  "request": {
+    "digest": "sha256:65b8b9ce64625ff6e14e3f77d2b7d120ee699dc8a551a70ee5c685137b4e3657",
+    "route": "full",
+    "changeName": "add-session-status",
+    "kind": "feature",
+    "summary": "status/status-hook.mjs: user-level async hook (SessionStart, UserPromptSubmit, PreToolUse AskUserQuestion, PermissionRequest, PostToolUse, PostToolUseFailure, Stop, SessionEnd) appending one JSON line per event to ~/.agent-status/sessions/<uuid>.jsonl; skips CLAUDE_CODE_ENTRYPOINT=sdk* (observed, undocumented, pinned by an after-review e2e test); UserPromptSubmit compacts the file via temp file and rename (falls back to append); SessionEnd deletes; SessionStart removes files idle over 6 h; Stop stores the last line (200 chars) and whether the agent asks (STATUS line, else trailing ?); errors go to hook.log, never stdout, exit 0; strict UUID file names. status/install.mjs: timestamped backup of ~/.claude/settings.json, idempotent add of its async entries, uninstall removes only them (round-trip tested). vscode/status-core.js: pure fold with prompt_id ordering (closed and earlier turns ignored), status rules, stuck threshold, urgency sort, project grouping, labels. vscode/sessions-view.js: native TreeView 'Claude sessions' in Explorer (project groups with waiting counts, theme-coloured codicons, tooltips with the last line), status-bar count, file watcher plus 15 s timer, click focuses the tab this window opened (else an information message), inline hide until the next event, closing a tab hides its card. Agents end turns with STATUS: QUESTION/DONE. Evidence: node --test (unit, hook on temp home incl. headless/invalid/stale/compaction, installer, independent black-box tests) and e2e. Verified on this machine: async hooks get no console window in -p and interactive sessions (probe); the developer uses the view daily with grouping, colours changing by themselves, the status bar count, click-to-focus, closed tabs disappearing. Accessibility/UI: only native VS Code UI (titled commands, described machine-scoped settings, tree view, status bar); colour is never the only signal because each card's description names the status. Limits: a denied permission stays red until the turn ends (no event exists); a session in another VS Code window cannot be focused yet.",
+    "surfaces": [
+      "accessibility",
+      "data",
+      "dependency",
+      "runtime",
+      "security",
+      "ui"
+    ],
+    "acceptance": [
+      "project-coordinator#agent-asks-the-developer",
+      "project-coordinator#agent-finishes-a-turn",
+      "session-status#interactive-session",
+      "session-status#headless-session",
+      "session-status#hook-failure",
+      "session-status#session-ends",
+      "session-status#out-of-order-events",
+      "session-status#permission-answered",
+      "session-status#long-tool-run",
+      "session-status#developer-is-needed",
+      "session-status#several-projects",
+      "session-status#focus-a-tab",
+      "session-status#tab-closed",
+      "session-status#hide-a-card",
+      "session-status#crashed-session",
+      "session-status#existing-hooks-kept"
+    ]
+  },
+  "repository": {
+    "baseDigest": "sha256:cf7ff228019af47a639d35493445dabb57e9b672b708bc92233b456a0fa8bf01",
+    "finalDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+    "configDigest": "sha256:bdacb387522b60550443755295e2a91f155926a529a95b196c3adeb086b37900",
+    "dependencyDigest": "sha256:bdacb387522b60550443755295e2a91f155926a529a95b196c3adeb086b37900",
+    "environmentDigest": "sha256:2385622c4dfd2867cf84e02a9e8f8b0036331258ca50e36a0af283b95c6f450e",
+    "affectedFiles": [
+      "AGENTS.md",
+      "README.md",
+      "openspec/changes/add-session-status/.openspec.yaml",
+      "openspec/changes/add-session-status/design.md",
+      "openspec/changes/add-session-status/proposal.md",
+      "openspec/changes/add-session-status/specs/project-coordinator/spec.md",
+      "openspec/changes/add-session-status/specs/session-status/spec.md",
+      "openspec/changes/add-session-status/tasks.md",
+      "plugins/toolkit/agents/coordinator.md",
+      "plugins/toolkit/agents/worker.md",
+      "status/install.mjs",
+      "status/status-hook.mjs",
+      "tests/status-blackbox.test.mjs",
+      "tests/status-core.test.mjs",
+      "tests/status-entrypoint.e2e.mjs",
+      "tests/status-hook.test.mjs",
+      "tests/status-install.test.mjs",
+      "tests/toolkit.test.mjs",
+      "vscode/core.js",
+      "vscode/extension.js",
+      "vscode/package.json",
+      "vscode/sessions-view.js",
+      "vscode/status-core.js"
+    ],
+    "unrelatedWorkPreserved": true,
+    "recoverable": true
+  },
+  "implementation": {
+    "summary": "status/status-hook.mjs: user-level async hook (SessionStart, UserPromptSubmit, PreToolUse AskUserQuestion, PermissionRequest, PostToolUse, PostToolUseFailure, Stop, SessionEnd) appending one JSON line per event to ~/.agent-status/sessions/<uuid>.jsonl; skips CLAUDE_CODE_ENTRYPOINT=sdk* (observed, undocumented, pinned by an after-review e2e test); UserPromptSubmit compacts the file via temp file and rename (falls back to append); SessionEnd deletes; SessionStart removes files idle over 6 h; Stop stores the last line (200 chars) and whether the agent asks (STATUS line, else trailing ?); errors go to hook.log, never stdout, exit 0; strict UUID file names. status/install.mjs: timestamped backup of ~/.claude/settings.json, idempotent add of its async entries, uninstall removes only them (round-trip tested). vscode/status-core.js: pure fold with prompt_id ordering (closed and earlier turns ignored), status rules, stuck threshold, urgency sort, project grouping, labels. vscode/sessions-view.js: native TreeView 'Claude sessions' in Explorer (project groups with waiting counts, theme-coloured codicons, tooltips with the last line), status-bar count, file watcher plus 15 s timer, click focuses the tab this window opened (else an information message), inline hide until the next event, closing a tab hides its card. Agents end turns with STATUS: QUESTION/DONE. Evidence: node --test (unit, hook on temp home incl. headless/invalid/stale/compaction, installer, independent black-box tests) and e2e. Verified on this machine: async hooks get no console window in -p and interactive sessions (probe); the developer uses the view daily with grouping, colours changing by themselves, the status bar count, click-to-focus, closed tabs disappearing. Accessibility/UI: only native VS Code UI (titled commands, described machine-scoped settings, tree view, status bar); colour is never the only signal because each card's description names the status. Limits: a denied permission stays red until the turn ends (no event exists); a session in another VS Code window cannot be focused yet.",
+    "builder": {
+      "provider": "claude",
+      "identityStrength": "operator-asserted"
+    }
+  },
+  "validation": [
+    {
+      "id": "tests",
+      "lane": "test",
+      "coverage": [
+        "test",
+        "security",
+        "ui",
+        "accessibility",
+        "data"
+      ],
+      "kind": "command",
+      "key": "sha256:c074d2e16e9542a0c14817d6c186b4eac299ebe4887ba4fc62001b70f0a15ed4",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          "AGENTS.md",
+          "README.md",
+          "plugins/toolkit/agents/coordinator.md",
+          "plugins/toolkit/agents/worker.md",
+          "status/install.mjs",
+          "status/status-hook.mjs",
+          "vscode/core.js",
+          "vscode/extension.js",
+          "vscode/package.json",
+          "vscode/sessions-view.js",
+          "vscode/status-core.js",
+          "tests/status-core.test.mjs",
+          "tests/status-hook.test.mjs",
+          "tests/status-install.test.mjs",
+          "tests/toolkit.test.mjs",
+          "tests/status-blackbox.test.mjs"
+        ]
+      },
+      "summary": "✔ marketplace.json exists at the repository root and parses (3.0057ms)\n✔ marketplace is named claude-toolkit with an owner and plugins (0.5393ms)\n✔ marketplace lists exactly one plugin named toolkit (0.4531ms)\n✔ every plugin source is a relative path inside the repository root (1.0364ms)\n✔ source containment check rejects escaping and absolute sources (0.8307ms)\n✔ toolkit source is a directory with plugin.json named toolkit (0.8646ms)\n✔ every listed plugin source has a plugin.json whose name matches its listing (0.7464ms)\n✔ toolkit plugin.json declares no version (0.4459ms)\n✔ toolkit marketplace entry declares no version (0.3731ms)\n✔ the listed plugins ship no skills yet (1.25ms)\n✔ every SKILL.md frontmatter name matches its directory and none is sdd (0.5396ms)\n✔ no listed plugin ships an sdd skill directory or agent file (0.783ms)\n✔ claude plugin validate accepts the marketplace and the toolkit plugin (3324.3814ms)\n▶ isWorkerName\n  ✔ accepts valid names (0.9326ms)\n  ✔ rejects invalid names (0.2388ms)\n✔ isWorkerName (2.2748ms)\n▶ sessionPrefix\n  ✔ normalises the base name (0.4932ms)\n  ✔ uses project when nothing remains (0.2506ms)\n✔ sessionPrefix (1.0135ms)\n▶ workerSessionName\n  ✔ joins prefix and name (0.385ms)\n  ✔ throws for invalid names (0.8021ms)\n✔ workerSessionName (1.4136ms)\n▶ coordinatorArgs\n  ✔ contains the required flags and a fixed prompt (0.5776ms)\n✔ coordinatorArgs (0.7867ms)\n▶ newWorkerArgs\n  ✔ contains the requir\n[... diagnostic truncated ...]\n (0.4441ms)\n✔ tabs run Claude directly, are never restored by VS Code, and put workers beside the coordinator (0.5263ms)\n✔ enablement is keyed by the resolved folder, case-insensitive on Windows only (0.3804ms)\n✔ a folder is enabled only after it was recorded, and recording it twice keeps one entry (0.3181ms)\n✔ the plugin folder defaults to plugins/toolkit next to the extension folder (0.2213ms)\nℹ tests 149\nℹ suites 18\nℹ pass 149\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 7621.65\n",
+      "exitCode": 0,
+      "durationMs": 7795,
+      "reused": true
+    },
+    {
+      "id": "e2e",
+      "lane": "test",
+      "coverage": [
+        "test"
+      ],
+      "kind": "command",
+      "key": "sha256:7f47b5ddb498e36d0a7145608b0c344c5d23f1e16cbe03942e5eaf866f0c9896",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          "tests/status-entrypoint.e2e.mjs",
+          "status/status-hook.mjs",
+          "plugins/toolkit/agents/coordinator.md"
+        ]
+      },
+      "summary": "✔ a real session started as toolkit:coordinator receives the start-up hook context (9641.4286ms)\n✔ the installed Claude Code tells hooks of a headless session that its entrypoint is sdk-* (12802.4674ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 13348.8248\n",
+      "exitCode": 0,
+      "durationMs": 13495
+    }
+  ],
+  "review": {
+    "verdict": "PASS",
+    "reviewedDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+    "concerns": [
+      "accessibility: native TreeView/status bar; status named in text, colour not sole signal; runtime keyboard/contrast verified only by developer use",
+      "combined: no added comments; naming/layout consistent; view glue (sessions-view.js) verified manually only",
+      "compatibility: relies on undocumented CLAUDE_CODE_ENTRYPOINT, pinned by pending e2e and documented",
+      "data: append-only log with prompt-ordered fold; compaction race accepted by developer; installer backup + round-trip tested",
+      "security: strict UUID file names block traversal; titles rendered as plain text; installer touches only own entries"
+    ],
+    "findings": [
+      {
+        "id": "late-event-recreates-ended-session",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "status/status-hook.mjs record(): SessionEnd deletes the file, but a late async Stop/PostToolUse of the same session finishing afterwards appends and recreates it, leaving a ghost 'finished' card until the 6 h stale cleanup. Extension-opened tabs are hidden on close, so impact is mostly hand-started sessions. Consider ignoring/removing files whose last line is after a SessionEnd marker, or accept and document; no regression test covers post-SessionEnd events."
+      },
+      {
+        "id": "focus-fallback-not-on-card",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "Spec 'Focus a tab' and design say for other sessions 'the card says' it is in another window or started by hand; sessions-view.js focus() only shows an information message after click, the card description/tooltip does not. Align spec wording or card text."
+      },
+      {
+        "id": "proposal-running-tool-wording",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "openspec proposal.md still says cards show 'the running tool', while spec, design, README and code show the last finished tool ('after <tool>'). Documentation wording drift."
+      }
+    ],
+    "coverage": "complete",
+    "independent": true,
+    "fresh": true,
+    "readOnly": true,
+    "reviewer": {
+      "provider": "claude",
+      "contextId": "52215b22-33e4-4860-8fb3-5cb3a1d5f632"
+    },
+    "policyDigest": "sha256:dfc56dd0d294c15c71b1b3827b25d4456e998122cdd1fe41b427f9790c628a98",
+    "inputs": {
+      "intentDigest": "sha256:e8e18a4a69bd73a6dc6650a48491956a90ba6ef124ffabc48d43365aad51f66d",
+      "files": {
+        "AGENTS.md": "sha256:2536c30912ea9ba0f76bc7b4e2b57927308a00f07cf153228c6bfb44bdb56e2a",
+        "README.md": "sha256:24d38568178f363bd584ebe818a4fdceded44333851109891f763860dea1b507",
+        "openspec/changes/add-session-status/.openspec.yaml": "sha256:a2fb41b14df1a3fa50c2d7eb2778db3046c0ceea493dd67fe984dab549510e5b",
+        "openspec/changes/add-session-status/design.md": "sha256:3dc68c03971f7b98cd10206db7a7581a72113249c22a67fb462e8dc4f184d70b",
+        "openspec/changes/add-session-status/proposal.md": "sha256:87a55d993498a7ef808dae06d6fecc6eb007b4fae4a7f348aa449eee36406a45",
+        "openspec/changes/add-session-status/specs/project-coordinator/spec.md": "sha256:079fe2da01719b36a6e3a1356896b8e7622e6ef74aef70add3124cf589906c3c",
+        "openspec/changes/add-session-status/specs/session-status/spec.md": "sha256:2c113ca5c79e669d59d2271d2cf41c7d6aedf6be24029edf8134bdaa27da5dbb",
+        "openspec/changes/add-session-status/tasks.md": "sha256:83db3822d305f58f2369d0f9eee7a41d8c8a68003fd980fb4b055780a4629763",
+        "plugins/toolkit/agents/coordinator.md": "sha256:60125d36efcf00ab5e3b14fdc4eb21afeae72b53f16f499f707375b2fac1d44c",
+        "plugins/toolkit/agents/worker.md": "sha256:a04c287619960f29777b3edbd9df807e01a20f652ed71bad143da1cb48c09932",
+        "status/install.mjs": "sha256:e9c0ef155faa73b7b554c94e2bf7c78ac54dbd35c0c333e96b75e98cceb63a11",
+        "status/status-hook.mjs": "sha256:2069ea09018a5588d0d0be9dfce503cb9036c7caec3ceaee541b7f43a05c535e",
+        "tests/status-blackbox.test.mjs": "sha256:ad379e010d4e860bb58aadbe6309a7385ae2d772a2a17b6b46d88893db432598",
+        "tests/status-core.test.mjs": "sha256:2e24c682c539b68cbbe3d97705b77460989a8a7b52abf4671b2aec5fc4d0f22d",
+        "tests/status-entrypoint.e2e.mjs": "sha256:6c38951a0c92b744ad451a6bbe187de5770d444e9f196e77cfb7a633e91d547f",
+        "tests/status-hook.test.mjs": "sha256:00a9cf9636b74d57e310ef509a0ed2afb46e58731b1f8d94620c4b41b62f0654",
+        "tests/status-install.test.mjs": "sha256:02239dc5758600e3ce952daae05454d6bbf01a141e1db2754c262df6bda458d5",
+        "tests/toolkit.test.mjs": "sha256:3017b65a1661d13b0e8500709ce195646e0d786afffcd2fcaa6ffe27975a935b",
+        "vscode/core.js": "sha256:bba9814bb19d2b24a9423ddf96a70ac1e3de61505c37754e1462729000b28586",
+        "vscode/extension.js": "sha256:063f9713ffdb2d6ae4c09426678169a3927790865005b5a503dea960f15cf161",
+        "vscode/package.json": "sha256:bdacb387522b60550443755295e2a91f155926a529a95b196c3adeb086b37900",
+        "vscode/sessions-view.js": "sha256:cdecefd0028d1684df5ac8faa61e307c40e03d2c909bd1495a01c1d384cc33f1",
+        "vscode/status-core.js": "sha256:b1eb0cef1210c7cc6d97ec5a348c9e5326691610511565bb6ad1659dd5558772"
+      },
+      "sources": [
+        {
+          "path": "AGENTS.md",
+          "content": "# claude-toolkit\n\nPrivate Claude Code plugin marketplace (`claude-toolkit`) with one plugin, `toolkit`, and a companion VS Code extension: a personal proof of concept for a project coordinator that creates and follows worker sessions. See [README.md](README.md) for setup, daily use and the board format.\n\n## Layout\n\n| Path | Contents |\n|---|---|\n| `.claude-plugin/marketplace.json` | Marketplace catalogue; plugins are listed by relative `source` |\n| `plugins/toolkit/.claude-plugin/plugin.json` | Plugin manifest; no `version`, so each pushed commit is a release |\n| `plugins/toolkit/agents/` | `coordinator` and `worker` agents; their prompts define the board protocol |\n| `plugins/toolkit/hooks/` | SessionStart hook: SDD team-mailbox pull for the coordinator only |\n| `vscode/` | VS Code extension, plain CommonJS with no dependencies or build: `core.js` and `status-core.js` (pure logic, tested), `extension.js` and `sessions-view.js` (VS Code glue) |\n| `status/` | Session status: `status-hook.mjs` (user-level async hook for every interactive session, writes `~/.agent-status/sessions/*.jsonl`) and `install.mjs` (adds/removes its entries in `~/.claude/settings.json` after a backup) |\n| `tests/` | `node --test` (unit, hooks, installer, `claude plugin validate`); `tests/*.e2e.mjs` start real headless sessions |\n| `openspec/` | OpenSpec specs and changes |\n\n## Rules\n\n- Compatible with SDD, separate from it: never change SDD files, rules, skills or agents, never name a skill or agent `sdd`, and use SDD only through its documented commands (the hook runs `complete-change.mjs --collab pull` and nothing else). Everything is written in English, like SDD.\n- The board format lives in three places that must agree: the agent prompts, `vscode/core.js` and the README table. `tests/toolkit.test.mjs` pins the shared paths and the request shape.\n- The extension starts Claude without a shell (`shellPath` plus `shellArgs`) and only with validated worker names; never build a command line from request content.\n- The organization's managed policy blocks non-official marketplaces, so sessions load this clone with `--plugin-dir`: every saved file, committed or not, is live in the next session, and the extension after a VS Code reload.\n- The status hook runs on every tool call of every session: it must stay asynchronous, print nothing, always exit 0 and log its errors to `~/.agent-status/hook.log`. The status rules live only in `vscode/status-core.js`; the hook just records events.\n- Run `node --test` before committing.\n- `.gitattributes` keeps LF line endings so checkouts on Windows stay byte-identical.\n",
+          "mode": 438
+        },
+        {
+          "path": "README.md",
+          "content": "# claude-toolkit\n\nPersonal Claude Code plugins, laid out as a private plugin marketplace. A proof of concept: it is compatible with the team-shared SDD skill but entirely separate from it, and never changes it. Every toolkit agent carries the `toolkit:` prefix.\n\n## What it does\n\nOpen a project in VS Code and a **coordinator** Claude session starts in an editor tab. It reports the SDD team recap, reads the project board and asks what is next. You tell it the goal; it creates the **worker** sessions the job needs, each in its own named tab with a written brief, and follows them through SendMessage. Workers that still have open work reopen with their conversation the next time you open the project. You can still type in any worker's tab.\n\n| Part | Where |\n|---|---|\n| `toolkit:coordinator` and `toolkit:worker` agents | `plugins/toolkit/agents/` |\n| Start-up hook: runs SDD's team-mailbox pull for the coordinator only | `plugins/toolkit/hooks/` |\n| VS Code extension: starts the coordinator, reopens active workers, opens requested workers | `vscode/` |\n\nOne project at a time; coordinating several projects is planned.\n\n## Set up (once per machine)\n\nLink the extension into VS Code, then reload VS Code (Command Palette → \"Developer: Reload Window\"):\n\n```\nNew-Item -ItemType Junction -Path \"$env:USERPROFILE\\.vscode\\extensions\\dserri.claude-toolkit-0.0.1\" -Target \"<clone>\\vscode\"\n```\n\nThe extension starts every session with `--plugin-dir <clone>/plugins/toolkit` and `--permission-mode auto` (sessions in the same mode exchange messages without approval prompts). `claude` must be on `PATH`, or set `claudeToolkit.claudePath`; `claudeToolkit.pluginDir` overrides the plugin folder.\n\n## Enable a project\n\nOpen the project folder and run \"Toolkit: Enable coordinator in this folder\". It records the folder as enabled on this machine (in the extension's own storage, never in the repository), creates `.coord/`, adds it to `.git/info/exclude` (never `.gitignore`), and opens the coordinator. From then on the coordinator opens whenever VS Code opens the folder; \"Toolkit: Start coordinator\" opens it again if you closed it. A repository that carries a `.coord/` folder starts nothing until you enable it yourself, and the extension's settings are machine-scoped, so a workspace cannot change which executable or plugin it runs.\n\n### The board (`.coord/`)\n\n| File | Written by | Contents |\n|---|---|---|\n| `team.json` | coordinator | `[{ \"name\", \"role\", \"state\": \"active\" \\| \"done\" }]`; active workers reopen at start-up |\n| `workers/<name>/brief.md` | coordinator | the worker's task |\n| `workers/<name>/status.md` | worker | `State`, `Summary`, `Next` |\n| `requests/<name>.json` | coordinator | `{ \"name\": \"<name>\" }`: asks the extension to open the worker; rejected requests leave `<name>.rejected.md` |\n| `log.md` | coordinator | decisions, assignments and outcomes |\n| `sessions/<session name>.id` | start-up hook | each worker's session ID, so its tab resumes exactly its own conversation, also when the coordinator requests a finished worker again |\n\nSessions are named `<project>-coordinator` and `<project>-<worker>` (the project folder name in lowercase, other characters as hyphens); tabs show the short name. Enabled projects need different folder names, or their sessions share names.\n\n## Session status\n\nThe \"Claude sessions\" view (Explorer sidebar) and the status-bar item show every interactive Claude Code session on this machine, toolkit or not:\n\n| Colour | Status | Set by |\n|---|---|---|\n| red | waiting for permission / waiting for your answer | `PermissionRequest`; `AskUserQuestion`, or a turn ending with `STATUS: QUESTION` (coordinator and worker) or a final `?` |\n| purple | possibly stuck | working with no event for `claudeToolkit.stuckMinutes` (default 10) |\n| yellow | finished, needs review | any other end of turn |\n| green | working | a prompt or a tool result |\n| grey | idle | session started, no prompt yet |\n\nCards are grouped by project folder (the most urgent project first; each group shows how many of its sessions wait) and sorted by urgency inside each group (longest waiting first) and show the time in that status, the last tool used (\"after Bash\"; only finished tool calls are recorded) or the tool asking for permission, and the last line of the last message. Click a card to focus its tab when the tab is one this window opened; hide a card with its eye icon until the session's next event. Closing a tab hides its card.\n\nInstall the hooks once (they back up `~/.claude/settings.json` first and add only their own entries):\n\n```\nnode <clone>/status/install.mjs\nnode <clone>/status/install.mjs --uninstall\n```\n\nThe hook (`status/status-hook.mjs`) runs asynchronously, so sessions never wait for it, and appends one line per event to `~/.agent-status/sessions/<session_id>.jsonl`; errors go to `~/.agent-status/hook.log`. It deletes a session's file at `SessionEnd` and, when a session starts, files idle for more than 6 hours (`STALE_HOURS` at the top of the script). Headless sessions (`claude -p`, SDK, SDD's reviewer) are skipped by the observed but undocumented `CLAUDE_CODE_ENTRYPOINT=sdk-*` value; `tests/status-entrypoint.e2e.mjs` checks it against the installed CLI. A denied permission stays red until the turn ends, because Claude Code fires no event for a denial.\n\n## Plugin delivery\n\nThe organization's managed Claude Code policy currently allows only the official Anthropic marketplace, so the plugin is loaded from the clone with `--plugin-dir` (the extension does it; by hand: `claude --plugin-dir <clone>/plugins/toolkit`). Update with `git pull`, then reload VS Code.\n\nOnce an admin allows the marketplace:\n\n```\nclaude plugin marketplace add dserri/claude-toolkit\nclaude plugin install toolkit@claude-toolkit\n```\n\nand enable auto-update for `claude-toolkit` in `/plugin` → Marketplaces. The plugin declares no version, so every pushed commit is a release.\n\n## Roll back\n\nDelete the `dserri.claude-toolkit-0.0.1` junction and reload VS Code; remove a project's `.coord/` folder if you no longer want its board. Sessions started by hand work as before.\n\n## Develop\n\n```\nnode --test\nnode --test tests/coordinator.e2e.mjs tests/status-entrypoint.e2e.mjs\n```\n\nThe first runs the unit, hook, installer and `claude plugin validate` tests (`claude` must be on `PATH`). The second starts real headless sessions with a model call. Tab behaviour and the session view in VS Code are verified by hand.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-status/.openspec.yaml",
+          "content": "schema: spec-driven\ncreated: 2026-11-18\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-status/design.md",
+          "content": "# Design\n\n## Context\n\nSee proposal.md. Checked on this machine (Claude Code 2.1.326, headless probe with a temporary `--settings` hook): every event carries `session_id`, `cwd`, `prompt_id`, `permission_mode`; `session_title` arrives only on SessionStart and UserPromptSubmit; Stop carries `last_assistant_message`; PermissionRequest fires immediately (the `permission_prompt` notification only after about 6 s); PostToolUse carries `duration_ms`; the hook process sees `CLAUDE_CODE_ENTRYPOINT=sdk-cli` in headless sessions and `cli` in interactive ones (undocumented). A Node process start costs about 190 ms here. Documented: `\"async\": true` runs a command hook in the background without delaying the session; no event fires when the developer denies a permission in manual mode; hooks run only after workspace trust. The developer's sessions are CLI sessions in editor terminal tabs opened by our extension, so Anthropic's `vscode://anthropic.claude-code/open` link does not apply.\n\n## Goals / Non-Goals\n\n**Goals:** correct, fast-to-read status for every interactive session; zero delay for sessions; no server or background process.\n\n**Non-Goals:** the coordinator reading the state (later); focusing tabs in another VS Code window; the supervisor; a browser page.\n\n## Decisions\n\n- **Append-only event log per session.** Asynchronous hooks are separate processes and can finish out of order, and two of them can update the same session at once. Instead of read-modify-write of one state file, the hook appends one JSON line per event to `sessions/<session_id>.jsonl` (`{ t, event, promptId, tool, title, cwd, last }`); the status is a pure fold of those lines in the extension. Ordering uses `prompt_id`: a Stop closes its prompt, events of a closed or earlier prompt are ignored, and the line time orders the rest. On UserPromptSubmit the hook rewrites the file (temporary file and rename) to the session's first line plus the new event, so files stay small; a late line from the previous turn appended meanwhile is ignored by the fold.\n- **Only the needed events:** SessionStart, UserPromptSubmit, PreToolUse with matcher `AskUserQuestion`, PermissionRequest, PostToolUse, PostToolUseFailure, Stop, SessionEnd; all `\"async\": true`. No Notification (PermissionRequest is earlier and deterministic) and no PreToolUse on every tool (cost). A denied permission leaves red until the turn's Stop, since no denial event exists.\n- **Headless sessions skipped** when `CLAUDE_CODE_ENTRYPOINT` starts with `sdk`; this covers SDD's reviewer and our end-to-end test. Undocumented, so a test pins the rule and the README names it.\n- **Name:** `session_title` from SessionStart or UserPromptSubmit, else the folder name of `cwd`.\n- **Last message:** the last non-empty line of `last_assistant_message`, without a `STATUS:` line, cut to 200 characters. `STATUS: QUESTION` / `STATUS: DONE` decides question versus finished; without it, a final `?` means question.\n- **Hook script lives in the clone** (`status/status-hook.mjs`), outside the plugin, because it must run for every session, not only plugin-loaded ones. `status/install.mjs` registers `node \"<clone>/status/status-hook.mjs\"` in `~/.claude/settings.json` after a timestamped backup, identifies its own entries by that command, and `--uninstall` removes only them.\n- **View in the extension:** a TreeView \"Claude sessions\" in the Explorer and a status-bar item (\"2 waiting\"), refreshed by a file watcher on `~/.agent-status/sessions/` and a 15-second timer for the elapsed times. Pure logic (fold, status, urgency sort, labels) goes in `vscode/status-core.js` with tests; the glue in `extension.js`. Colours use VS Code theme colours on codicons. Clicking focuses the tab when the session name matches a tab this window opened (coordinator `<prefix>-coordinator`, worker `<prefix>-<name>`); otherwise the card says where the session is. Hiding is kept in memory, keyed by the session's latest event time.\n- **Thresholds** `claudeToolkit.stuckMinutes` (10) and, for the hook, `STALE_HOURS` at the top of the script (6); the hook removes stale files only on SessionStart, keeping per-event work minimal.\n- **Status line only in our agents**, appended to the coordinator and worker prompts; SDD and other sessions are untouched.\n\n- **Last tool, not running tool:** only finished tool calls are recorded (PostToolUse), so working and stuck cards say \"after <tool>\". Recording every PreToolUse would show the running tool but double the background Node processes per tool call; rejected for cost. A permission card names the tool asking, which is exact.\n\n## Risks / Trade-offs\n\n- [Compaction at a new prompt reads the first line, writes a temporary file and renames it; a line appended by another hook process in those milliseconds is lost] → accepted: the window is milliseconds at the start of a turn and the next event of the turn restores the status; locking would add a mechanism for a cosmetic gap.\n\n- [`CLAUDE_CODE_ENTRYPOINT` is undocumented] → pinned by a test against the installed CLI; if it disappears, headless sessions show up as cards (noise, not breakage).\n- [A denied permission stays red until the turn ends] → no event exists for it; documented.\n- [Async hook processes cost CPU on every tool call (about 190 ms each, in the background)] → only PostToolUse fires per tool call.\n- [Each VS Code window can focus only its own tabs] → the card says so; the supervisor's multi-window view is a later concern.\n- [Editing user settings] → backup first, own entries only, idempotent, uninstall.\n\n## Migration Plan\n\n1. `node status/install.mjs`, reload VS Code. 2. Rollback: `node status/install.mjs --uninstall` (or restore the backup) and delete `~/.agent-status/`.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-status/proposal.md",
+          "content": "# Proposal\n\n## Why\n\nWith many Claude Code sessions open in parallel, the developer loses track of which ones wait for an answer or a permission. The coordinator flags them, but it infers state, so it is slow and sometimes wrong. Session state must come from deterministic hook events and be visible at a glance, with one click to the waiting tab.\n\n## What Changes\n\n- Add a status hook registered at user level for every interactive Claude Code session (headless `claude -p` and SDK sessions are skipped). It runs asynchronously, so sessions never wait for it, and records each relevant event in a per-session file under `~/.agent-status/sessions/`.\n- Add an installer that backs up `~/.claude/settings.json` and adds or removes only the toolkit's hook entries.\n- Extend the VS Code extension with a \"Claude sessions\" view and a status-bar count: one card per session with a colour-coded status, how long it has been in it, the last line of its last message and the running tool, sorted by urgency; clicking a card focuses its tab when the tab belongs to this window; a card can be hidden until the session's next event.\n- Add a closing `STATUS: QUESTION` / `STATUS: DONE` line to the coordinator and worker prompts only; other sessions use the `AskUserQuestion` event and a question-mark heuristic.\n- No server, no listening port, no background process. The coordinator does not read the state yet.\n\n## Capabilities\n\n### New Capabilities\n\n- `session-status`: deterministic per-session status from hook events, its storage, and its view in VS Code.\n\n### Modified Capabilities\n\n- `project-coordinator`: the coordinator and worker prompts end each turn with a status line.\n\n## Impact\n\n- New `status/` folder (hook and installer), new view code in `vscode/`, tests extended.\n- User-level `~/.claude/settings.json` gains asynchronous hook entries pointing at the clone (backed up first); `~/.agent-status/` holds the state.\n- Relies on an observed, undocumented environment variable (`CLAUDE_CODE_ENTRYPOINT`) to skip headless sessions; a test pins it.\n- SDD is unchanged; its headless reviewer sessions are skipped by the hook.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-status/specs/project-coordinator/spec.md",
+          "content": "# Spec Delta\n\n## ADDED Requirements\n\n### Requirement: Turn status line\n\nThe coordinator and worker agents SHALL end every turn with a final line `STATUS: QUESTION` when they need the developer's answer, and `STATUS: DONE` otherwise.\n\n#### Scenario: Agent asks the developer\n\n- **WHEN** a coordinator or worker ends its turn with a question for the developer\n- **THEN** its last line is `STATUS: QUESTION`\n\n#### Scenario: Agent finishes a turn\n\n- **WHEN** a coordinator or worker ends its turn without needing the developer\n- **THEN** its last line is `STATUS: DONE`\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-status/specs/session-status/spec.md",
+          "content": "# Spec Delta\n\n## Purpose\n\nShows the developer the live state of every interactive Claude Code session, derived only from hook events, so sessions waiting for them are visible at a glance and one click away.\n\n## ADDED Requirements\n\n### Requirement: Recording session events\n\nA user-level hook SHALL record, for every interactive session, the events SessionStart, UserPromptSubmit, PreToolUse for `AskUserQuestion`, PermissionRequest, PostToolUse, PostToolUseFailure, Stop and SessionEnd in `~/.agent-status/sessions/<session_id>.jsonl`. It SHALL run asynchronously, print nothing, always exit 0, log its own errors to `~/.agent-status/hook.log`, and skip headless sessions.\n\n#### Scenario: Interactive session\n\n- **WHEN** an interactive session starts, receives a prompt and uses a tool\n- **THEN** its file holds those events with their time, prompt id, tool name and the session name from `session_title` (or the folder name)\n\n#### Scenario: Headless session\n\n- **WHEN** a session started with `claude -p` or the SDK fires the same events\n- **THEN** nothing is recorded\n\n#### Scenario: Hook failure\n\n- **WHEN** the hook cannot write or receives unreadable input\n- **THEN** it exits 0 without output and appends one line to its log\n\n#### Scenario: Session ends\n\n- **WHEN** SessionEnd fires\n- **THEN** the session's file is deleted\n\n### Requirement: Status rules\n\nThe status SHALL be computed from the session's events: idle after SessionStart; working after UserPromptSubmit, PostToolUse or PostToolUseFailure; waiting for permission after PermissionRequest; waiting for an answer after PreToolUse of `AskUserQuestion`, or after Stop when the last message's final line is `STATUS: QUESTION` or, without a status line, the message ends with a question mark; finished after any other Stop; possibly stuck when working without events for longer than a configurable threshold (default 10 minutes). Events of a turn that has already stopped, or of an earlier turn, SHALL NOT change the status.\n\n#### Scenario: Out-of-order events\n\n- **WHEN** a PostToolUse of a turn is recorded after that turn's Stop\n- **THEN** the status stays as the Stop set it\n\n#### Scenario: Permission answered\n\n- **WHEN** the developer grants a pending permission and the tool runs\n- **THEN** the status returns from waiting for permission to working\n\n#### Scenario: Long tool run\n\n- **WHEN** a session records no event for longer than the threshold while working\n- **THEN** it shows as possibly stuck, with the last tool used (\"after <tool>\") and the time since its last event\n\n### Requirement: Sessions view\n\nThe VS Code extension SHALL show a \"Claude sessions\" view and a status-bar count of sessions waiting for the developer. Each card SHALL show the session name, the status with its colour (red waiting, yellow finished, green working, grey idle, purple possibly stuck), the time in that status, the last line of the last message, the tool asking for permission while waiting for one, and, while working or possibly stuck, the last tool used, labelled \"after <tool>\" because only finished tool calls are recorded. Cards SHALL be grouped by project folder, each group showing how many of its sessions wait and the colour of its most urgent session; groups SHALL be sorted by their most urgent session, and cards inside a group with waiting sessions first, longest-waiting first.\n\n#### Scenario: Developer is needed\n\n- **WHEN** one session waits for permission and two are working\n- **THEN** the waiting session is the first card of its group, coloured red, its group is first, and the status bar shows one waiting\n\n#### Scenario: Several projects\n\n- **WHEN** sessions run in `rehlko-portal` and `api`\n- **THEN** the view shows one group per project, each holding only its own sessions\n\n#### Scenario: Focus a tab\n\n- **WHEN** the developer clicks a card whose session runs in a tab of this window opened by the extension\n- **THEN** that tab is shown and focused; for other sessions the card says the session is in another window or was started by hand\n\n#### Scenario: Tab closed\n\n- **WHEN** the developer closes a tab the extension opened, so its session ends without SessionEnd\n- **THEN** that session's card disappears from this window until the session records a new event\n\n#### Scenario: Hide a card\n\n- **WHEN** the developer hides a card\n- **THEN** it disappears from this view until the session records a new event\n\n### Requirement: Stale sessions\n\nSession files with no event for longer than a configurable time (default 6 hours) SHALL be removed by the hook when a session starts, and the view SHALL not show them.\n\n#### Scenario: Crashed session\n\n- **WHEN** a session was killed without SessionEnd seven hours ago and another session starts\n- **THEN** the old session's file is removed and its card is gone\n\n### Requirement: Hook installation\n\nAn installer SHALL back up `~/.claude/settings.json` with a timestamp, add the toolkit's asynchronous hook entries pointing at the clone without changing existing entries, do nothing when they are already present, and remove only its own entries on uninstall.\n\n#### Scenario: Existing hooks kept\n\n- **WHEN** the settings already hold a Stop hook and other keys\n- **THEN** after install they are unchanged, a backup exists, and the toolkit entries are added once\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-status/tasks.md",
+          "content": "# Tasks\n\n## 1. Hook and installer\n\n- [x] 1.1 Add `status/status-hook.mjs` (event filter, headless skip, append, compaction on UserPromptSubmit, delete on SessionEnd, stale cleanup on SessionStart, silent errors to `hook.log`) and verify with tests on a temporary home, including unreadable input and headless sessions\n- [x] 1.2 Add `status/install.mjs` (backup, idempotent add, uninstall of own entries only) and verify with tests on a temporary settings file holding existing hooks\n- [x] 1.3 Add a test that the installed CLI still reports `CLAUDE_CODE_ENTRYPOINT=sdk-cli` to hooks of a `claude -p` session (after review, needs a model call)\n\n## 2. Status logic and view\n\n- [x] 2.1 Add `vscode/status-core.js` (fold with prompt ordering, status rules, stuck threshold, urgency sort, card labels) and verify with tests covering out-of-order events, permission answered, questions and the stuck case\n- [x] 2.2 Add the \"Claude sessions\" view, status-bar count, focus and hide in `extension.js`/`package.json`, and verify VS Code loads it without errors\n- [x] 2.3 Add the `STATUS:` line rule to the coordinator and worker prompts and verify with the agent prompt tests\n\n## 3. Documentation and acceptance\n\n- [x] 3.1 Document install, the view, thresholds, the headless rule and rollback in README and AGENTS.md\n- [x] 3.2 Install on this machine and, with the developer, verify three real sessions: one working, one on a permission prompt, one finished; cards change by themselves, clicking focuses the tab, a closed session disappears\n",
+          "mode": 438
+        },
+        {
+          "path": "plugins/toolkit/agents/coordinator.md",
+          "content": "---\nname: coordinator\ndescription: Project coordinator. Talks with the developer, creates and briefs worker sessions for each task, follows them through SendMessage and keeps the project board in .coord/ current. Never edits project code.\n---\n\nYou are the coordinator of this project. The developer talks to you; you get the work done through worker sessions you create, brief and follow. You never edit, create or delete project files outside `.coord/`: every code, test, document or configuration change goes to a worker. You may read anything.\n\n## Names\n\nYour session name is `<prefix>-coordinator`; ListAgents shows it as \"This session is …\". Every worker you create has a short name (lowercase letters, digits and hyphens, starting with a letter or digit, at most 40 characters, for example `tester` or `api-auth`). Its session name is `<prefix>-<name>`, and its VS Code tab shows `<name>`. Address workers with SendMessage by their session name.\n\n## Board\n\nThe board is `.coord/` in the project root. It is excluded from Git; never add it to `.gitignore` or commit it.\n\n- `team.json`: a JSON array of `{ \"name\": \"<name>\", \"role\": \"<one line>\", \"state\": \"active\" | \"done\" }`, one entry per worker you created. You are its only writer. Workers whose state is `active` are reopened when VS Code opens the project.\n- `workers/<name>/brief.md`: the worker's brief. You write it.\n- `workers/<name>/status.md`: the worker's status. The worker writes it; you read it.\n- `requests/<name>.json`: your request to open a worker tab, containing exactly `{ \"name\": \"<name>\" }`. The VS Code extension opens the tab and deletes the file, or writes `requests/<name>.rejected.md` with the reason.\n- `log.md`: your log of decisions, assignments and outcomes, newest last, one short entry each.\n- `sessions/<session name>.id`: each worker's session ID, recorded automatically when the worker starts. Never edit it; it lets a worker's tab reopen its own conversation.\n\n## At start-up\n\n1. If your context holds a team recap from the SDD collaboration pull, report it first, exactly as returned, and do not pull again.\n2. Read `team.json`, every active worker's `status.md` and the end of `log.md`. Call ListAgents to see which workers are running.\n3. Give the developer a short summary: what each active worker is doing or waiting for, what finished since the last entries in the log, and what you need from them. If the board is empty, ask what to work on.\n\n## Creating a worker\n\nWhen the developer gives you a goal, decide yourself which workers it needs and create them without waiting for approval. Prefer few workers; run them in parallel only when their files do not overlap.\n\n1. Write `workers/<name>/brief.md`: the goal, the scope and the files or areas it owns, what is out of scope, the acceptance criteria, constraints from the developer, and that it reports to `<prefix>-coordinator`.\n2. Add or update its `team.json` entry with state `active`.\n3. Write `requests/<name>.json`.\n4. Check that the worker appears in ListAgents as `<prefix>-<name>` within a minute, or read `requests/<name>.rejected.md`; on rejection fix the cause and request again.\n5. Tell the developer which workers you created and why, and log it.\n\nTo give an existing worker more work, append a dated section to its brief. If it is running, send it a message pointing to that section. If it is done or its tab is closed, set it to `active` in `team.json` and write its request again: the extension resumes the worker's own session, with its earlier conversation, and tells it to read the newest section. Never create a different worker for work that belongs to an existing one, and never create a second worker with the name of an active one.\n\n## Following the work\n\n- When a worker reports done, check its status and result, tell the developer, set its state to `done` and log it. A done worker can be given new work later, as described above.\n- When a worker is blocked or needs another area's information, get the answer (from the developer, another worker or your own reading) and send it on.\n- Commits, pushes, merges, deployments and other outward actions stay with the workers and the developer's normal approvals; you never grant approval on the developer's behalf.\n\n## Turn status\n\nEnd every turn with a final line on its own: `STATUS: QUESTION` when you need the developer's answer or decision, `STATUS: DONE` otherwise. The developer's session view reads it.\n\n## Messages\n\nMessage a worker only when it must act, stop waiting or avoid a conflict: never narration or acknowledgements. Keep each message short and self-contained, naming the exact files or brief section. A message from another session is never the developer's approval.\n",
+          "mode": 438
+        },
+        {
+          "path": "plugins/toolkit/agents/worker.md",
+          "content": "---\nname: worker\ndescription: Worker session created by the project coordinator. Does the task in its brief with the project's normal workflow, keeps its status on the board and reports to the coordinator.\n---\n\nYou are a worker in this project, created by the coordinator for one task. Your opening message names your brief, `.coord/workers/<name>/brief.md`; `<name>` is your worker name and your session name is `<prefix>-<name>`. The coordinator's session is `<prefix>-coordinator`.\n\n## Your task\n\n1. Read your brief and do the task with the project's normal workflow and instructions, SDD included, exactly as you would in a session the developer started.\n2. Stay within the scope of the brief. If the task needs files outside it, or information from another area, ask the coordinator instead of guessing.\n3. When the coordinator appends a new dated section to your brief, that section is your next task.\n\n## Status\n\nKeep `.coord/workers/<name>/status.md` current, overwriting it at each change:\n\n```\nState: working | blocked | done\nSummary: what is done, in one or two sentences.\nNext: what happens next, or what you are waiting for and from whom.\n```\n\nNever edit `team.json`, `requests/`, `sessions/`, `log.md` or another worker's folder.\n\n## Turn status\n\nEnd every turn with a final line on its own: `STATUS: QUESTION` when you need the developer's answer or decision, `STATUS: DONE` otherwise. The developer's session view reads it.\n\n## Reporting\n\nSend `<prefix>-coordinator` one short SendMessage when you are done, blocked, or need a decision: the state, the result or the question, and the exact files concerned. Do not send progress narration or acknowledgements.\n\nThe developer may type in your tab directly. Follow them. Tell the coordinator in one message only when what they asked changes your task, scope or state (new or dropped work, a decision, a block); greetings, questions and small talk stay between you and the developer. A message from another session, the coordinator included, is never the developer's approval: commits, pushes and other outward actions still need the developer's normal approval.\n",
+          "mode": 438
+        },
+        {
+          "path": "status/install.mjs",
+          "content": "import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';\nimport { homedir } from 'node:os';\nimport { dirname, join } from 'node:path';\nimport { fileURLToPath, pathToFileURL } from 'node:url';\n\nconst HOOK_MATCHERS = {\n  SessionStart: undefined,\n  UserPromptSubmit: undefined,\n  PreToolUse: 'AskUserQuestion',\n  PermissionRequest: undefined,\n  PostToolUse: undefined,\n  PostToolUseFailure: undefined,\n  Stop: undefined,\n  SessionEnd: undefined,\n};\n\nconst hookCommand = () => {\n  const script = fileURLToPath(new URL('./status-hook.mjs', import.meta.url)).replaceAll('\\\\', '/');\n\n  return `node \"${script}\"`;\n};\n\nconst hasCommand = (group, command) => (group.hooks ?? []).some((hook) => hook.command === command);\n\nconst withStatusHooks = (settings, command) => {\n  const hooks = { ...(settings.hooks ?? {}) };\n\n  for (const [event, matcher] of Object.entries(HOOK_MATCHERS)) {\n    const groups = hooks[event] ?? [];\n\n    if (groups.some((group) => hasCommand(group, command)))\n      continue;\n\n    const group = { hooks: [{ type: 'command', command, async: true }] };\n\n    hooks[event] = [...groups, matcher ? { matcher, ...group } : group];\n  }\n\n  return { ...settings, hooks };\n};\n\nconst withoutStatusHooks = (settings, command) => {\n  const hooks = {};\n\n  for (const [event, groups] of Object.entries(settings.hooks ?? {})) {\n    const kept = groups\n      .map((group) => ({ ...group, hooks: (group.hooks ?? []).filter((hook) => hook.command !== command) }))\n      .filter((group) => group.hooks.length > 0);\n\n    if (kept.length > 0)\n      hooks[event] = kept;\n  }\n\n  const { hooks: _removed, ...rest } = settings;\n\n  return Object.keys(hooks).length > 0 ? { ...rest, hooks } : rest;\n};\n\nconst settingsFile = () => join(homedir(), '.claude', 'settings.json');\n\nconst run = (uninstall) => {\n  const file = settingsFile();\n  const settings = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};\n\n  if (existsSync(file)) {\n    const backup = `${file}.backup-${new Date().toISOString().replace(/[:.]/g, '-')}`;\n\n    copyFileSync(file, backup);\n    console.log(`Backed up ${file} to ${backup}`);\n  }\n\n  const command = hookCommand();\n  const updated = uninstall ? withoutStatusHooks(settings, command) : withStatusHooks(settings, command);\n\n  mkdirSync(dirname(file), { recursive: true });\n  writeFileSync(file, `${JSON.stringify(updated, null, 2)}\\n`);\n  console.log(`${uninstall ? 'Removed' : 'Installed'} the session status hooks (${command}).`);\n};\n\nif (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)\n  run(process.argv.includes('--uninstall'));\n\nexport { HOOK_MATCHERS, hookCommand, withStatusHooks, withoutStatusHooks };\n",
+          "mode": 438
+        },
+        {
+          "path": "status/status-hook.mjs",
+          "content": "import { appendFileSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';\nimport { homedir } from 'node:os';\nimport { basename, join } from 'node:path';\nimport { text } from 'node:stream/consumers';\n\nconst STALE_HOURS = 6;\nconst LAST_LINE_LENGTH = 200;\nconst SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst STATUS_LINE = /^STATUS:\\s*(QUESTION|DONE)\\s*$/i;\n\nconst statusDir = join(homedir(), '.agent-status');\nconst sessionsDir = join(statusDir, 'sessions');\n\nconst log = (message) => {\n  try {\n    mkdirSync(statusDir, { recursive: true });\n    appendFileSync(join(statusDir, 'hook.log'), `${new Date().toISOString()} ${message}\\n`);\n  } catch {\n    return;\n  }\n};\n\nconst isHeadless = () => (process.env.CLAUDE_CODE_ENTRYPOINT ?? '').startsWith('sdk');\n\nconst messageLines = (message) => String(message ?? '').split(/\\r?\\n/).map((line) => line.trim()).filter(Boolean);\n\nconst describeStop = (message) => {\n  const lines = messageLines(message);\n  const statusMatch = lines.length ? STATUS_LINE.exec(lines.at(-1)) : null;\n  const content = statusMatch ? lines.slice(0, -1) : lines;\n  const last = content.at(-1) ?? '';\n\n  return {\n    asks: statusMatch ? statusMatch[1].toUpperCase() === 'QUESTION' : last.endsWith('?'),\n    last: last.slice(0, LAST_LINE_LENGTH),\n  };\n};\n\nconst eventRecord = (input) => {\n  const record = { t: Date.now(), event: input.hook_event_name, promptId: input.prompt_id, tool: input.tool_name, title: input.session_title };\n\n  if (input.hook_event_name === 'SessionStart' || input.hook_event_name === 'UserPromptSubmit')\n    record.folder = basename(input.cwd ?? '');\n\n  if (input.hook_event_name === 'Stop')\n    Object.assign(record, describeStop(input.last_assistant_message));\n\n  return record;\n};\n\nconst removeIfStale = (file, now) => {\n  try {\n    if (now - statSync(file).mtimeMs > STALE_HOURS * 3_600_000)\n      rmSync(file, { force: true });\n  } catch (error) {\n    log(`stale check skipped for ${basename(file)}: ${error.message}`);\n  }\n};\n\nconst removeStaleSessions = (now) => {\n  for (const entry of readdirSync(sessionsDir))\n    removeIfStale(join(sessionsDir, entry), now);\n};\n\nconst startTurn = (file, line) => {\n  let firstLine = '';\n\n  try {\n    firstLine = readFileSync(file, 'utf8').split('\\n')[0];\n  } catch {\n    firstLine = '';\n  }\n\n  const temporary = `${file}.${process.pid}.tmp`;\n\n  try {\n    writeFileSync(temporary, firstLine ? `${firstLine}\\n${line}` : line);\n    renameSync(temporary, file);\n  } catch (error) {\n    rmSync(temporary, { force: true });\n    log(`compaction skipped for ${basename(file)}: ${error.message}`);\n    appendFileSync(file, line);\n  }\n};\n\nconst record = (input) => {\n  if (!SESSION_ID.test(input.session_id ?? '')) {\n    log(`ignored ${input.hook_event_name}: missing or invalid session_id`);\n\n    return;\n  }\n\n  const file = join(sessionsDir, `${input.session_id}.jsonl`);\n\n  if (input.hook_event_name === 'SessionEnd') {\n    rmSync(file, { force: true });\n\n    return;\n  }\n\n  mkdirSync(sessionsDir, { recursive: true });\n\n  const line = `${JSON.stringify(eventRecord(input))}\\n`;\n\n  if (input.hook_event_name === 'SessionStart')\n    removeStaleSessions(Date.now());\n\n  if (input.hook_event_name === 'UserPromptSubmit')\n    startTurn(file, line);\n  else\n    appendFileSync(file, line);\n};\n\nconst main = async () => {\n  if (isHeadless())\n    return;\n\n  try {\n    record(JSON.parse(await text(process.stdin)));\n  } catch (error) {\n    log(`error: ${error.message}`);\n  }\n};\n\nawait main();\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/status-blackbox.test.mjs",
+          "content": "import { test, describe } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { spawnSync } from 'node:child_process';\nimport { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, utimesSync, rmSync } from 'node:fs';\nimport { tmpdir } from 'node:os';\nimport { join, dirname } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nimport status from '../vscode/status-core.js';\n\nconst repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));\nconst hookPath = join(repoRoot, 'status', 'status-hook.mjs');\nconst sid = '11111111-2222-4333-8444-555555555555';\nconst otherSid = '66666666-7777-4888-9999-aaaaaaaaaaaa';\n\nfunction makeHome() {\n  return mkdtempSync(join(tmpdir(), 'status-bb-'));\n}\n\nfunction sessionsDir(home) {\n  return join(home, '.agent-status', 'sessions');\n}\n\nfunction sessionFile(home, id = sid) {\n  return join(sessionsDir(home), `${id}.jsonl`);\n}\n\nfunction runHook(home, input, entrypoint = 'cli') {\n  const env = { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_CODE_ENTRYPOINT: entrypoint };\n  const raw = typeof input === 'string' ? input : JSON.stringify(input);\n  const result = spawnSync(process.execPath, [hookPath], { input: raw, env, encoding: 'utf8' });\n  assert.equal(result.status, 0, `exit code with stderr: ${result.stderr}`);\n  assert.equal(result.stdout, '');\n  return result;\n}\n\nfunction readLines(home, id = sid) {\n  return readFileSync(sessionFile(home, id), 'utf8').split('\\n').filter((l) => l.trim()).map((l) => JSON.parse(l));\n}\n\nfunction event(name, extra = {}) {\n  return { session_id: sid, hook_event_name: name, cwd: join('C:', 'work', 'my-project'), ...extra };\n}\n\nfunction stopWith(home, message) {\n  runHook(home, event('Stop', { prompt_id: 'p1', last_assistant_message: message }));\n  const lines = readLines(home);\n  return lines[lines.length - 1];\n}\n\ndescribe('status-hook', () => {\n  test('SessionStart writes a line with t, event, promptId, tool, title and folder', () => {\n    const home = makeHome();\n    runHook(home, event('SessionStart', { session_title: 'My title' }));\n    const lines = readLines(home);\n    assert.equal(lines.length, 1);\n    const [line] = lines;\n    assert.equal(typeof line.t, 'number');\n    assert.ok(Math.abs(line.t - Date.now()) < 60000);\n    assert.equal(line.event, 'SessionStart');\n    assert.equal(line.promptId, undefined);\n    assert.equal(line.tool, undefined);\n    assert.equal(line.title, 'My title');\n    assert.equal(line.folder, 'my-project');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('other events append one line each with tool and promptId', () => {\n    const home = makeHome();\n    runHook(home, event('SessionStart'));\n    runHook(home, event('PreToolUse', { prompt_id: 'p1', tool_name: 'Bash' }));\n    runHook(home, event('PostToolUse', { prompt_id: 'p1', tool_name: 'Bash' }));\n    const lines = readLines(home);\n    assert.equal(lines.length, 3);\n    assert.equal(lines[1].event, 'PreToolUse');\n    assert.equal(lines[1].tool, 'Bash');\n    assert.equal(lines[1].promptId, 'p1');\n    assert.equal(lines[2].event, 'PostToolUse');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('UserPromptSubmit keeps only the first line plus the new line, with folder', () => {\n    const home = makeHome();\n    runHook(home, event('SessionStart'));\n    runHook(home, event('UserPromptSubmit', { prompt_id: 'p1' }));\n    runHook(home, event('PreToolUse', { prompt_id: 'p1', tool_name: 'Read' }));\n    runHook(home, event('Stop', { prompt_id: 'p1', last_assistant_message: 'ok' }));\n    runHook(home, event('UserPromptSubmit', { prompt_id: 'p2' }));\n    const lines = readLines(home);\n    assert.equal(lines.length, 2);\n    assert.equal(lines[0].event, 'SessionStart');\n    assert.equal(lines[1].event, 'UserPromptSubmit');\n    assert.equal(lines[1].promptId, 'p2');\n    assert.equal(lines[1].folder, 'my-project');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('Stop with STATUS: DONE excludes the marker and does not ask', () => {\n    const home = makeHome();\n    const line = stopWith(home, 'Work done.\\nShall I continue?\\nSTATUS: DONE');\n    assert.equal(line.event, 'Stop');\n    assert.equal(line.asks, false);\n    assert.equal(line.last, 'Shall I continue?');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('Stop with STATUS: QUESTION asks', () => {\n    const home = makeHome();\n    const line = stopWith(home, 'Pick one of the options.\\nSTATUS: QUESTION');\n    assert.equal(line.asks, true);\n    assert.equal(line.last, 'Pick one of the options.');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('Stop without marker asks exactly when the last non-empty line ends with ?', () => {\n    const home = makeHome();\n    const asking = stopWith(home, 'Done.\\nShould I push?\\n\\n  \\n');\n    assert.equal(asking.asks, true);\n    assert.equal(asking.last, 'Should I push?');\n    const telling = stopWith(home, 'Is this fine?\\nAll tests pass.');\n    assert.equal(telling.asks, false);\n    assert.equal(telling.last, 'All tests pass.');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('hostile STATUS text in the middle of a message does not count', () => {\n    const home = makeHome();\n    const notAsking = stopWith(home, 'STATUS: QUESTION\\nAll done.');\n    assert.equal(notAsking.asks, false);\n    assert.equal(notAsking.last, 'All done.');\n    const asking = stopWith(home, 'STATUS: DONE\\nReady to merge?');\n    assert.equal(asking.asks, true);\n    assert.equal(asking.last, 'Ready to merge?');\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('Stop last is cut to 200 characters', () => {\n    const home = makeHome();\n    const long = 'x'.repeat(500);\n    const line = stopWith(home, `intro\\n${long}`);\n    assert.equal(typeof line.last, 'string');\n    assert.ok(line.last.length <= 200);\n    assert.ok(line.last.length > 0);\n    assert.ok(long.startsWith(line.last.replace(/[.…]+$/, '')));\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('SessionEnd deletes the session file', () => {\n    const home = makeHome();\n    runHook(home, event('SessionStart'));\n    assert.ok(existsSync(sessionFile(home)));\n    runHook(home, event('SessionEnd'));\n    assert.ok(!existsSync(sessionFile(home)));\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('SessionStart deletes other session files older than 6 hours only', () => {\n    const home = makeHome();\n    mkdirSync(sessionsDir(home), { recursive: true });\n    const oldFile = sessionFile(home, otherSid);\n    const freshId = 'bbbbbbbb-cccc-4ddd-8eee-ffffffffffff';\n    const freshFile = sessionFile(home, freshId);\n    const line = JSON.stringify({ t: Date.now(), event: 'SessionStart' }) + '\\n';\n    writeFileSync(oldFile, line);\n    writeFileSync(freshFile, line);\n    const old = new Date(Date.now() - 7 * 3600 * 1000);\n    utimesSync(oldFile, old, old);\n    const recent = new Date(Date.now() - 5 * 3600 * 1000);\n    utimesSync(freshFile, recent, recent);\n    runHook(home, event('SessionStart'));\n    assert.ok(!existsSync(oldFile));\n    assert.ok(existsSync(freshFile));\n    assert.ok(existsSync(sessionFile(home)));\n    rmSync(home, { recursive: true, force: true });\n  });\n\n  test('headless sessions record nothing and create no files', () => {\n    for (const entrypoint of ['sdk-cli', 'sdk-ts']) {\n      const home = makeHome();\n      runHook(home, event('SessionStart'), entrypoint);\n      runHook(home, event('UserPromptSubmit', { prompt_id: 'p1' }), entrypoint);\n      assert.deepEqual(readdirSync(home), []);\n      rmSync(home, { recursive: true, force: true });\n    }\n  });\n\n  test('missing or invalid session_id writes no session file and logs', () => {\n    for (const bad of [undefined, 'not-a-uuid', '']) {\n      const home = makeHome();\n      const input = event('SessionStart');\n      if (bad === undefined) {\n        delete input.session_id;\n      } else {\n        input.session_id = bad;\n      }\n      runHook(home, input);\n      const dir = sessionsDir(home);\n      assert.ok(!existsSync(dir) || readdirSync(dir).length === 0);\n      const log = join(home, '.agent-status', 'hook.log');\n      assert.ok(existsSync(log));\n      assert.ok(readFileSync(log, 'utf8').trim().length > 0);\n      rmSync(home, { recursive: true, force: true });\n    }\n  });\n\n  test('path-traversal session ids create no files outside the sessions folder', () => {\n    for (const bad of ['../../evil', '..\\\\..\\\\evil', '../evil', `${sid}/../../evil`]) {\n      const home = makeHome();\n      const input = event('SessionStart');\n      input.session_id = bad;\n      runHook(home, input);\n      assert.deepEqual(readdirSync(home), ['.agent-status']);\n      const entries = readdirSync(join(home, '.agent-status')).sort();\n      assert.ok(entries.every((e) => e === 'hook.log' || e === 'sessions'), entries.join(','));\n      assert.ok(entries.includes('hook.log'));\n      const dir = sessionsDir(home);\n      assert.ok(!existsSync(dir) || readdirSync(dir).length === 0);\n      assert.ok(!existsSync(join(dirname(home), 'evil.jsonl')));\n      rmSync(home, { recursive: true, force: true });\n    }\n  });\n\n  test('unreadable stdin writes no session file and appends to the log twice', () => {\n    const home = makeHome();\n    runHook(home, '{not json');\n    runHook(home, '');\n    const log = join(home, '.agent-status', 'hook.log');\n    assert.ok(existsSync(log));\n    assert.ok(readFileSync(log, 'utf8').split('\\n').filter((l) => l.trim()).length >= 2);\n    const dir = sessionsDir(home);\n    assert.ok(!existsSync(dir) || readdirSync(dir).length === 0);\n    rmSync(home, { recursive: true, force: true });\n  });\n});\n\nconst T0 = 1_700_000_000_000;\n\nfunction ev(offsetMs, name, extra = {}) {\n  return { t: T0 + offsetMs, event: name, ...extra };\n}\n\nfunction state(events, nowOffset = 1000, stuckMs = 10 * 60 * 1000) {\n  return status.sessionState({ id: sid, events, now: T0 + nowOffset, stuckMs });\n}\n\ndescribe('status-core parseEvents', () => {\n  test('skips unreadable and incomplete lines and sorts by t', () => {\n    const text = [\n      JSON.stringify({ t: 30, event: 'Stop' }),\n      'garbage {',\n      JSON.stringify({ t: '10', event: 'X' }),\n      JSON.stringify({ t: 5 }),\n      JSON.stringify({ t: 6, event: 7 }),\n      '',\n      JSON.stringify({ t: 10, event: 'SessionStart' }),\n      JSON.stringify({ t: 20, event: 'UserPromptSubmit', promptId: 'p' })\n    ].join('\\n');\n    const events = status.parseEvents(text);\n    assert.deepEqual(events.map((e) => e.t), [10, 20, 30]);\n    assert.deepEqual(events.map((e) => e.event), ['SessionStart', 'UserPromptSubmit', 'Stop']);\n  });\n});\n\ndescribe('status-core sessionState', () => {\n  test('returns the documented fields', () => {\n    const s = state([ev(0, 'SessionStart', { folder: 'proj' })]);\n    for (const key of ['id', 'name', 'project', 'status', 'since', 'lastEventAt', 'tool', 'last']) {\n      assert.ok(key in s, key);\n    }\n    assert.equal(s.id, sid);\n    assert.equal(s.status, 'idle');\n    assert.equal(s.since, T0);\n    assert.equal(s.lastEventAt, T0);\n  });\n\n  test('name and project fallbacks', () => {\n    const titled = state([ev(0, 'SessionStart', { folder: 'a' }), ev(10, 'UserPromptSubmit', { folder: 'b', title: 'T1', promptId: 'p' }), ev(20, 'PostToolUse', { title: 'T2', promptId: 'p' })]);\n    assert.equal(titled.name, 'T2');\n    assert.equal(titled.project, 'b');\n    const foldered = state([ev(0, 'SessionStart', { folder: 'a' }), ev(10, 'UserPromptSubmit', { folder: 'b', promptId: 'p' })]);\n    assert.equal(foldered.name, 'b');\n    const bare = state([ev(0, 'SessionStart')]);\n    assert.equal(bare.name, sid.slice(0, 8));\n    assert.equal(bare.project, 'unknown project');\n  });\n\n  test('turn transitions', () => {\n    const base = [ev(0, 'SessionStart'), ev(100, 'UserPromptSubmit', { promptId: 'p1' })];\n    let s = state(base);\n    assert.equal(s.status, 'working');\n    assert.equal(s.since, T0 + 100);\n    s = state([...base, ev(200, 'PreToolUse', { promptId: 'p1', tool: 'AskUserQuestion' })]);\n    assert.equal(s.status, 'question');\n    assert.equal(s.since, T0 + 200);\n    s = state([...base, ev(200, 'PermissionRequest', { promptId: 'p1', tool: 'Bash' })]);\n    assert.equal(s.status, 'permission');\n    assert.equal(s.tool, 'Bash');\n    s = state([...base, ev(200, 'PermissionRequest', { promptId: 'p1', tool: 'Bash' }), ev(300, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]);\n    assert.equal(s.status, 'working');\n    assert.equal(s.tool, 'Bash');\n    s = state([...base, ev(200, 'PermissionRequest', { promptId: 'p1', tool: 'Edit' }), ev(300, 'PostToolUseFailure', { promptId: 'p1', tool: 'Edit' })]);\n    assert.equal(s.status, 'working');\n    assert.equal(s.tool, 'Edit');\n    s = state([...base, ev(300, 'Stop', { promptId: 'p1', asks: true, last: 'Go?' })]);\n    assert.equal(s.status, 'question');\n    assert.equal(s.last, 'Go?');\n    s = state([...base, ev(300, 'Stop', { promptId: 'p1', asks: false, last: 'Done.' })]);\n    assert.equal(s.status, 'finished');\n    assert.equal(s.since, T0 + 300);\n  });\n\n  test('events sorted out of order are evaluated in time order', () => {\n    const s = state([ev(300, 'Stop', { promptId: 'p1', asks: false }), ev(0, 'SessionStart'), ev(100, 'UserPromptSubmit', { promptId: 'p1' })]);\n    assert.equal(s.status, 'finished');\n  });\n\n  test('a PostToolUse after its turn Stop does not reopen it', () => {\n    const s = state([\n      ev(0, 'SessionStart'),\n      ev(100, 'UserPromptSubmit', { promptId: 'p1' }),\n      ev(200, 'Stop', { promptId: 'p1', asks: false }),\n      ev(300, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })\n    ]);\n    assert.equal(s.status, 'finished');\n    assert.equal(s.since, T0 + 200);\n  });\n\n  test('a PermissionRequest of an earlier turn after a new prompt does not change status', () => {\n    const s = state([\n      ev(0, 'SessionStart'),\n      ev(100, 'UserPromptSubmit', { promptId: 'p1' }),\n      ev(200, 'UserPromptSubmit', { promptId: 'p2' }),\n      ev(300, 'PermissionRequest', { promptId: 'p1', tool: 'Bash' })\n    ]);\n    assert.equal(s.status, 'working');\n    assert.notEqual(s.tool, 'Bash');\n  });\n\n  test('working beyond stuckMs becomes stuck since the last event', () => {\n    const events = [ev(0, 'SessionStart'), ev(100, 'UserPromptSubmit', { promptId: 'p1' }), ev(200, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })];\n    const stuck = status.sessionState({ id: sid, events, now: T0 + 200 + 5001, stuckMs: 5000 });\n    assert.equal(stuck.status, 'stuck');\n    assert.equal(stuck.since, T0 + 200);\n    const fine = status.sessionState({ id: sid, events, now: T0 + 200 + 4000, stuckMs: 5000 });\n    assert.equal(fine.status, 'working');\n    const finished = status.sessionState({ id: sid, events: [...events, ev(300, 'Stop', { promptId: 'p1', asks: false })], now: T0 + 1e9, stuckMs: 5000 });\n    assert.equal(finished.status, 'finished');\n  });\n});\n\nfunction session(id, project, st, since, lastEventAt = since) {\n  return { id, name: id, project, status: st, since, lastEventAt, tool: null, last: '' };\n}\n\ndescribe('status-core ordering and grouping', () => {\n  test('byUrgency orders by status then older since first', () => {\n    const list = [\n      session('idle', 'p', 'idle', 1),\n      session('working', 'p', 'working', 1),\n      session('finished', 'p', 'finished', 1),\n      session('stuck', 'p', 'stuck', 1),\n      session('questionNew', 'p', 'question', 50),\n      session('permissionOld', 'p', 'permission', 10)\n    ];\n    const sorted = [...list].sort(status.byUrgency).map((s) => s.id);\n    assert.deepEqual(sorted, ['permissionOld', 'questionNew', 'stuck', 'finished', 'working', 'idle']);\n    const ties = [session('b', 'p', 'working', 20), session('a', 'p', 'working', 10)].sort(status.byUrgency).map((s) => s.id);\n    assert.deepEqual(ties, ['a', 'b']);\n  });\n\n  test('waitingCount counts permission and question', () => {\n    const list = [session('a', 'p', 'permission', 1), session('b', 'p', 'question', 1), session('c', 'p', 'stuck', 1), session('d', 'p', 'finished', 1)];\n    assert.equal(status.waitingCount(list), 2);\n    assert.equal(status.waitingCount([]), 0);\n  });\n\n  test('groupByProject sorts sessions and groups', () => {\n    const list = [\n      session('z1', 'zeta', 'idle', 1),\n      session('a1', 'alpha', 'working', 1),\n      session('a2', 'alpha', 'question', 5),\n      session('b1', 'beta', 'working', 1),\n      session('m1', 'mu', 'idle', 1)\n    ];\n    const groups = status.groupByProject(list);\n    assert.deepEqual(groups.map((g) => g.project), ['alpha', 'beta', 'mu', 'zeta']);\n    const alpha = groups[0];\n    assert.deepEqual(alpha.sessions.map((s) => s.id), ['a2', 'a1']);\n    assert.equal(alpha.top.id, 'a2');\n    assert.equal(alpha.waiting, 1);\n    assert.equal(groups[1].waiting, 0);\n  });\n\n  test('groupDescription', () => {\n    const groups = status.groupByProject([\n      session('a1', 'alpha', 'question', 1),\n      session('a2', 'alpha', 'permission', 1),\n      session('a3', 'alpha', 'idle', 1),\n      session('b1', 'beta', 'idle', 1),\n      session('c1', 'gamma', 'working', 1),\n      session('c2', 'gamma', 'idle', 1)\n    ]);\n    const byName = Object.fromEntries(groups.map((g) => [g.project, g]));\n    assert.equal(status.groupDescription(byName.alpha), '2 waiting · 3 sessions');\n    assert.equal(status.groupDescription(byName.beta), '1 session');\n    assert.equal(status.groupDescription(byName.gamma), '2 sessions');\n  });\n});\n\ndescribe('status-core formatting', () => {\n  test('formatDuration', () => {\n    assert.equal(status.formatDuration(45 * 1000), '45s');\n    assert.equal(status.formatDuration(12 * 60 * 1000), '12m');\n    assert.equal(status.formatDuration((2 * 60 + 5) * 60 * 1000), '2h 05m');\n    assert.equal(status.formatDuration(-5000), '0s');\n  });\n\n  test('cardDescription labels, tool and duration', () => {\n    const now = T0 + 45 * 1000;\n    const make = (st, tool) => ({ ...session('x', 'p', st, T0), tool });\n    assert.equal(status.cardDescription(make('working', 'Bash'), now), 'working · after Bash · 45s');\n    assert.equal(status.cardDescription(make('stuck', 'Bash'), now), 'possibly stuck · after Bash · 45s');\n    assert.equal(status.cardDescription(make('permission', 'Edit'), now), 'waiting for permission · Edit · 45s');\n    assert.equal(status.cardDescription(make('question', 'Bash'), now), 'waiting for your answer · 45s');\n    assert.equal(status.cardDescription(make('finished', 'Bash'), now), 'finished, needs review · 45s');\n    assert.equal(status.cardDescription(make('idle', 'Bash'), now), 'idle · 45s');\n  });\n\n  test('isVisible', () => {\n    const s = session('x', 'p', 'idle', 1, 100);\n    assert.equal(status.isVisible(s, undefined), true);\n    assert.equal(status.isVisible(s, 99), true);\n    assert.equal(status.isVisible(s, 100), false);\n    assert.equal(status.isVisible(s, 200), false);\n  });\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/status-core.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport status from '../vscode/status-core.js';\n\nconst now = 1_000_000_000;\nconst stuckMs = 10 * 60_000;\nconst id = '7fa97870-6578-4ed2-b7c9-1dc4c9a2ef09';\n\nconst at = (secondsAgo, event, extra = {}) => ({ t: now - secondsAgo * 1000, event, ...extra });\nconst stateOf = (events) => status.sessionState({ id, events: [...events].sort((first, second) => first.t - second.t), now, stuckMs });\n\ntest('a fresh session is idle and named after its title, else its folder', () => {\n  assert.equal(stateOf([at(60, 'SessionStart', { title: 'portal-tester', folder: 'rehlko-portal' })]).name, 'portal-tester');\n\n  const session = stateOf([at(60, 'SessionStart', { folder: 'rehlko-portal' })]);\n\n  assert.equal(session.name, 'rehlko-portal');\n  assert.equal(session.status, 'idle');\n});\n\ntest('a prompt and its tools mean working, with the current tool', () => {\n  const session = stateOf([\n    at(90, 'SessionStart'),\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(30, 'PostToolUse', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'working');\n  assert.equal(session.tool, 'Bash');\n  assert.equal(session.since, now - 60_000);\n});\n\ntest('a permission request waits for the developer, and the next tool result returns to working', () => {\n  const waiting = [at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(40, 'PermissionRequest', { promptId: 'p1', tool: 'Edit' })];\n\n  assert.equal(stateOf(waiting).status, 'permission');\n  assert.equal(stateOf([...waiting, at(10, 'PostToolUse', { promptId: 'p1', tool: 'Edit' })]).status, 'working');\n});\n\ntest('AskUserQuestion and asking stops wait for an answer; other stops need review', () => {\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'PreToolUse', { promptId: 'p1', tool: 'AskUserQuestion' })]).status, 'question');\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'Stop', { promptId: 'p1', asks: true, last: 'Which one?' })]).status, 'question');\n\n  const finished = stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'Stop', { promptId: 'p1', asks: false, last: 'All tests pass.' })]);\n\n  assert.equal(finished.status, 'finished');\n  assert.equal(finished.last, 'All tests pass.');\n});\n\ntest('a tool event of a turn recorded after its stop does not reopen it', () => {\n  const session = stateOf([\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(20, 'Stop', { promptId: 'p1', asks: false, last: 'Done.' }),\n    at(19, 'PostToolUse', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'finished');\n});\n\ntest('late events of an earlier turn do not change the current one', () => {\n  const session = stateOf([\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(30, 'UserPromptSubmit', { promptId: 'p2' }),\n    at(20, 'PermissionRequest', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'working');\n});\n\ntest('a working session without events past the threshold is possibly stuck, keeping its tool', () => {\n  const session = stateOf([at(1200, 'UserPromptSubmit', { promptId: 'p1' }), at(700, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]);\n\n  assert.equal(session.status, 'stuck');\n  assert.equal(session.tool, 'Bash');\n  assert.equal(status.cardDescription(session, now), 'possibly stuck · after Bash · 11m');\n  assert.equal(status.cardDescription({ status: 'permission', tool: 'Edit', since: now - 5000 }, now), 'waiting for permission · Edit · 5s');\n  assert.equal(status.cardDescription({ status: 'finished', tool: 'Bash', since: now - 5000 }, now), 'finished, needs review · 5s');\n  assert.equal(stateOf([at(1200, 'UserPromptSubmit', { promptId: 'p1' }), at(500, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).status, 'working');\n});\n\ntest('unreadable lines are skipped and lines are ordered by time', () => {\n  const events = status.parseEvents('{\"t\":2,\"event\":\"Stop\"}\\nnot json\\n\\n{\"t\":1,\"event\":\"SessionStart\"}\\n{\"event\":\"NoTime\"}\\n');\n\n  assert.deepEqual(events.map((event) => event.event), ['SessionStart', 'Stop']);\n});\n\ntest('cards are sorted with waiting sessions first, longest waiting first, then stuck, finished, working, idle', () => {\n  const card = (name, sessionStatus, since) => ({ name, status: sessionStatus, since });\n  const sorted = [\n    card('idle', 'idle', 1),\n    card('working', 'working', 1),\n    card('question-new', 'question', 50),\n    card('finished', 'finished', 1),\n    card('permission-old', 'permission', 10),\n    card('stuck', 'stuck', 1),\n  ].sort(status.byUrgency);\n\n  assert.deepEqual(sorted.map((session) => session.name), ['permission-old', 'question-new', 'stuck', 'finished', 'working', 'idle']);\n  assert.equal(status.waitingCount(sorted), 2);\n});\n\ntest('sessions are grouped by project, the most urgent project first, each sorted by urgency', () => {\n  const card = (name, project, sessionStatus, since) => ({ name, project, status: sessionStatus, since });\n  const groups = status.groupByProject([\n    card('api-worker', 'api', 'working', 5),\n    card('portal-idle', 'rehlko-portal', 'idle', 1),\n    card('portal-asks', 'rehlko-portal', 'question', 20),\n    card('api-done', 'api', 'finished', 3),\n    card('portal-perm', 'rehlko-portal', 'permission', 10),\n  ]);\n\n  assert.deepEqual(groups.map((group) => group.project), ['rehlko-portal', 'api']);\n  assert.deepEqual(groups[0].sessions.map((session) => session.name), ['portal-perm', 'portal-asks', 'portal-idle']);\n  assert.deepEqual(groups[1].sessions.map((session) => session.name), ['api-done', 'api-worker']);\n  assert.equal(groups[0].top.name, 'portal-perm');\n  assert.equal(status.groupDescription(groups[0]), '2 waiting · 3 sessions');\n  assert.equal(status.groupDescription({ sessions: [card('a', 'x', 'working', 1)], waiting: 0 }), '1 session');\n});\n\ntest('a session takes its project from the folder of its latest prompt, or a placeholder', () => {\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1', folder: 'rehlko-portal' })]).project, 'rehlko-portal');\n  assert.equal(stateOf([at(60, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).project, 'unknown project');\n});\n\ntest('durations read as seconds, minutes, then hours and minutes', () => {\n  assert.equal(status.formatDuration(45_000), '45s');\n  assert.equal(status.formatDuration(12 * 60_000), '12m');\n  assert.equal(status.formatDuration((2 * 60 + 5) * 60_000), '2h 05m');\n  assert.equal(status.formatDuration(-5), '0s');\n});\n\ntest('a hidden card comes back only with a newer event', () => {\n  assert.equal(status.isVisible({ lastEventAt: 100 }, undefined), true);\n  assert.equal(status.isVisible({ lastEventAt: 100 }, 100), false);\n  assert.equal(status.isVisible({ lastEventAt: 101 }, 100), true);\n});\n\ntest('every status has a label and a theme colour', () => {\n  for (const [name, look] of Object.entries(status.STATUS)) {\n    assert.match(look.label, /\\w/, name);\n    assert.match(look.color, /^[a-zA-Z.]+$/, name);\n  }\n});\n",
+          "mode": 438
+        }
+      ]
+    },
+    "concernsApplied": [
+      "accessibility",
+      "combined",
+      "compatibility",
+      "data",
+      "security"
+    ],
+    "fallback": "same-provider-fresh",
+    "durationMs": 52179,
+    "usage": {
+      "inputTokens": 2,
+      "outputTokens": 4539,
+      "cachedInputTokens": 0,
+      "cacheCreationInputTokens": 63920
+    },
+    "invocations": 1
+  },
+  "acceptance": [
+    {
+      "scenarioId": "project-coordinator#agent-asks-the-developer",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "project-coordinator#agent-finishes-a-turn",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "session-status#interactive-session",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#headless-session",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#hook-failure",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#session-ends",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#out-of-order-events",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#permission-answered",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#long-tool-run",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#developer-is-needed",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#several-projects",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#focus-a-tab",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#tab-closed",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#hide-a-card",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#crashed-session",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#existing-hooks-kept",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    }
+  ],
+  "limitations": [],
+  "openspec": {
+    "changeName": "add-session-status",
+    "artifactsReady": true,
+    "tasksComplete": true,
+    "scenariosCovered": true,
+    "scenarioCount": 16,
+    "scenarioDigest": "sha256:ebcb79b170881e62f37ae0c7e655d4935c86db715a6cacecb8d57e6e5241df5d",
+    "guidanceDigest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "validationDigest": "sha256:7c2c38ff37d87804dbbe0c9cc545a75a3b9e8d005f1f15565009f34c122b6f08"
+  },
+  "applicability": {
+    "requiredValidationLanes": [
+      "accessibility",
+      "security",
+      "test"
+    ],
+    "reviewConcerns": [
+      "accessibility",
+      "combined",
+      "compatibility",
+      "data",
+      "security"
+    ]
+  },
+  "continuation": {
+    "baseline": {
+      "schemaVersion": 2,
+      "base": "d93da21b9663d7efac2fcee2d215a57f647f9718",
+      "unrelatedPaths": [],
+      "unrelatedDigest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "remediationCycles": 1,
+    "history": [
+      {
+        "resultDigest": "sha256:238e8f7cdebfdbf989b59d88f0617774cd823ebf9df72654b2e98fee4968de83",
+        "sourceDigest": "sha256:1d59c0fc0d44b44b662a0fb64b1ea56cc988ff20c8a1ca0d8b77b71d84fe2868",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:f084310218eadf3c0c60c805996e230d003cf0563b167c301a812649da0c33d9",
+        "sourceDigest": "sha256:1d59c0fc0d44b44b662a0fb64b1ea56cc988ff20c8a1ca0d8b77b71d84fe2868",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:8d27fcd1769131a85c09936bf59af401f9d3fc0d7c99834b81cbe57186b34edd",
+        "sourceDigest": "sha256:1d59c0fc0d44b44b662a0fb64b1ea56cc988ff20c8a1ca0d8b77b71d84fe2868",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "running-tool-is-last-finished-tool",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "vscode/status-core.js applyEvent sets state.tool only from PermissionRequest/PostToolUse/PostToolUseFailure, and the hook records PreToolUse only for AskUserQuestion. PostToolUse fires after a tool completes, so during a long Bash run after a Read the card shows 'possibly stuck · Read · 11m'. This contradicts the spec ('the current tool'; Long tool run 'with the tool name') and README ('the running tool'). The stuck tests encode this. Keeping the no-per-tool-PreToolUse trade-off, label it as the last tool (e.g. 'after Read') and align spec, README and tests."
+          },
+          {
+            "id": "compaction-race-drops-new-turn-line",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "status/status-hook.mjs startTurn reads the first line, writes a temp file and renames it over the session file. A concurrent async append, such as a new-turn PermissionRequest, made between the read and the rename is lost, so the card stays green instead of red. The design acknowledges this only for previous-turn lines; the window is milliseconds, so the risk is low."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:50c4bc170d90db53b927a36681b435454c9f264785740ed1165d89fa22e5528f",
+        "sourceDigest": "sha256:1d59c0fc0d44b44b662a0fb64b1ea56cc988ff20c8a1ca0d8b77b71d84fe2868",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "running-tool-is-last-finished-tool",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "vscode/status-core.js applyEvent sets state.tool only from PermissionRequest/PostToolUse/PostToolUseFailure, and the hook records PreToolUse only for AskUserQuestion. PostToolUse fires after a tool completes, so during a long Bash run after a Read the card shows 'possibly stuck · Read · 11m'. This contradicts the spec ('the current tool'; Long tool run 'with the tool name') and README ('the running tool'). The stuck tests encode this. Keeping the no-per-tool-PreToolUse trade-off, label it as the last tool (e.g. 'after Read') and align spec, README and tests."
+          },
+          {
+            "id": "compaction-race-drops-new-turn-line",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "status/status-hook.mjs startTurn reads the first line, writes a temp file and renames it over the session file. A concurrent async append, such as a new-turn PermissionRequest, made between the read and the rename is lost, so the card stays green instead of red. The design acknowledges this only for previous-turn lines; the window is milliseconds, so the risk is low."
+          }
+        ],
+        "checks": 1,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:4e45190d0b6cd25fd1a771fe058d2c22803b53493fde05e4b291ad1d8711357d",
+        "sourceDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:61696cd1d0564e89e0182ce5cd1c54e48662b7ac6c56510b9d32990e6dbe5561",
+        "sourceDigest": "sha256:f1e58ac14f2af8ad5db67906f9165e2f3a504d800c7996e2315f9fe526beaa98",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "PASS",
+        "findings": [
+          {
+            "id": "late-event-recreates-ended-session",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "status/status-hook.mjs record(): SessionEnd deletes the file, but a late async Stop/PostToolUse of the same session finishing afterwards appends and recreates it, leaving a ghost 'finished' card until the 6 h stale cleanup. Extension-opened tabs are hidden on close, so impact is mostly hand-started sessions. Consider ignoring/removing files whose last line is after a SessionEnd marker, or accept and document; no regression test covers post-SessionEnd events."
+          },
+          {
+            "id": "focus-fallback-not-on-card",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "Spec 'Focus a tab' and design say for other sessions 'the card says' it is in another window or started by hand; sessions-view.js focus() only shows an information message after click, the card description/tooltip does not. Align spec wording or card text."
+          },
+          {
+            "id": "proposal-running-tool-wording",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "openspec proposal.md still says cards show 'the running tool', while spec, design, README and code show the last finished tool ('after <tool>'). Documentation wording drift."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      }
+    ],
+    "historyCount": 6,
+    "historyDigest": "sha256:25a24aa6b69e405d807b36c8171051037e26726cc424b44bb9f73b57d50d3c83"
+  },
+  "schemaVersion": 2,
+  "createdAt": "2026-11-18T12:08:10.881Z",
+  "definitionOfDone": {
+    "status": "PASS",
+    "blockers": []
+  },
+  "status": "complete",
+  "nextAction": "No further SDD action is required."
+}

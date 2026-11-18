@@ -41,6 +41,29 @@ Open the project folder and run "Toolkit: Enable coordinator in this folder". It
 
 Sessions are named `<project>-coordinator` and `<project>-<worker>` (the project folder name in lowercase, other characters as hyphens); tabs show the short name. Enabled projects need different folder names, or their sessions share names.
 
+## Session status
+
+The "Claude sessions" view (Explorer sidebar) and the status-bar item show every interactive Claude Code session on this machine, toolkit or not:
+
+| Colour | Status | Set by |
+|---|---|---|
+| red | waiting for permission / waiting for your answer | `PermissionRequest`; `AskUserQuestion`, or a turn ending with `STATUS: QUESTION` (coordinator and worker) or a final `?` |
+| purple | possibly stuck | working with no event for `claudeToolkit.stuckMinutes` (default 10) |
+| yellow | finished, needs review | any other end of turn |
+| green | working | a prompt or a tool result |
+| grey | idle | session started, no prompt yet |
+
+Cards are grouped by project folder (the most urgent project first; each group shows how many of its sessions wait) and sorted by urgency inside each group (longest waiting first) and show the time in that status, the last tool used ("after Bash"; only finished tool calls are recorded) or the tool asking for permission, and the last line of the last message. Click a card to focus its tab when the tab is one this window opened; hide a card with its eye icon until the session's next event. Closing a tab hides its card.
+
+Install the hooks once (they back up `~/.claude/settings.json` first and add only their own entries):
+
+```
+node <clone>/status/install.mjs
+node <clone>/status/install.mjs --uninstall
+```
+
+The hook (`status/status-hook.mjs`) runs asynchronously, so sessions never wait for it, and appends one line per event to `~/.agent-status/sessions/<session_id>.jsonl`; errors go to `~/.agent-status/hook.log`. It deletes a session's file at `SessionEnd` and, when a session starts, files idle for more than 6 hours (`STALE_HOURS` at the top of the script). Headless sessions (`claude -p`, SDK, SDD's reviewer) are skipped by the observed but undocumented `CLAUDE_CODE_ENTRYPOINT=sdk-*` value; `tests/status-entrypoint.e2e.mjs` checks it against the installed CLI. A denied permission stays red until the turn ends, because Claude Code fires no event for a denial.
+
 ## Plugin delivery
 
 The organization's managed Claude Code policy currently allows only the official Anthropic marketplace, so the plugin is loaded from the clone with `--plugin-dir` (the extension does it; by hand: `claude --plugin-dir <clone>/plugins/toolkit`). Update with `git pull`, then reload VS Code.
@@ -62,7 +85,7 @@ Delete the `dserri.claude-toolkit-0.0.1` junction and reload VS Code; remove a p
 
 ```
 node --test
-node --test tests/coordinator.e2e.mjs
+node --test tests/coordinator.e2e.mjs tests/status-entrypoint.e2e.mjs
 ```
 
-The first runs the unit, hook and `claude plugin validate` tests (`claude` must be on `PATH`). The second starts a real coordinator session with a model call. Tab behaviour in VS Code is verified by hand.
+The first runs the unit, hook, installer and `claude plugin validate` tests (`claude` must be on `PATH`). The second starts real headless sessions with a model call. Tab behaviour and the session view in VS Code are verified by hand.

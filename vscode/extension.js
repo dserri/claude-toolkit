@@ -4,6 +4,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const core = require('./core');
+const { registerSessionsView } = require('./sessions-view');
 
 let output;
 let watching = false;
@@ -27,12 +28,14 @@ const settings = (context) => {
 
 const openTabNames = () => vscode.window.terminals.map((terminal) => terminal.name);
 
-const openTab = ({ name, args, folder, claudePath, beside }) => {
+const tabsBySession = new Map();
+
+const openTab = ({ name, sessionName, args, folder, claudePath, beside }) => {
   if (openTabNames().includes(name))
     return;
 
   output.appendLine(`Opening ${name}: ${claudePath} ${JSON.stringify(args)}`);
-  vscode.window.createTerminal(core.terminalOptions({ name, claudePath, args, folder, beside }));
+  tabsBySession.set(sessionName, vscode.window.createTerminal(core.terminalOptions({ name, claudePath, args, folder, beside })));
 };
 
 const readSessionRecord = (folder, name) => {
@@ -101,7 +104,7 @@ const handleRequest = (context, folder, file, { waitForWrite }) => {
   const sessionRecord = readSessionRecord(folder, result.name);
   const args = core.requestedWorkerArgs({ projectFolder: folder, pluginDir, name: result.name, sessionRecord });
 
-  openTab({ name: result.name, args, folder, claudePath, beside: true });
+  openTab({ name: result.name, sessionName: core.workerSessionName(folder, result.name), args, folder, claudePath, beside: true });
 };
 
 const watchRequests = (context, folder) => {
@@ -124,13 +127,13 @@ const start = (context, folder) => {
   const { claudePath, pluginDir } = settings(context);
   const coordinatorArgs = core.coordinatorArgs({ projectFolder: folder, pluginDir });
 
-  openTab({ name: core.COORDINATOR_TAB, args: coordinatorArgs, folder, claudePath, beside: false });
+  openTab({ name: core.COORDINATOR_TAB, sessionName: core.coordinatorSessionName(folder), args: coordinatorArgs, folder, claudePath, beside: false });
 
   for (const name of readActiveWorkers(folder)) {
     const sessionRecord = readSessionRecord(folder, name);
     const args = core.resumeWorkerArgs({ projectFolder: folder, pluginDir, name, sessionRecord });
 
-    openTab({ name, args, folder, claudePath, beside: true });
+    openTab({ name, sessionName: core.workerSessionName(folder, name), args, folder, claudePath, beside: true });
   }
 
   if (!watching) {
@@ -209,6 +212,7 @@ const activate = (context) => {
     vscode.commands.registerCommand('claudeToolkit.enable', withFolder((folder) => enable(context, folder))),
     vscode.commands.registerCommand('claudeToolkit.start', withFolder((folder) => startEnabled(context, folder))),
   );
+  registerSessionsView(context, tabsBySession);
 
   const folder = projectFolder();
 

@@ -93,3 +93,17 @@ When a coordinator session starts (not when one is resumed), the plugin SHALL ru
 
 - **WHEN** the SDD script is absent or the pull fails
 - **THEN** the coordinator's context says the pull failed and why, in one line, and the session continues
+
+### Requirement: Turn status line
+
+The coordinator and worker agents SHALL end every turn with a final line `STATUS: QUESTION` when they need the developer's answer, and `STATUS: DONE` otherwise.
+
+#### Scenario: Agent asks the developer
+
+- **WHEN** a coordinator or worker ends its turn with a question for the developer
+- **THEN** its last line is `STATUS: QUESTION`
+
+#### Scenario: Agent finishes a turn
+
+- **WHEN** a coordinator or worker ends its turn without needing the developer
+- **THEN** its last line is `STATUS: DONE`

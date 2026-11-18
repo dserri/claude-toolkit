@@ -54,16 +54,27 @@ test('both agents describe the same board paths', () => {
   }
 });
 
+test('both agents end every turn with the status line the session view reads', () => {
+  for (const name of ['coordinator', 'worker'])
+    assert.match(readAgent(name), /End every turn with a final line on its own: `STATUS: QUESTION` when you need the developer's answer or decision, `STATUS: DONE` otherwise\./, name);
+});
+
 test('the coordinator writes requests in the exact shape the extension accepts', () => {
   assert.match(readAgent('coordinator'), /^- `requests\/<name>\.json`: .*containing exactly `\{ "name": "<name>" \}`/m);
 });
 
-test('the extension adds only native, labelled VS Code UI: commands and settings, no custom views', () => {
+test('the extension adds only native, labelled VS Code UI: commands, settings and a tree view, no webview', () => {
   const extension = readJson('vscode', 'package.json');
-  const { commands, configuration } = extension.contributes;
+  const { commands, configuration, views } = extension.contributes;
 
-  assert.deepEqual(Object.keys(extension.contributes).sort(), ['commands', 'configuration']);
-  assert.deepEqual(commands.map((command) => command.title), ['Toolkit: Enable coordinator in this folder', 'Toolkit: Start coordinator']);
+  assert.deepEqual(Object.keys(extension.contributes).sort(), ['commands', 'configuration', 'menus', 'views']);
+  assert.deepEqual(commands.map((command) => command.title), [
+    'Toolkit: Enable coordinator in this folder',
+    'Toolkit: Start coordinator',
+    'Toolkit: Show session tab',
+    'Toolkit: Hide session until its next event',
+  ]);
+  assert.deepEqual(views, { explorer: [{ id: 'claudeToolkit.sessions', name: 'Claude sessions' }] });
 
   for (const [key, setting] of Object.entries(configuration.properties)) {
     assert.match(setting.description, /\S{3}/, key);
