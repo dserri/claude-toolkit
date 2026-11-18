@@ -76,8 +76,11 @@ test('the extension adds only native, labelled VS Code UI: commands, settings an
     'Toolkit: Show session tab',
     'Toolkit: Hide session until its next event',
     'Toolkit: Show session again',
+    'Toolkit: Reset session order',
     'Toolkit: Show the session waiting longest',
     'Toolkit: Next waiting session',
+    'Toolkit: Move up',
+    'Toolkit: Move down',
   ]);
   assert.deepEqual(viewsContainers, { activitybar: [{ id: 'claudeToolkit', title: 'Claude sessions', icon: 'media/sessions.svg' }] });
   assert.deepEqual(views, { claudeToolkit: [{ id: 'claudeToolkit.sessions', name: 'Claude sessions' }] });

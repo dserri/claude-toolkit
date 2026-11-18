@@ -1,0 +1,458 @@
+{
+  "route": "full",
+  "request": {
+    "digest": "sha256:89eadb5830efcfd8243e4aa8dae59be0730fd5553bd6fcfee4a535e4dbc8e802",
+    "route": "full",
+    "changeName": "add-manual-order",
+    "kind": "feature",
+    "summary": "status-core: applyOrder (placed items in stored order, the rest by a fallback), moveBefore (place a key before a target or last), orderedGroups (project order and per-project session order by name, unplaced ones by urgency). sessions-view: createTreeView with a TreeDragAndDropController (one mime type; drags carry kind, project and name; hidden entries and the hidden group are neither draggable nor drop targets); drop rules: project onto another project -> before it; session onto a session of the same project -> before it, onto its own project -> last; anything else ignored; the full displayed order is stored in globalState 'sessionOrder' (shared by windows); 'Toolkit: Reset session order' clears it. Review fixes: one persist helper awaits globalState.update, refreshes, and shows an error message on failure (prune writes report failures too); readSessions skips files with no parsed events so an unreadable file is not new activity; the hidden group label is 'Hidden (n)'. README documents ordering. Developer acceptance in VS Code: reorder sessions and projects, cross-project drop refused, same order in a second window, reset. Tests: node --test 189 passed. UI stays native (tree drag and drop). Round 1 fixes: vscode/session-files.js reads session files and reports unreadable or empty ones separately; pruneHidden keeps their hidden entries (regression test through the file reader). Order keys: titled sessions by name, untitled by id:<id> (sessionKey), so folder-named twins move separately. Reorders merge displayed keys with stored keys not displayed (mergeOrder keeps each after its stored predecessor), so hidden or absent placed items keep their place. Keyboard alternative: 'Toolkit: Move up/Move down' in the context menu of sessions and projects (stepTarget + moveBefore; projects get contextValue 'project'); covered by tests, not yet tried by the developer. Missing group guarded; one shared byGroupUrgency comparator.",
+    "surfaces": [
+      "accessibility",
+      "dependency",
+      "runtime",
+      "ui"
+    ],
+    "acceptance": [
+      "session-status#reorder-sessions",
+      "session-status#reorder-projects",
+      "session-status#cross-project-drop",
+      "session-status#new-session",
+      "session-status#reset",
+      "session-status#unreadable-file"
+    ]
+  },
+  "repository": {
+    "baseDigest": "sha256:fa774709d53af9f2feecd593438827b1c4d49574f19f0cf7769dbf030c01f5ba",
+    "finalDigest": "sha256:b5c60389c02d1e269927ec8976922d2806342c1819e2101fa854cbba78169e38",
+    "configDigest": "sha256:64bd5ebc09005459de6436345630a01be4c3dc35cc91efe3a1df741b0630a62a",
+    "dependencyDigest": "sha256:64bd5ebc09005459de6436345630a01be4c3dc35cc91efe3a1df741b0630a62a",
+    "environmentDigest": "sha256:2385622c4dfd2867cf84e02a9e8f8b0036331258ca50e36a0af283b95c6f450e",
+    "affectedFiles": [
+      "README.md",
+      "openspec/changes/add-manual-order/.openspec.yaml",
+      "openspec/changes/add-manual-order/design.md",
+      "openspec/changes/add-manual-order/proposal.md",
+      "openspec/changes/add-manual-order/specs/session-status/spec.md",
+      "openspec/changes/add-manual-order/tasks.md",
+      "tests/session-files.test.mjs",
+      "tests/status-core.test.mjs",
+      "tests/toolkit.test.mjs",
+      "vscode/package.json",
+      "vscode/session-files.js",
+      "vscode/sessions-view.js",
+      "vscode/status-core.js"
+    ],
+    "unrelatedWorkPreserved": true,
+    "recoverable": true
+  },
+  "implementation": {
+    "summary": "status-core: applyOrder (placed items in stored order, the rest by a fallback), moveBefore (place a key before a target or last), orderedGroups (project order and per-project session order by name, unplaced ones by urgency). sessions-view: createTreeView with a TreeDragAndDropController (one mime type; drags carry kind, project and name; hidden entries and the hidden group are neither draggable nor drop targets); drop rules: project onto another project -> before it; session onto a session of the same project -> before it, onto its own project -> last; anything else ignored; the full displayed order is stored in globalState 'sessionOrder' (shared by windows); 'Toolkit: Reset session order' clears it. Review fixes: one persist helper awaits globalState.update, refreshes, and shows an error message on failure (prune writes report failures too); readSessions skips files with no parsed events so an unreadable file is not new activity; the hidden group label is 'Hidden (n)'. README documents ordering. Developer acceptance in VS Code: reorder sessions and projects, cross-project drop refused, same order in a second window, reset. Tests: node --test 189 passed. UI stays native (tree drag and drop). Round 1 fixes: vscode/session-files.js reads session files and reports unreadable or empty ones separately; pruneHidden keeps their hidden entries (regression test through the file reader). Order keys: titled sessions by name, untitled by id:<id> (sessionKey), so folder-named twins move separately. Reorders merge displayed keys with stored keys not displayed (mergeOrder keeps each after its stored predecessor), so hidden or absent placed items keep their place. Keyboard alternative: 'Toolkit: Move up/Move down' in the context menu of sessions and projects (stepTarget + moveBefore; projects get contextValue 'project'); covered by tests, not yet tried by the developer. Missing group guarded; one shared byGroupUrgency comparator.",
+    "builder": {
+      "provider": "claude",
+      "identityStrength": "operator-asserted"
+    }
+  },
+  "validation": [
+    {
+      "id": "tests",
+      "lane": "test",
+      "coverage": [
+        "test",
+        "ui",
+        "accessibility"
+      ],
+      "kind": "command",
+      "key": "sha256:dee66c92b2efb7b9b917d0167678803b7e8743096ea3cdd4064bc0f6a5744384",
+      "codeDigest": "sha256:b5c60389c02d1e269927ec8976922d2806342c1819e2101fa854cbba78169e38",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          "README.md",
+          "vscode/package.json",
+          "vscode/sessions-view.js",
+          "vscode/status-core.js",
+          "tests/status-core.test.mjs",
+          "tests/toolkit.test.mjs",
+          "vscode/session-files.js",
+          "tests/session-files.test.mjs"
+        ]
+      },
+      "summary": "✔ marketplace.json exists at the repository root and parses (6.6089ms)\n✔ marketplace is named claude-toolkit with an owner and plugins (1.0843ms)\n✔ marketplace lists exactly one plugin named toolkit (0.8177ms)\n✔ every plugin source is a relative path inside the repository root (2.1646ms)\n✔ source containment check rejects escaping and absolute sources (1.4706ms)\n✔ toolkit source is a directory with plugin.json named toolkit (2.092ms)\n✔ every listed plugin source has a plugin.json whose name matches its listing (1.4782ms)\n✔ toolkit plugin.json declares no version (1.0944ms)\n✔ toolkit marketplace entry declares no version (0.829ms)\n✔ the listed plugins ship no skills yet (2.3551ms)\n✔ every SKILL.md frontmatter name matches its directory and none is sdd (1.1159ms)\n✔ no listed plugin ships an sdd skill directory or agent file (1.5406ms)\n✔ claude plugin validate accepts the marketplace and the toolkit plugin (4713.7602ms)\n▶ isWorkerName\n  ✔ accepts valid names (2.107ms)\n  ✔ rejects invalid names (0.4123ms)\n✔ isWorkerName (5.427ms)\n▶ sessionPrefix\n  ✔ normalises the base name (0.8424ms)\n  ✔ uses project when nothing remains (0.4645ms)\n✔ sessionPrefix (1.7694ms)\n▶ workerSessionName\n  ✔ joins prefix and name (0.6448ms)\n  ✔ throws for invalid names (1.5384ms)\n✔ workerSessionName (2.6616ms)\n▶ coordinatorArgs\n  ✔ contains the required flags and a fixed prompt (1.073ms)\n✔ coordinatorArgs (1.3815ms)\n▶ newWorkerArgs\n  ✔ contains the require\n[... diagnostic truncated ...]\nate without title or folder (0.4579ms)\n✔ hook records events with folder from cwd (759.8143ms)\n✔ hook prefers CLAUDE_PROJECT_DIR for folder (860.4601ms)\n✔ SessionEnd deletes the file, leaves a marker and blocks later events (1776.3254ms)\n✔ SessionStart after SessionEnd removes the marker and records (975.1097ms)\n✔ SessionStart removes files older than six hours, including markers (223.0204ms)\nℹ tests 195\nℹ suites 18\nℹ pass 195\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 10259.5326\n",
+      "exitCode": 0,
+      "durationMs": 10416,
+      "reused": true
+    }
+  ],
+  "review": {
+    "verdict": "PASS",
+    "reviewedDigest": "sha256:b5c60389c02d1e269927ec8976922d2806342c1819e2101fa854cbba78169e38",
+    "concerns": [
+      "accessibility: Move up/Move down is the keyboard alternative for drag and drop. It is covered by unit tests only; the developer has not used it in VS Code, so its runtime keyboard behaviour is unconfirmed.",
+      "combined: the order logic (applyOrder, moveBefore, mergeOrder, stepTarget, orderedGroups) matches the spec. The drop rules turn away cross-project drops and drops onto the hidden group.",
+      "compatibility: createTreeView with dragAndDropController, DataTransferItem and the viewItem =~ regex all work with engines ^1.90.0. Order state is a new globalState key, and existing hidden state stays compatible."
+    ],
+    "findings": [
+      {
+        "id": "keyboard-move-runtime-unverified",
+        "severity": "medium",
+        "status": "open",
+        "blocking": false,
+        "summary": "Move up/Move down (package.json view/item/context, sessions-view.js move) is the only keyboard alternative to dragging (WCAG 2.1.1). It is covered by stepTarget/moveBefore unit tests only; the request says the developer has not tried it yet. Before relying on it, try it once in VS Code: Shift+F10 on a session and on a project, both directions, first and last items, and the result in a second window."
+      },
+      {
+        "id": "order-keys-never-pruned",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "mergeOrder keeps every stored key that is not displayed, and nothing removes the keys of ended sessions. Each reorder therefore stores the id:<id> key of every untitled session displayed at the time, and the keys of projects that are gone, until 'Reset session order' is run. hiddenSessions is pruned on refresh; sessionOrder is not. Dropping id: keys whose session file no longer exists would keep globalState from growing without limit."
+      },
+      {
+        "id": "move-without-element",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "sessions-view.js move(element, step) reads element.sessions with no guard. If moveUp/moveDown runs without a tree element (for example from a user keybinding, since the palette hides them), it throws a TypeError instead of doing nothing."
+      },
+      {
+        "id": "openspec-docs-drift",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "design.md says the drag carries the session name, but it carries sessionKey. proposal.md Impact leaves out vscode/session-files.js. tasks.md has no tasks for Move up/down, mergeOrder, sessionKey or the session-files reader, which this change delivers."
+      }
+    ],
+    "coverage": "complete",
+    "independent": true,
+    "fresh": true,
+    "readOnly": true,
+    "reviewer": {
+      "provider": "claude",
+      "contextId": "ebb55574-b44f-4e13-be79-a031ce00626b"
+    },
+    "policyDigest": "sha256:3d1392720a009261f41e55ef9d5d9f6c279b29c84d5f56e4cfd232bde6bd996c",
+    "inputs": {
+      "intentDigest": "sha256:36f29c336841b8d515d8506ea77212407d969ebe8a0006e50c5a8f4f28337aad",
+      "files": {
+        "README.md": "sha256:7b26be9a849cd954b34b848573bb0aedc21c88d7edb3abff703cd0e2bf9fb314",
+        "openspec/changes/add-manual-order/.openspec.yaml": "sha256:72d943f4ed5d44dedc499ece3b67a8d0cff965cb53fbba03c97804cb10b88c37",
+        "openspec/changes/add-manual-order/design.md": "sha256:74b705d19954ce65efe80c44c71e68ff7731a7276d75046ee4f1ca44b89fe1f7",
+        "openspec/changes/add-manual-order/proposal.md": "sha256:790e263fbf39d544604334e9cef3cb7885f5a6f4281551dcbda835ab1df138ca",
+        "openspec/changes/add-manual-order/specs/session-status/spec.md": "sha256:b2bb3a96da1564c3ba03e7eb433a8c55087767859066be98e75c5f90b47130c5",
+        "openspec/changes/add-manual-order/tasks.md": "sha256:39aabcee2777c02380f7fcf1bae935a2e301222a01edb9d34e21895745b42c8f",
+        "tests/session-files.test.mjs": "sha256:ed84502ced4c5aa59993ef6200d0d69d3422f0496183698c714935ad9497f863",
+        "tests/status-core.test.mjs": "sha256:f5872bd04492078fcd0a653098f56b0f69285b32612231e849ebfe08c4da42f0",
+        "tests/toolkit.test.mjs": "sha256:85f54946a22d7561c9f831a2d59fcad4d6d3044808c3305cf4ebe72769718087",
+        "vscode/package.json": "sha256:64bd5ebc09005459de6436345630a01be4c3dc35cc91efe3a1df741b0630a62a",
+        "vscode/session-files.js": "sha256:ae012c3a8c66b6cce66d57d3c9f67bbfb823b78b4360ea6b0dab5e363e54b8a7",
+        "vscode/sessions-view.js": "sha256:c62adae844605b03f6303f1e8e76c79c7a04ef5371aa567d0b6d9462c7a817b6",
+        "vscode/status-core.js": "sha256:2664c13fb3086b79721dea9ad0dddfbe55f961858fff9472e6419895a872520a"
+      },
+      "sources": [
+        {
+          "path": "README.md",
+          "content": "# claude-toolkit\n\nPersonal Claude Code plugins, laid out as a private plugin marketplace. A proof of concept: it is compatible with the team-shared SDD skill but entirely separate from it, and never changes it. Every toolkit agent carries the `toolkit:` prefix.\n\n## What it does\n\nTwo parts, installable separately. **[INSTALL.md](INSTALL.md) is the setup guide** (written so Claude Code can follow it for you).\n\n1. **Claude sessions**: a \"Claude sessions\" view with the live, colour-coded status of every Claude session on the machine, a status-bar count, `Ctrl+Alt+N` to jump to waiting sessions, click-to-focus across VS Code windows, a `STATUS:` line at the end of every turn, and optionally a plain Claude tab that opens with a folder (\"Toolkit: Open Claude here on startup\"). Needs only the extension link and the status hooks.\n2. **Coordinator**: open a project and a **coordinator** Claude session starts in an editor tab. It reports the SDD team recap, reads the project board and asks what is next. You tell it the goal; it creates the **worker** sessions the job needs, each in its own named tab with a written brief, and follows them through SendMessage. Workers that still have open work reopen with their conversation the next time you open the project. You can still type in any worker's tab.\n\n| Part | Where |\n|---|---|\n| Status hooks (session events, `STATUS:` line instruction) and their installer | `status/` |\n| `toolkit:coordinator` and `toolkit:worker` agents | `plugins/toolkit/agents/` |\n| Start-up hook: runs SDD's team-mailbox pull for the coordinator only | `plugins/toolkit/hooks/` |\n| VS Code extension: session view, plain Claude tab, coordinator and worker tabs | `vscode/` |\n\nOne project per coordinator; coordinating several projects is planned.\n\n## Coordinator sessions\n\nThe extension starts every coordinator and worker session with `--plugin-dir <clone>/plugins/toolkit` and `--permission-mode auto` (sessions in the same mode exchange messages without approval prompts). `claude` must be on `PATH`, or set `claudeToolkit.claudePath`; `claudeToolkit.pluginDir` overrides the plugin folder. `claudeToolkit.workerLayout` chooses where worker tabs open: `beside` (default, the column next to the coordinator) or `tabs` (full-width tabs in the coordinator's column).\n\n## Enable a project\n\nOpen the project folder and run \"Toolkit: Enable coordinator in this folder\". It records the folder as enabled on this machine (in the extension's own storage, never in the repository), creates `.coord/`, adds it to `.git/info/exclude` (never `.gitignore`), and opens the coordinator. From then on the coordinator opens whenever VS Code opens the folder; \"Toolkit: Start coordinator\" opens it again if you closed it. A repository that carries a `.coord/` folder starts nothing until you enable it yourself, and the extension's settings are machine-scoped, so a workspace cannot change which executable or plugin it runs.\n\n### The board (`.coord/`)\n\n| File | Written by | Contents |\n|---|---|---|\n| `team.json` | coordinator | `[{ \"name\", \"role\", \"state\": \"active\" \\| \"done\" }]`; active workers reopen at start-up |\n| `workers/<name>/brief.md` | coordinator | the worker's task |\n| `workers/<name>/status.md` | worker | `State`, `Summary`, `Next` |\n| `requests/<name>.json` | coordinator | `{ \"name\": \"<name>\" }`: asks the extension to open the worker; rejected requests leave `<name>.rejected.md` |\n| `log.md` | coordinator | decisions, assignments and outcomes |\n| `sessions/<session name>.id` | start-up hook | each worker's session ID, so its tab resumes exactly its own conversation, also when the coordinator requests a finished worker again |\n\nSessions are named `<project>-coordinator` and `<project>-<worker>` (the project folder name in lowercase, other characters as hyphens); tabs show the short name. Enabled projects need different folder names, or their sessions share names.\n\n## Session status\n\nThe \"Claude sessions\" view (its own icon in the Activity Bar, the same in every window; drag it elsewhere once if you prefer) and the status-bar item show every interactive Claude Code session on this machine, toolkit or not. Clicking the status-bar item (`🔔 2 waiting`) shows the session waiting longest; `Ctrl+Alt+N` (\"Toolkit: Next waiting session\") cycles through the waiting sessions in urgency order; both reach tabs in other windows like a card click does.\n\n| Colour | Status | Set by |\n|---|---|---|\n| red | waiting for permission / waiting for your answer | `PermissionRequest`; `AskUserQuestion`, or a turn ending with `STATUS: QUESTION` (coordinator and worker) or a final `?` |\n| purple | possibly stuck | working with no event for `claudeToolkit.stuckMinutes` (default 10) |\n| yellow | finished, needs review | any other end of turn |\n| green | working | a prompt or a tool result |\n| grey | idle | session started, no prompt yet |\n\nCards are grouped by project folder (each group shows how many of its sessions wait). Drag sessions within their project, and projects among projects, to arrange the view; your order is kept in every window and wins over urgency, while sessions and projects you never placed follow yours sorted by urgency (longest waiting first). \"Move up\" / \"Move down\" in a card's or project's context menu (also Shift+F10 from the keyboard) do the same without dragging. \"Toolkit: Reset session order\" returns to automatic sorting. Cards show the time in that status, the last tool used (\"after Bash\"; only finished tool calls are recorded) or the tool asking for permission, and the last line of the last message. Click a card to focus its tab, in any VS Code window: each window lists the session tabs it opened in `~/.agent-status/windows/<pid>.json`, and a click on a session held by another window brings that window to the front (by opening its folder) and asks it, through `~/.agent-status/focus/<pid>.json`, to show the tab. A card's tooltip says where its session runs; a session started by hand outside the toolkit's tabs only gets a message. Hide a card with its eye icon until the session's next event; closing a tab hides its card too. Hidden cards are listed in the collapsed \"Hidden\" group at the bottom of the view, where the eye button shows one again; hiding is remembered across reloads.\n\nThe hooks are installed with `node <clone>/status/install.mjs` (see [INSTALL.md](INSTALL.md)); it backs up `~/.claude/settings.json` first and adds only its own entries, and `--uninstall` removes them. A small synchronous start-up hook (`status/turn-status-hook.mjs`) asks every interactive session to end each turn with `STATUS: QUESTION` or `STATUS: DONE`. \"Toolkit: Open Claude here on startup\" opens a plain `claude` tab (session `<project>-claude`, no agent, plugin or prompt) whenever the folder opens; \"Toolkit: Stop opening Claude here\" turns off both the plain tab and the coordinator for the folder.\n\nThe event hook (`status/status-hook.mjs`) runs asynchronously, so sessions never wait for it, and appends one line per event to `~/.agent-status/sessions/<session_id>.jsonl`; errors go to `~/.agent-status/hook.log`. It deletes a session's file at `SessionEnd` and leaves a `<session_id>.ended` marker so late background events cannot bring the session back (a new start or resume clears it), and, when a session starts, removes files and markers idle for more than 6 hours (`STALE_HOURS` at the top of the script). Headless sessions (`claude -p`, SDK, SDD's reviewer) are skipped by the observed but undocumented `CLAUDE_CODE_ENTRYPOINT=sdk-*` value; `tests/status-entrypoint.e2e.mjs` checks it against the installed CLI. A denied permission stays red until the turn ends, because Claude Code fires no event for a denial.\n\n## Plugin delivery\n\nThe organization's managed Claude Code policy currently allows only the official Anthropic marketplace, so the plugin is loaded from the clone with `--plugin-dir` (the extension does it; by hand: `claude --plugin-dir <clone>/plugins/toolkit`). Update with `git pull`, then reload VS Code.\n\nOnce an admin allows the marketplace:\n\n```\nclaude plugin marketplace add dserri/claude-toolkit\nclaude plugin install toolkit@claude-toolkit\n```\n\nand enable auto-update for `claude-toolkit` in `/plugin` → Marketplaces. The plugin declares no version, so every pushed commit is a release.\n\n## Roll back\n\nDelete the `dserri.claude-toolkit-0.0.1` junction and reload VS Code; remove a project's `.coord/` folder if you no longer want its board. Sessions started by hand work as before.\n\n## Develop\n\n```\nnode --test\nnode --test tests/coordinator.e2e.mjs tests/status-entrypoint.e2e.mjs\n```\n\nThe first runs the unit, hook, installer and `claude plugin validate` tests (`claude` must be on `PATH`). The second starts real headless sessions with a model call. Tab behaviour and the session view in VS Code are verified by hand.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-manual-order/.openspec.yaml",
+          "content": "schema: spec-driven\ncreated: 2026-11-18\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-manual-order/design.md",
+          "content": "# Design\n\n## Context\n\nSee proposal.md. The view uses `registerTreeDataProvider`; groups and cards are sorted by `byUrgency`. VS Code supports reordering through a `TreeDragAndDropController` passed to `createTreeView`.\n\n## Decisions\n\n- **Order as key lists** in `globalState` key `sessionOrder` = `{ projects: [project], sessions: { [project]: [session key] } }`. A titled session's key is its name (stable across restarts); an untitled one, named after its folder and not unique, is keyed `id:<session id>` (found in review).\n- **Reorders merge, never replace** (found in review): the new list is the displayed keys merged with stored keys not displayed (each kept after its stored predecessor), so hidden sessions and projects without live sessions keep their place.\n- **Keyboard alternative** (found in review): \"Move up\" / \"Move down\" in the context menu of sessions and projects (reachable with Shift+F10) apply the same move as a drag.\n- **Unreadable files** (found in review): `vscode/session-files.js` reports files without parsed events separately, and pruning keeps their hidden entries.\n- **Pure helpers in `status-core.js`:** `applyOrder(items, keys, keyOf, fallback)` puts items whose key is listed first in list order, then the rest by `fallback`; `moveBefore(keys, moved, target)` returns the keys with `moved` placed before `target`, or last when `target` is absent. On a drop the view takes the keys as currently displayed, moves one, and stores the full list, so everything displayed becomes placed.\n- **Drag and drop:** `createTreeView` with a controller using one mime type for this view; the drag carries the dragged element's kind, project and name; drops are accepted only session→session or session→own project (same project) and project→project.\n- **Reset:** command clears `sessionOrder`.\n- **Review fixes:** one `persist(key, value)` helper awaits the update, refreshes, and shows an error message if it fails; `readSessions` skips files with no parsed events; the hidden group label becomes `Hidden (n)`.\n\n## Risks / Trade-offs\n\n- [Two sessions with the same name in different projects] → order lists are per project, so names only need to be unique within a project, which session names are.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-manual-order/proposal.md",
+          "content": "# Proposal\n\n## Why\n\nThe developer wants to arrange the session view as they work: projects in their own order and sessions inside a project in their own order, instead of the automatic urgency sort that, for example, lifts an idle session they rarely use.\n\n## What Changes\n\n- Sessions can be dragged to a new position inside their project, and projects can be dragged among projects; a session cannot be dropped into another project.\n- The developer's order wins over urgency. Colours, the status-bar jump and the next-waiting shortcut keep finding waiting sessions. Sessions and projects never placed by hand appear after the placed ones, sorted by urgency.\n- \"Toolkit: Reset session order\" returns to automatic sorting.\n- The order is stored per machine and shared by all windows.\n- Fixes from the hidden-group review: storage writes report failures; an unreadable or empty session file no longer counts as new activity; the hidden group label reads \"Hidden (n)\".\n\n## Capabilities\n\n### New Capabilities\n\nNone.\n\n### Modified Capabilities\n\n- `session-status`: manual ordering and the review fixes.\n\n## Impact\n\n`vscode/status-core.js`, `vscode/sessions-view.js`, `vscode/package.json`, tests, README.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-manual-order/specs/session-status/spec.md",
+          "content": "# Spec Delta\n\n## ADDED Requirements\n\n### Requirement: Manual order\n\nThe developer SHALL be able to drag a session onto another session of the same project to place it before that session, or onto its own project to place it last, and drag a project onto another project to place it before. Drops across projects or onto the hidden group SHALL change nothing. The resulting order SHALL be stored per machine, shared by all windows, and SHALL take precedence over urgency; sessions and projects never placed SHALL follow the placed ones in urgency order. \"Toolkit: Reset session order\" SHALL clear it. \"Move up\" and \"Move down\" in the context menu of a session or project SHALL make the same moves without dragging. A reorder SHALL keep the placement of items not currently displayed, and sessions without a title SHALL be ordered individually.\n\n#### Scenario: Reorder sessions\n\n- **WHEN** the developer drags `portal-docs` onto `portal-tester` in the `rehlko-portal` group\n- **THEN** `portal-docs` is shown just before `portal-tester` and stays there when statuses change\n\n#### Scenario: Reorder projects\n\n- **WHEN** the developer drags the `api` project onto `rehlko-portal`\n- **THEN** `api` is shown before `rehlko-portal` in every window\n\n#### Scenario: Cross-project drop\n\n- **WHEN** the developer drops a `rehlko-portal` session onto an `api` session\n- **THEN** nothing moves\n\n#### Scenario: New session\n\n- **WHEN** a new session starts in a project whose sessions were placed by hand\n- **THEN** it appears after the placed sessions\n\n#### Scenario: Reset\n\n- **WHEN** the developer runs \"Toolkit: Reset session order\"\n- **THEN** projects and sessions are sorted by urgency again\n\n### Requirement: Robust hidden state\n\nStorage writes for hidden state and order SHALL report a failure to the developer instead of failing silently. A session file that cannot be read or holds no events SHALL NOT be treated as new activity. The hidden group SHALL be labelled \"Hidden (n)\".\n\n#### Scenario: Unreadable file\n\n- **WHEN** a hidden session's file cannot be read during a refresh\n- **THEN** it stays hidden\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-manual-order/tasks.md",
+          "content": "# Tasks\n\n## 1. Implementation\n\n- [x] 1.1 Add `applyOrder` and `moveBefore` to `vscode/status-core.js` with tests\n- [x] 1.2 Drag and drop controller, stored order, reset command, review fixes in `sessions-view.js`/`package.json`; verify VS Code loads it\n- [x] 1.3 Document ordering in README\n\n## 2. Acceptance\n\n- [x] 2.1 With the developer: reorder sessions within a project and projects, see a cross-project drop refused, see the order in a second window, reset\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/session-files.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { mkdtempSync, rmSync, writeFileSync } from 'node:fs';\nimport { tmpdir } from 'node:os';\nimport { join } from 'node:path';\nimport sessionFiles from '../vscode/session-files.js';\nimport status from '../vscode/status-core.js';\n\ntest('readable session files are parsed; empty or unreadable ones are reported, not treated as activity', () => {\n  const folder = mkdtempSync(join(tmpdir(), 'toolkit-session-files-'));\n\n  try {\n    writeFileSync(join(folder, 'live.jsonl'), '{\"t\":1,\"event\":\"SessionStart\"}\\n');\n    writeFileSync(join(folder, 'empty.jsonl'), '');\n    writeFileSync(join(folder, 'garbled.jsonl'), 'not json\\n');\n    writeFileSync(join(folder, 'other.txt'), 'ignored');\n\n    const { readable, unreadableIds } = sessionFiles.readSessionFiles(folder);\n\n    assert.deepEqual(readable.map((entry) => entry.id), ['live']);\n    assert.deepEqual([...unreadableIds].sort(), ['empty', 'garbled']);\n\n    const sessions = readable.map(({ id, events }) => status.sessionState({ id, events, now: 10, stuckMs: 1000 }));\n\n    assert.deepEqual(status.pruneHidden({ live: 1, empty: 5, gone: 3 }, sessions, unreadableIds), { live: 1, empty: 5 });\n  } finally {\n    rmSync(folder, { recursive: true, force: true });\n  }\n});\n\ntest('a missing sessions folder means no sessions', () => {\n  assert.deepEqual(sessionFiles.readSessionFiles(join(tmpdir(), 'toolkit-absent-folder-xyz')), { readable: [], unreadableIds: new Set() });\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/status-core.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport status from '../vscode/status-core.js';\n\nconst now = 1_000_000_000;\nconst stuckMs = 10 * 60_000;\nconst id = '7fa97870-6578-4ed2-b7c9-1dc4c9a2ef09';\n\nconst at = (secondsAgo, event, extra = {}) => ({ t: now - secondsAgo * 1000, event, ...extra });\nconst stateOf = (events) => status.sessionState({ id, events: [...events].sort((first, second) => first.t - second.t), now, stuckMs });\n\ntest('a fresh session is idle and named after its title, else its folder', () => {\n  assert.equal(stateOf([at(60, 'SessionStart', { title: 'portal-tester', folder: 'rehlko-portal' })]).name, 'portal-tester');\n\n  const session = stateOf([at(60, 'SessionStart', { folder: 'rehlko-portal' })]);\n\n  assert.equal(session.name, 'rehlko-portal');\n  assert.equal(session.status, 'idle');\n});\n\ntest('a prompt and its tools mean working, with the current tool', () => {\n  const session = stateOf([\n    at(90, 'SessionStart'),\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(30, 'PostToolUse', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'working');\n  assert.equal(session.tool, 'Bash');\n  assert.equal(session.since, now - 60_000);\n});\n\ntest('a permission request waits for the developer, and the next tool result returns to working', () => {\n  const waiting = [at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(40, 'PermissionRequest', { promptId: 'p1', tool: 'Edit' })];\n\n  assert.equal(stateOf(waiting).status, 'permission');\n  assert.equal(stateOf([...waiting, at(10, 'PostToolUse', { promptId: 'p1', tool: 'Edit' })]).status, 'working');\n});\n\ntest('AskUserQuestion and asking stops wait for an answer; other stops need review', () => {\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'PreToolUse', { promptId: 'p1', tool: 'AskUserQuestion' })]).status, 'question');\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'Stop', { promptId: 'p1', asks: true, last: 'Which one?' })]).status, 'question');\n\n  const finished = stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'Stop', { promptId: 'p1', asks: false, last: 'All tests pass.' })]);\n\n  assert.equal(finished.status, 'finished');\n  assert.equal(finished.last, 'All tests pass.');\n});\n\ntest('a tool event of a turn recorded after its stop does not reopen it', () => {\n  const session = stateOf([\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(20, 'Stop', { promptId: 'p1', asks: false, last: 'Done.' }),\n    at(19, 'PostToolUse', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'finished');\n});\n\ntest('late events of an earlier turn do not change the current one', () => {\n  const session = stateOf([\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(30, 'UserPromptSubmit', { promptId: 'p2' }),\n    at(20, 'PermissionRequest', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'working');\n});\n\ntest('a working session without events past the threshold is possibly stuck, keeping its tool', () => {\n  const session = stateOf([at(1200, 'UserPromptSubmit', { promptId: 'p1' }), at(700, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]);\n\n  assert.equal(session.status, 'stuck');\n  assert.equal(session.tool, 'Bash');\n  assert.equal(status.cardDescription(session, now), 'possibly stuck · after Bash · 11m');\n  assert.equal(status.cardDescription({ status: 'permission', tool: 'Edit', since: now - 5000 }, now), 'waiting for permission · Edit · 5s');\n  assert.equal(status.cardDescription({ status: 'finished', tool: 'Bash', since: now - 5000 }, now), 'finished, needs review · 5s');\n  assert.equal(stateOf([at(1200, 'UserPromptSubmit', { promptId: 'p1' }), at(500, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).status, 'working');\n});\n\ntest('unreadable lines are skipped and lines are ordered by time', () => {\n  const events = status.parseEvents('{\"t\":2,\"event\":\"Stop\"}\\nnot json\\n\\n{\"t\":1,\"event\":\"SessionStart\"}\\n{\"event\":\"NoTime\"}\\n');\n\n  assert.deepEqual(events.map((event) => event.event), ['SessionStart', 'Stop']);\n});\n\ntest('cards are sorted with waiting sessions first, longest waiting first, then stuck, finished, working, idle', () => {\n  const card = (name, sessionStatus, since) => ({ name, status: sessionStatus, since });\n  const sorted = [\n    card('idle', 'idle', 1),\n    card('working', 'working', 1),\n    card('question-new', 'question', 50),\n    card('finished', 'finished', 1),\n    card('permission-old', 'permission', 10),\n    card('stuck', 'stuck', 1),\n  ].sort(status.byUrgency);\n\n  assert.deepEqual(sorted.map((session) => session.name), ['permission-old', 'question-new', 'stuck', 'finished', 'working', 'idle']);\n  assert.equal(status.waitingCount(sorted), 2);\n});\n\ntest('sessions are grouped by project, the most urgent project first, each sorted by urgency', () => {\n  const card = (name, project, sessionStatus, since) => ({ name, project, status: sessionStatus, since });\n  const groups = status.groupByProject([\n    card('api-worker', 'api', 'working', 5),\n    card('portal-idle', 'rehlko-portal', 'idle', 1),\n    card('portal-asks', 'rehlko-portal', 'question', 20),\n    card('api-done', 'api', 'finished', 3),\n    card('portal-perm', 'rehlko-portal', 'permission', 10),\n  ]);\n\n  assert.deepEqual(groups.map((group) => group.project), ['rehlko-portal', 'api']);\n  assert.deepEqual(groups[0].sessions.map((session) => session.name), ['portal-perm', 'portal-asks', 'portal-idle']);\n  assert.deepEqual(groups[1].sessions.map((session) => session.name), ['api-done', 'api-worker']);\n  assert.equal(groups[0].top.name, 'portal-perm');\n  assert.equal(status.groupDescription(groups[0]), '2 waiting · 3 sessions');\n  assert.equal(status.groupDescription({ sessions: [card('a', 'x', 'working', 1)], waiting: 0 }), '1 session');\n});\n\ntest('a session takes its project from the first folder recorded, or a placeholder', () => {\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1', folder: 'rehlko-portal' })]).project, 'rehlko-portal');\n  assert.equal(stateOf([\n    at(90, 'SessionStart', { folder: 'rehlko-portal', title: 'rehlko-portal-coordinator' }),\n    at(60, 'UserPromptSubmit', { promptId: 'p1', folder: '.coord' }),\n  ]).project, 'rehlko-portal');\n  assert.equal(stateOf([at(60, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).project, 'unknown project');\n});\n\ntest('only the latest session per title is kept; untitled sessions are never merged', () => {\n  const session = (sessionId, name, titled, lastEventAt) => ({ id: sessionId, name, titled, lastEventAt });\n  const kept = status.latestPerTitle([\n    session('old', 'rehlko-portal-coordinator', true, 100),\n    session('new', 'rehlko-portal-coordinator', true, 200),\n    session('tester', 'rehlko-portal-tester', true, 50),\n    session('plain-1', 'rehlko-portal', false, 10),\n    session('plain-2', 'rehlko-portal', false, 20),\n  ]);\n\n  assert.deepEqual(kept.map((entry) => entry.id), ['new', 'tester', 'plain-1', 'plain-2']);\n});\n\ntest('a titled session reports it, a folder-named one does not', () => {\n  assert.equal(stateOf([at(60, 'SessionStart', { title: 'portal-tester', folder: 'portal' })]).titled, true);\n  assert.equal(stateOf([at(60, 'SessionStart', { folder: 'portal' })]).titled, false);\n});\n\ntest('waiting sessions come in urgency order and the next one wraps around', () => {\n  const session = (id, sessionStatus, since) => ({ id, status: sessionStatus, since });\n  const waiting = status.waitingSessions([\n    session('working', 'working', 1),\n    session('question-new', 'question', 30),\n    session('permission-old', 'permission', 10),\n    session('finished', 'finished', 1),\n  ]);\n\n  assert.deepEqual(waiting.map((entry) => entry.id), ['permission-old', 'question-new']);\n  assert.equal(status.nextWaiting(waiting, undefined).id, 'permission-old');\n  assert.equal(status.nextWaiting(waiting, 'permission-old').id, 'question-new');\n  assert.equal(status.nextWaiting(waiting, 'question-new').id, 'permission-old');\n  assert.equal(status.nextWaiting(waiting, 'gone').id, 'permission-old');\n  assert.equal(status.nextWaiting([], 'permission-old'), undefined);\n});\n\ntest('a click shows an own tab, raises another window, or explains', () => {\n  assert.equal(status.clickAction({ kind: 'here' }), 'show');\n  assert.equal(status.clickAction({ kind: 'other', window: { pid: 2 } }), 'raise');\n  assert.equal(status.clickAction({ kind: 'none' }), 'message');\n});\n\ntest('only well-formed entries of running windows count', () => {\n  const entries = [\n    { pid: 10, folder: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal', sessions: ['rehlko-portal-coordinator'] },\n    { pid: 20, folder: 'P:\\\\repos\\\\Rehlko\\\\api', sessions: ['api-coordinator'] },\n    { pid: 30, folder: 'P:\\\\repos\\\\gone', sessions: [] },\n    { pid: '40', folder: 'x', sessions: [] },\n    { pid: 50, sessions: [] },\n    null,\n  ];\n\n  assert.deepEqual(status.liveWindows(entries, (pid) => pid !== 30).map((entry) => entry.pid), [10, 20]);\n});\n\ntest('a session is located in this window, another window, or none', () => {\n  const windows = [\n    { pid: 10, folder: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal', sessions: ['rehlko-portal-coordinator', 'rehlko-portal-tester'] },\n    { pid: 20, folder: 'P:\\\\repos\\\\Rehlko\\\\api', sessions: ['api-coordinator'] },\n  ];\n  const here = status.sessionLocation('rehlko-portal-tester', 10, windows);\n  const other = status.sessionLocation('api-coordinator', 10, windows);\n  const none = status.sessionLocation('vs-code skill upgrade', 10, windows);\n\n  assert.equal(here.kind, 'here');\n  assert.equal(other.kind, 'other');\n  assert.equal(other.window.pid, 20);\n  assert.equal(none.kind, 'none');\n  assert.equal(status.locationLabel(here), 'in this window');\n  assert.equal(status.locationLabel(other), 'in window api');\n  assert.equal(status.locationLabel({ kind: 'other', window: { folder: '/home/dev/app/' } }), 'in window app');\n  assert.equal(status.locationLabel(none), 'not in a toolkit tab');\n});\n\ntest('durations read as seconds, minutes, then hours and minutes', () => {\n  assert.equal(status.formatDuration(45_000), '45s');\n  assert.equal(status.formatDuration(12 * 60_000), '12m');\n  assert.equal(status.formatDuration((2 * 60 + 5) * 60_000), '2h 05m');\n  assert.equal(status.formatDuration(-5), '0s');\n});\n\ntest('hidden sessions are split out, newest first, and come back with a newer event', () => {\n  const sessions = [\n    { id: 'a', lastEventAt: 100 },\n    { id: 'b', lastEventAt: 300 },\n    { id: 'c', lastEventAt: 200 },\n    { id: 'd', lastEventAt: 500 },\n  ];\n  const { visible, hidden } = status.splitHidden(sessions, { b: 300, c: 200, d: 400 });\n\n  assert.deepEqual(visible.map((session) => session.id), ['a', 'd']);\n  assert.deepEqual(hidden.map((session) => session.id), ['b', 'c']);\n  assert.deepEqual(status.splitHidden(sessions, {}).hidden, []);\n});\n\ntest('placed items keep the stored order, the rest follow by the fallback', () => {\n  const items = ['idle', 'waiting', 'working', 'new'].map((name) => ({ name }));\n  const ordered = status.applyOrder(items, ['working', 'idle', 'gone'], (item) => item.name, (first, second) => first.name.localeCompare(second.name));\n\n  assert.deepEqual(ordered.map((item) => item.name), ['working', 'idle', 'new', 'waiting']);\n  assert.deepEqual(status.applyOrder(items, [], (item) => item.name, () => 0).map((item) => item.name), ['idle', 'waiting', 'working', 'new']);\n});\n\ntest('moving a key places it before the target, or last without one', () => {\n  assert.deepEqual(status.moveBefore(['a', 'b', 'c', 'd'], 'd', 'b'), ['a', 'd', 'b', 'c']);\n  assert.deepEqual(status.moveBefore(['a', 'b', 'c'], 'a', 'c'), ['b', 'a', 'c']);\n  assert.deepEqual(status.moveBefore(['a', 'b', 'c'], 'a', undefined), ['b', 'c', 'a']);\n  assert.deepEqual(status.moveBefore(['a', 'b'], 'x', 'b'), ['a', 'x', 'b']);\n  assert.deepEqual(status.moveBefore(['a', 'b'], 'a', 'missing'), ['b', 'a']);\n});\n\ntest('the developer order wins over urgency for projects and sessions; unplaced ones follow by urgency', () => {\n  const card = (name, project, sessionStatus, since) => ({ name, titled: true, project, status: sessionStatus, since });\n  const groups = status.groupByProject([\n    card('portal-idle', 'rehlko-portal', 'idle', 1),\n    card('portal-asks', 'rehlko-portal', 'question', 5),\n    card('portal-new', 'rehlko-portal', 'permission', 9),\n    card('api-work', 'api', 'working', 2),\n    card('web-done', 'web', 'finished', 3),\n  ]);\n  const ordered = status.orderedGroups(groups, {\n    projects: ['api', 'rehlko-portal'],\n    sessions: { 'rehlko-portal': ['portal-idle', 'portal-asks'] },\n  });\n\n  assert.deepEqual(ordered.map((group) => group.project), ['api', 'rehlko-portal', 'web']);\n  assert.deepEqual(ordered[1].sessions.map((session) => session.name), ['portal-idle', 'portal-asks', 'portal-new']);\n  assert.deepEqual(status.orderedGroups(groups, {}).map((group) => group.project), ['rehlko-portal', 'web', 'api']);\n});\n\ntest('a reorder keeps placed items that are not displayed, next to their stored neighbour', () => {\n  assert.deepEqual(status.mergeOrder(['b', 'a'], ['a', 'x', 'b', 'y']), ['b', 'y', 'a', 'x']);\n  assert.deepEqual(status.mergeOrder(['a', 'b'], ['gone', 'a']), ['gone', 'a', 'b']);\n  assert.deepEqual(status.mergeOrder(['a'], []), ['a']);\n  assert.deepEqual(status.moveBefore(status.mergeOrder(['b', 'a'], ['a', 'hidden', 'b']), 'b', 'a'), ['b', 'a', 'hidden']);\n});\n\ntest('titled sessions are keyed by name, untitled ones by id, so twins never move together', () => {\n  const twins = [\n    { id: 'one', name: 'rehlko-portal', titled: false, status: 'working', since: 1 },\n    { id: 'two', name: 'rehlko-portal', titled: false, status: 'working', since: 2 },\n    { id: 'three', name: 'rehlko-portal-tester', titled: true, status: 'working', since: 3 },\n  ];\n\n  assert.deepEqual(twins.map(status.sessionKey), ['id:one', 'id:two', 'rehlko-portal-tester']);\n\n  const keys = status.moveBefore(twins.map(status.sessionKey), 'id:two', 'id:one');\n  const [group] = status.orderedGroups([{ project: 'rehlko-portal', sessions: twins, top: twins[0] }], { sessions: { 'rehlko-portal': keys } });\n\n  assert.deepEqual(group.sessions.map((session) => session.id), ['two', 'one', 'three']);\n});\n\ntest('one step up or down targets the right neighbour, and the ends do nothing', () => {\n  const keys = ['a', 'b', 'c'];\n\n  assert.equal(status.stepTarget(keys, 'b', -1), 'a');\n  assert.equal(status.stepTarget(keys, 'a', 1), 'c');\n  assert.equal(status.stepTarget(keys, 'b', 1), undefined);\n  assert.equal(status.stepTarget(keys, 'a', -1), null);\n  assert.equal(status.stepTarget(keys, 'c', 1), null);\n  assert.equal(status.stepTarget(keys, 'x', 1), null);\n  assert.deepEqual(status.moveBefore(keys, 'b', status.stepTarget(keys, 'b', 1)), ['a', 'c', 'b']);\n  assert.deepEqual(status.moveBefore(keys, 'c', status.stepTarget(keys, 'c', -1)), ['a', 'c', 'b']);\n});\n\ntest('hidden entries of unreadable files are kept', () => {\n  const sessions = [{ id: 'a', lastEventAt: 100 }];\n\n  assert.deepEqual(status.pruneHidden({ a: 100, flaky: 50, gone: 10 }, sessions, new Set(['flaky'])), { a: 100, flaky: 50 });\n});\n\ntest('pruning keeps only hidden entries of existing sessions without newer events', () => {\n  const sessions = [{ id: 'a', lastEventAt: 100 }, { id: 'b', lastEventAt: 300 }];\n\n  assert.deepEqual(status.pruneHidden({ a: 100, b: 200, gone: 50 }, sessions), { a: 100 });\n  assert.deepEqual(status.pruneHidden({}, sessions), {});\n});\n\ntest('a hidden card comes back only with a newer event', () => {\n  assert.equal(status.isVisible({ lastEventAt: 100 }, undefined), true);\n  assert.equal(status.isVisible({ lastEventAt: 100 }, 100), false);\n  assert.equal(status.isVisible({ lastEventAt: 101 }, 100), true);\n});\n\ntest('every status has a label and a theme colour', () => {\n  for (const [name, look] of Object.entries(status.STATUS)) {\n    assert.match(look.label, /\\w/, name);\n    assert.match(look.color, /^[a-zA-Z.]+$/, name);\n  }\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/toolkit.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { readFileSync, readdirSync } from 'node:fs';\nimport { fileURLToPath } from 'node:url';\nimport { join } from 'node:path';\n\nconst root = fileURLToPath(new URL('..', import.meta.url));\nconst pluginRoot = join(root, 'plugins', 'toolkit');\n\nconst readJson = (...segments) => JSON.parse(readFileSync(join(root, ...segments), 'utf8'));\nconst readAgent = (name) => readFileSync(join(pluginRoot, 'agents', `${name}.md`), 'utf8');\nconst frontmatter = (text) => /^---\\n([\\s\\S]*?)\\n---\\n/.exec(text)[1];\n\ntest('marketplace lists the toolkit plugin from inside the repository', () => {\n  const marketplace = readJson('.claude-plugin', 'marketplace.json');\n\n  assert.equal(marketplace.name, 'claude-toolkit');\n  assert.ok(marketplace.owner?.name);\n  assert.deepEqual(\n    marketplace.plugins.map(({ name, source }) => ({ name, source })),\n    [{ name: 'toolkit', source: './plugins/toolkit' }],\n  );\n});\n\ntest('plugin manifest is named toolkit and declares no version', () => {\n  const plugin = readJson('plugins', 'toolkit', '.claude-plugin', 'plugin.json');\n\n  assert.equal(plugin.name, 'toolkit');\n  assert.equal(Object.hasOwn(plugin, 'version'), false);\n});\n\ntest('the plugin ships exactly the coordinator and worker agents and the start-up hook', () => {\n  assert.deepEqual(readdirSync(pluginRoot).sort(), ['.claude-plugin', 'agents', 'hooks']);\n  assert.deepEqual(readdirSync(join(pluginRoot, 'agents')).sort(), ['coordinator.md', 'worker.md']);\n  assert.deepEqual(readdirSync(join(pluginRoot, 'hooks')).sort(), ['hooks.json', 'session-start.mjs']);\n});\n\ntest('agent definitions are named after their files and carry a description', () => {\n  for (const name of ['coordinator', 'worker']) {\n    const fields = frontmatter(readAgent(name));\n\n    assert.match(fields, new RegExp(`^name: ${name}$`, 'm'));\n    assert.match(fields, /^description: \\S/m);\n  }\n});\n\ntest('both agents describe the same board paths', () => {\n  for (const name of ['coordinator', 'worker']) {\n    const prompt = readAgent(name);\n\n    for (const boardPath of ['team.json', 'requests/', 'sessions/', 'log.md', 'brief.md', 'status.md', '<prefix>-coordinator']) {\n      assert.ok(prompt.includes(boardPath), `${name} mentions ${boardPath}`);\n    }\n  }\n});\n\ntest('both agents end every turn with the status line the session view reads', () => {\n  for (const name of ['coordinator', 'worker'])\n    assert.match(readAgent(name), /End every turn with a final line on its own: `STATUS: QUESTION` when you need the developer's answer or decision, `STATUS: DONE` otherwise\\./, name);\n});\n\ntest('the coordinator writes requests in the exact shape the extension accepts', () => {\n  assert.match(readAgent('coordinator'), /^- `requests\\/<name>\\.json`: .*containing exactly `\\{ \"name\": \"<name>\" \\}`/m);\n});\n\ntest('the extension adds only native, labelled VS Code UI: commands, settings and a tree view, no webview', () => {\n  const extension = readJson('vscode', 'package.json');\n  const { commands, configuration, views, viewsContainers, keybindings } = extension.contributes;\n\n  assert.deepEqual(Object.keys(extension.contributes).sort(), ['commands', 'configuration', 'keybindings', 'menus', 'views', 'viewsContainers']);\n  assert.deepEqual(commands.map((command) => command.title), [\n    'Toolkit: Enable coordinator in this folder',\n    'Toolkit: Start coordinator',\n    'Toolkit: Open Claude here on startup',\n    'Toolkit: Stop opening Claude here',\n    'Toolkit: Show session tab',\n    'Toolkit: Hide session until its next event',\n    'Toolkit: Show session again',\n    'Toolkit: Reset session order',\n    'Toolkit: Show the session waiting longest',\n    'Toolkit: Next waiting session',\n    'Toolkit: Move up',\n    'Toolkit: Move down',\n  ]);\n  assert.deepEqual(viewsContainers, { activitybar: [{ id: 'claudeToolkit', title: 'Claude sessions', icon: 'media/sessions.svg' }] });\n  assert.deepEqual(views, { claudeToolkit: [{ id: 'claudeToolkit.sessions', name: 'Claude sessions' }] });\n  assert.ok(readFileSync(join(root, 'vscode', 'media', 'sessions.svg'), 'utf8').startsWith('<svg'));\n  assert.deepEqual(keybindings, [{ command: 'claudeToolkit.nextWaiting', key: 'ctrl+alt+n', mac: 'cmd+alt+n' }]);\n  assert.deepEqual(configuration.properties['claudeToolkit.workerLayout'].enum, ['beside', 'tabs']);\n  assert.equal(configuration.properties['claudeToolkit.workerLayout'].default, 'beside');\n\n  for (const [key, setting] of Object.entries(configuration.properties)) {\n    assert.match(setting.description, /\\S{3}/, key);\n    assert.equal(setting.scope, 'machine', `${key} cannot be overridden by a workspace`);\n  }\n});\n\ntest('the start-up hook runs when a session starts or resumes', () => {\n  const hooks = readJson('plugins', 'toolkit', 'hooks', 'hooks.json').hooks;\n\n  assert.deepEqual(Object.keys(hooks), ['SessionStart']);\n  assert.equal(hooks.SessionStart.length, 1);\n  assert.equal(hooks.SessionStart[0].matcher, 'startup|resume');\n  assert.equal(hooks.SessionStart[0].hooks[0].command, 'node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.mjs\"');\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "vscode/package.json",
+          "content": "{\n  \"name\": \"claude-toolkit\",\n  \"displayName\": \"Claude Toolkit\",\n  \"description\": \"Opens a Claude Code project coordinator and its worker sessions as named editor tabs, and shows the status of every Claude session.\",\n  \"publisher\": \"dserri\",\n  \"version\": \"0.0.1\",\n  \"private\": true,\n  \"engines\": {\n    \"vscode\": \"^1.90.0\"\n  },\n  \"main\": \"./extension.js\",\n  \"activationEvents\": [\n    \"onStartupFinished\"\n  ],\n  \"contributes\": {\n    \"commands\": [\n      {\n        \"command\": \"claudeToolkit.enable\",\n        \"title\": \"Toolkit: Enable coordinator in this folder\"\n      },\n      {\n        \"command\": \"claudeToolkit.start\",\n        \"title\": \"Toolkit: Start coordinator\"\n      },\n      {\n        \"command\": \"claudeToolkit.openOnStartup\",\n        \"title\": \"Toolkit: Open Claude here on startup\"\n      },\n      {\n        \"command\": \"claudeToolkit.stopOpening\",\n        \"title\": \"Toolkit: Stop opening Claude here\"\n      },\n      {\n        \"command\": \"claudeToolkit.focusSession\",\n        \"title\": \"Toolkit: Show session tab\"\n      },\n      {\n        \"command\": \"claudeToolkit.hideSession\",\n        \"title\": \"Toolkit: Hide session until its next event\",\n        \"icon\": \"$(eye-closed)\"\n      },\n      {\n        \"command\": \"claudeToolkit.showSessionAgain\",\n        \"title\": \"Toolkit: Show session again\",\n        \"icon\": \"$(eye)\"\n      },\n      {\n        \"command\": \"claudeToolkit.resetOrder\",\n        \"title\": \"Toolkit: Reset session order\"\n      },\n      {\n        \"command\": \"claudeToolkit.focusMostUrgent\",\n        \"title\": \"Toolkit: Show the session waiting longest\"\n      },\n      {\n        \"command\": \"claudeToolkit.nextWaiting\",\n        \"title\": \"Toolkit: Next waiting session\"\n      },\n      {\n        \"command\": \"claudeToolkit.moveUp\",\n        \"title\": \"Toolkit: Move up\"\n      },\n      {\n        \"command\": \"claudeToolkit.moveDown\",\n        \"title\": \"Toolkit: Move down\"\n      }\n    ],\n    \"viewsContainers\": {\n      \"activitybar\": [\n        {\n          \"id\": \"claudeToolkit\",\n          \"title\": \"Claude sessions\",\n          \"icon\": \"media/sessions.svg\"\n        }\n      ]\n    },\n    \"views\": {\n      \"claudeToolkit\": [\n        {\n          \"id\": \"claudeToolkit.sessions\",\n          \"name\": \"Claude sessions\"\n        }\n      ]\n    },\n    \"keybindings\": [\n      {\n        \"command\": \"claudeToolkit.nextWaiting\",\n        \"key\": \"ctrl+alt+n\",\n        \"mac\": \"cmd+alt+n\"\n      }\n    ],\n    \"menus\": {\n      \"view/item/context\": [\n        {\n          \"command\": \"claudeToolkit.hideSession\",\n          \"when\": \"view == claudeToolkit.sessions && viewItem == session\",\n          \"group\": \"inline\"\n        },\n        {\n          \"command\": \"claudeToolkit.showSessionAgain\",\n          \"when\": \"view == claudeToolkit.sessions && viewItem == hiddenSession\",\n          \"group\": \"inline\"\n        },\n        {\n          \"command\": \"claudeToolkit.moveUp\",\n          \"when\": \"view == claudeToolkit.sessions && viewItem =~ /^(session|project)$/\",\n          \"group\": \"order@1\"\n        },\n        {\n          \"command\": \"claudeToolkit.moveDown\",\n          \"when\": \"view == claudeToolkit.sessions && viewItem =~ /^(session|project)$/\",\n          \"group\": \"order@2\"\n        }\n      ],\n      \"commandPalette\": [\n        {\n          \"command\": \"claudeToolkit.moveUp\",\n          \"when\": \"false\"\n        },\n        {\n          \"command\": \"claudeToolkit.moveDown\",\n          \"when\": \"false\"\n        },\n        {\n          \"command\": \"claudeToolkit.focusSession\",\n          \"when\": \"false\"\n        },\n        {\n          \"command\": \"claudeToolkit.hideSession\",\n          \"when\": \"false\"\n        },\n        {\n          \"command\": \"claudeToolkit.showSessionAgain\",\n          \"when\": \"false\"\n        }\n      ]\n    },\n    \"configuration\": {\n      \"title\": \"Claude Toolkit\",\n      \"properties\": {\n        \"claudeToolkit.claudePath\": {\n          \"type\": \"string\",\n          \"scope\": \"machine\",\n          \"default\": \"\",\n          \"description\": \"Path to the Claude Code executable. Empty uses `claude` from PATH.\"\n        },\n        \"claudeToolkit.pluginDir\": {\n          \"type\": \"string\",\n          \"scope\": \"machine\",\n          \"default\": \"\",\n          \"description\": \"Path to the toolkit plugin folder. Empty uses plugins/toolkit next to this extension's real folder.\"\n        },\n        \"claudeToolkit.stuckMinutes\": {\n          \"type\": \"number\",\n          \"scope\": \"machine\",\n          \"default\": 10,\n          \"minimum\": 1,\n          \"description\": \"Minutes without events after which a working session is shown as possibly stuck.\"\n        },\n        \"claudeToolkit.workerLayout\": {\n          \"type\": \"string\",\n          \"scope\": \"machine\",\n          \"enum\": [\"beside\", \"tabs\"],\n          \"enumDescriptions\": [\n            \"Worker tabs open in the column next to the coordinator.\",\n            \"Worker tabs open as full-width tabs in the coordinator's column.\"\n          ],\n          \"default\": \"beside\",\n          \"description\": \"Where worker tabs open.\"\n        }\n      }\n    }\n  }\n}\n",
+          "mode": 438
+        },
+        {
+          "path": "vscode/session-files.js",
+          "content": "const fs = require('node:fs');\nconst path = require('node:path');\nconst status = require('./status-core');\n\nconst readSessionFiles = (directory) => {\n  if (!fs.existsSync(directory))\n    return { readable: [], unreadableIds: new Set() };\n\n  const readable = [];\n  const unreadableIds = new Set();\n\n  for (const entry of fs.readdirSync(directory).filter((name) => name.endsWith('.jsonl'))) {\n    const id = entry.slice(0, -'.jsonl'.length);\n    let events = [];\n\n    try {\n      events = status.parseEvents(fs.readFileSync(path.join(directory, entry), 'utf8'));\n    } catch {\n      events = [];\n    }\n\n    if (events.length > 0)\n      readable.push({ id, events });\n    else\n      unreadableIds.add(id);\n  }\n\n  return { readable, unreadableIds };\n};\n\nmodule.exports = { readSessionFiles };\n",
+          "mode": 438
+        },
+        {
+          "path": "vscode/sessions-view.js",
+          "content": "const vscode = require('vscode');\nconst fs = require('node:fs');\nconst os = require('node:os');\nconst path = require('node:path');\nconst status = require('./status-core');\nconst registry = require('./registry');\nconst sessionFiles = require('./session-files');\n\nconst VIEW_ID = 'claudeToolkit.sessions';\nconst STALE_MS = 6 * 3_600_000;\nconst REFRESH_MS = 15_000;\nconst HIDDEN_SESSIONS = 'hiddenSessions';\nconst SESSION_ORDER = 'sessionOrder';\nconst DRAG_MIME = 'application/vnd.code.tree.claudetoolkit.sessions';\n\nconst statusDir = () => path.join(os.homedir(), '.agent-status');\nconst sessionsDir = () => path.join(statusDir(), 'sessions');\nconst windowsDir = () => path.join(statusDir(), 'windows');\nconst focusDir = () => path.join(statusDir(), 'focus');\nconst ownWindowFile = () => path.join(windowsDir(), `${process.pid}.json`);\nconst focusFile = (pid) => path.join(focusDir(), `${pid}.json`);\n\nconst writeFocusRequest = (pid, sessionName) => registry.writeAtomically(focusFile(pid), JSON.stringify({ session: sessionName, at: Date.now() }));\n\nconst isAlive = (pid) => {\n  try {\n    process.kill(pid, 0);\n\n    return true;\n  } catch (error) {\n    return error.code === 'EPERM';\n  }\n};\n\nconst readSessions = (now, stuckMs) => {\n  const { readable, unreadableIds } = sessionFiles.readSessionFiles(sessionsDir());\n  const sessions = readable\n    .map(({ id, events }) => status.sessionState({ id, events, now, stuckMs }))\n    .filter((session) => now - session.lastEventAt <= STALE_MS);\n\n  return { sessions, unreadableIds };\n};\n\nconst readWindows = () => registry.readLiveWindows(windowsDir(), isAlive);\n\nclass SessionsProvider {\n  constructor(tabsBySession, globalState) {\n    this.tabsBySession = tabsBySession;\n    this.globalState = globalState;\n    this.sessions = [];\n    this.hiddenSessions = [];\n    this.groups = [];\n    this.windows = [];\n    this.changed = new vscode.EventEmitter();\n    this.onDidChangeTreeData = this.changed.event;\n    this.statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);\n    this.statusBar.command = 'claudeToolkit.focusMostUrgent';\n  }\n\n  refresh() {\n    const now = Date.now();\n    const stuckMs = vscode.workspace.getConfiguration('claudeToolkit').get('stuckMinutes', 10) * 60_000;\n\n    this.now = now;\n    this.windows = readWindows();\n\n    const { sessions, unreadableIds } = readSessions(now, stuckMs);\n    const all = status.latestPerTitle(sessions);\n    const stored = this.storedHidden();\n    const hidden = status.pruneHidden(stored, all, unreadableIds);\n\n    if (Object.keys(hidden).length !== Object.keys(stored).length)\n      this.globalState.update(HIDDEN_SESSIONS, hidden).then(undefined, reportStorageError);\n\n    const split = status.splitHidden(all, hidden);\n\n    this.sessions = split.visible;\n    this.hiddenSessions = split.hidden;\n    this.groups = status.orderedGroups(status.groupByProject(this.sessions), this.globalState.get(SESSION_ORDER, {}));\n    this.updateStatusBar();\n    this.changed.fire();\n  }\n\n  publishWindow() {\n    const entry = {\n      pid: process.pid,\n      folder: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? '',\n      sessions: [...this.tabsBySession.keys()],\n    };\n\n    registry.writeAtomically(ownWindowFile(), JSON.stringify(entry));\n    this.refresh();\n  }\n\n  updateStatusBar() {\n    const waiting = status.waitingCount(this.sessions);\n\n    this.statusBar.text = waiting > 0 ? `$(bell-dot) ${waiting} waiting` : '$(check) none waiting';\n    this.statusBar.tooltip = waiting > 0 ? 'Show the Claude session waiting longest' : 'Open Claude sessions';\n    this.statusBar.backgroundColor = waiting > 0 ? new vscode.ThemeColor('statusBarItem.warningBackground') : undefined;\n    this.statusBar.show();\n  }\n\n  storedHidden() {\n    return this.globalState.get(HIDDEN_SESSIONS, {});\n  }\n\n  persist(key, value) {\n    this.globalState.update(key, value).then(() => this.refresh(), reportStorageError);\n  }\n\n  storeHidden(hidden) {\n    this.persist(HIDDEN_SESSIONS, hidden);\n  }\n\n  storeProjectOrder(moved, target) {\n    const order = this.globalState.get(SESSION_ORDER, {});\n    const keys = status.mergeOrder(this.groups.map((group) => group.project), order.projects ?? []);\n\n    this.persist(SESSION_ORDER, { ...order, projects: status.moveBefore(keys, moved, target) });\n  }\n\n  storeSessionOrder(project, moved, target) {\n    const group = this.groups.find((candidate) => candidate.project === project);\n\n    if (!group)\n      return;\n\n    const order = this.globalState.get(SESSION_ORDER, {});\n    const keys = status.mergeOrder(group.sessions.map(status.sessionKey), order.sessions?.[project] ?? []);\n\n    this.persist(SESSION_ORDER, { ...order, sessions: { ...order.sessions, [project]: status.moveBefore(keys, moved, target) } });\n  }\n\n  drop(dragged, target) {\n    if (!target || target.kind === 'hidden' || this.hiddenSessions.includes(target))\n      return;\n\n    if (dragged.kind === 'project' && target.sessions && target.project !== dragged.project)\n      this.storeProjectOrder(dragged.project, target.project);\n    else if (dragged.kind === 'session' && target.project === dragged.project)\n      this.storeSessionOrder(dragged.project, dragged.key, target.sessions ? undefined : status.sessionKey(target));\n  }\n\n  move(element, step) {\n    if (element.sessions) {\n      const projects = this.groups.map((group) => group.project);\n      const target = status.stepTarget(projects, element.project, step);\n\n      if (target !== null)\n        this.storeProjectOrder(element.project, target);\n\n      return;\n    }\n\n    const group = this.groups.find((candidate) => candidate.project === element.project);\n\n    if (!group)\n      return;\n\n    const key = status.sessionKey(element);\n    const target = status.stepTarget(group.sessions.map(status.sessionKey), key, step);\n\n    if (target !== null)\n      this.storeSessionOrder(element.project, key, target);\n  }\n\n  resetOrder() {\n    this.persist(SESSION_ORDER, {});\n  }\n\n  hide(session) {\n    this.storeHidden({ ...this.storedHidden(), [session.id]: session.lastEventAt });\n  }\n\n  hideSessionNamed(sessionName) {\n    const named = this.sessions.filter((candidate) => candidate.name === sessionName);\n\n    this.storeHidden({ ...this.storedHidden(), ...Object.fromEntries(named.map((session) => [session.id, session.lastEventAt])) });\n  }\n\n  showAgain(session) {\n    const { [session.id]: _shown, ...rest } = this.storedHidden();\n\n    this.storeHidden(rest);\n  }\n\n  location(session) {\n    return status.sessionLocation(session.name, process.pid, this.windows);\n  }\n\n  showOwnTab(sessionName) {\n    const terminal = this.tabsBySession.get(sessionName);\n\n    if (terminal)\n      terminal.show(false);\n  }\n\n  focus(session) {\n    const location = this.location(session);\n    const action = status.clickAction(location);\n\n    this.lastFocusedId = session.id;\n\n    if (action === 'show') {\n      this.showOwnTab(session.name);\n\n      return;\n    }\n\n    if (action === 'raise') {\n      writeFocusRequest(location.window.pid, session.name);\n      void vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(location.window.folder), { forceNewWindow: true });\n\n      return;\n    }\n\n    void vscode.window.showInformationMessage(`${session.name} is not a toolkit tab in any VS Code window; it was started by hand.`);\n  }\n\n  focusMostUrgent() {\n    const [first] = status.waitingSessions(this.sessions);\n\n    if (first) {\n      this.focus(first);\n\n      return;\n    }\n\n    void vscode.commands.executeCommand(`${VIEW_ID}.focus`);\n  }\n\n  focusNextWaiting() {\n    const next = status.nextWaiting(status.waitingSessions(this.sessions), this.lastFocusedId);\n\n    if (next) {\n      this.focus(next);\n\n      return;\n    }\n\n    void vscode.window.showInformationMessage('No Claude session is waiting for you.');\n  }\n\n  receiveFocusRequest() {\n    const file = focusFile(process.pid);\n    const request = registry.readJson(file);\n\n    fs.rmSync(file, { force: true });\n\n    if (typeof request?.session === 'string')\n      this.showOwnTab(request.session);\n  }\n\n  getTreeItem(element) {\n    if (element.kind === 'hidden')\n      return this.hiddenGroupItem(element);\n\n    return element.sessions ? this.groupItem(element) : this.sessionItem(element);\n  }\n\n  hiddenGroupItem(group) {\n    const item = new vscode.TreeItem(`Hidden (${group.sessions.length})`, vscode.TreeItemCollapsibleState.Collapsed);\n\n    item.id = 'hidden';\n    item.tooltip = 'Sessions you hid or whose tab you closed. Use the eye button to show one again.';\n    item.iconPath = new vscode.ThemeIcon('eye-closed');\n\n    return item;\n  }\n\n  groupItem(group) {\n    const item = new vscode.TreeItem(group.project, vscode.TreeItemCollapsibleState.Expanded);\n\n    item.id = `project:${group.project}`;\n    item.contextValue = 'project';\n    item.description = status.groupDescription(group);\n    item.iconPath = new vscode.ThemeIcon('folder', new vscode.ThemeColor(status.STATUS[group.top.status].color));\n\n    return item;\n  }\n\n  sessionItem(session) {\n    const item = new vscode.TreeItem(session.name);\n    const look = status.STATUS[session.status];\n    const where = status.locationLabel(this.location(session));\n\n    item.id = `session:${session.id}`;\n    item.description = status.cardDescription(session, this.now);\n    item.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(look.color));\n    item.tooltip = [look.label, where, session.last].filter(Boolean).join('\\n');\n    item.contextValue = this.hiddenSessions.includes(session) ? 'hiddenSession' : 'session';\n    item.command = { command: 'claudeToolkit.focusSession', title: 'Show tab', arguments: [session] };\n\n    return item;\n  }\n\n  getChildren(element) {\n    if (element)\n      return element.sessions;\n\n    return this.hiddenSessions.length > 0 ? [...this.groups, { kind: 'hidden', sessions: this.hiddenSessions }] : this.groups;\n  }\n}\n\nconst reportStorageError = (error) => {\n  void vscode.window.showErrorMessage(`Claude Toolkit: could not save the session view state: ${error.message}`);\n};\n\nconst dragAndDrop = (provider) => ({\n  dragMimeTypes: [DRAG_MIME],\n  dropMimeTypes: [DRAG_MIME],\n  handleDrag: ([element], dataTransfer) => {\n    if (!element || element.kind === 'hidden' || provider.hiddenSessions.includes(element))\n      return;\n\n    const dragged = element.sessions\n      ? { kind: 'project', project: element.project }\n      : { kind: 'session', project: element.project, key: status.sessionKey(element) };\n\n    dataTransfer.set(DRAG_MIME, new vscode.DataTransferItem(JSON.stringify(dragged)));\n  },\n  handleDrop: async (target, dataTransfer) => {\n    const item = dataTransfer.get(DRAG_MIME);\n\n    if (item)\n      provider.drop(JSON.parse(await item.asString()), target);\n  },\n});\n\nconst watch = (directory, pattern, onEvent) => {\n  fs.mkdirSync(directory, { recursive: true });\n\n  const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(vscode.Uri.file(directory), pattern));\n\n  watcher.onDidCreate(onEvent);\n  watcher.onDidChange(onEvent);\n  watcher.onDidDelete(onEvent);\n\n  return watcher;\n};\n\nconst registerSessionsView = (context, tabsBySession) => {\n  const provider = new SessionsProvider(tabsBySession, context.globalState);\n  const refresh = () => provider.refresh();\n  const timer = setInterval(refresh, REFRESH_MS);\n\n  context.subscriptions.push(\n    provider.statusBar,\n    watch(sessionsDir(), '*.jsonl', refresh),\n    watch(windowsDir(), '*.json', refresh),\n    watch(focusDir(), `${process.pid}.json`, () => provider.receiveFocusRequest()),\n    { dispose: () => clearInterval(timer) },\n    { dispose: () => fs.rmSync(ownWindowFile(), { force: true }) },\n    vscode.window.createTreeView(VIEW_ID, { treeDataProvider: provider, dragAndDropController: dragAndDrop(provider) }),\n    vscode.commands.registerCommand('claudeToolkit.resetOrder', () => provider.resetOrder()),\n    vscode.commands.registerCommand('claudeToolkit.moveUp', (element) => provider.move(element, -1)),\n    vscode.commands.registerCommand('claudeToolkit.moveDown', (element) => provider.move(element, 1)),\n    vscode.commands.registerCommand('claudeToolkit.focusSession', (session) => provider.focus(session)),\n    vscode.commands.registerCommand('claudeToolkit.hideSession', (session) => provider.hide(session)),\n    vscode.commands.registerCommand('claudeToolkit.showSessionAgain', (session) => provider.showAgain(session)),\n    vscode.commands.registerCommand('claudeToolkit.focusMostUrgent', () => provider.focusMostUrgent()),\n    vscode.commands.registerCommand('claudeToolkit.nextWaiting', () => provider.focusNextWaiting()),\n    vscode.window.onDidCloseTerminal((terminal) => {\n      for (const [sessionName, tab] of tabsBySession) {\n        if (tab !== terminal)\n          continue;\n\n        tabsBySession.delete(sessionName);\n        provider.hideSessionNamed(sessionName);\n        provider.publishWindow();\n      }\n    }),\n  );\n\n  provider.publishWindow();\n\n  return { publishWindow: () => provider.publishWindow() };\n};\n\nmodule.exports = { registerSessionsView };\n",
+          "mode": 438
+        }
+      ]
+    },
+    "concernsApplied": [
+      "accessibility",
+      "combined",
+      "compatibility"
+    ],
+    "fallback": "same-provider-fresh",
+    "durationMs": 48677,
+    "usage": {
+      "inputTokens": 2,
+      "outputTokens": 4135,
+      "cachedInputTokens": 0,
+      "cacheCreationInputTokens": 53355
+    },
+    "invocations": 1
+  },
+  "acceptance": [
+    {
+      "scenarioId": "session-status#reorder-sessions",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:b5c60389c02d1e269927ec8976922d2806342c1819e2101fa854cbba78169e38",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "session-status#reorder-projects",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:b5c60389c02d1e269927ec8976922d2806342c1819e2101fa854cbba78169e38",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "session-status#cross-project-drop",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:b5c60389c02d1e269927ec8976922d2806342c1819e2101fa854cbba78169e38",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "session-status#new-session",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:b5c60389c02d1e269927ec8976922d2806342c1819e2101fa854cbba78169e38",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "session-status#reset",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:b5c60389c02d1e269927ec8976922d2806342c1819e2101fa854cbba78169e38",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "session-status#unreadable-file",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:b5c60389c02d1e269927ec8976922d2806342c1819e2101fa854cbba78169e38",
+      "evidenceIds": [
+        "tests"
+      ]
+    }
+  ],
+  "limitations": [],
+  "openspec": {
+    "changeName": "add-manual-order",
+    "artifactsReady": true,
+    "tasksComplete": true,
+    "scenariosCovered": true,
+    "scenarioCount": 6,
+    "scenarioDigest": "sha256:6cea022cd568c9184a6c7c2c10aa91dc7b8c008e472dd946d5bea238cd7aca01",
+    "guidanceDigest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "validationDigest": "sha256:866f569003ab9ca70c3f7c3ab1bd7909be322338a2593140cfbe1358490b1531"
+  },
+  "applicability": {
+    "requiredValidationLanes": [
+      "accessibility",
+      "test"
+    ],
+    "reviewConcerns": [
+      "accessibility",
+      "combined",
+      "compatibility"
+    ]
+  },
+  "continuation": {
+    "baseline": {
+      "schemaVersion": 2,
+      "base": "37017f0e16227138534a8122d4bd36b0c27a9d7c",
+      "unrelatedPaths": [],
+      "unrelatedDigest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "remediationCycles": 1,
+    "history": [
+      {
+        "resultDigest": "sha256:eaf14981c34e221c11991e4760f3178061ed08c3e048dd9af508a55acb68ca01",
+        "sourceDigest": "sha256:5835e9fe154ccdfc7ca3898ed5bbfbf238002a2d0018a167c94b481ad464a8d1",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:d4abe46ca99b63cdc8144e0c9863d6c1a9bec3da2c99b63d15e9e560082bc714",
+        "sourceDigest": "sha256:5835e9fe154ccdfc7ca3898ed5bbfbf238002a2d0018a167c94b481ad464a8d1",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:0b0f50453393c95dad44125ed46c66498ac37fe981f9d2794b7a816fb1498e4e",
+        "sourceDigest": "sha256:5835e9fe154ccdfc7ca3898ed5bbfbf238002a2d0018a167c94b481ad464a8d1",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "unreadable-hidden-session-unhidden",
+            "severity": "high",
+            "status": "open",
+            "blocking": true,
+            "summary": "vscode/sessions-view.js readSessions now drops files with no parsed events, so an unreadable hidden session is absent from `all`; refresh() then calls status.pruneHidden(stored, all), which keeps only entries of present sessions, and persists the pruned map. On the next refresh with a readable file the session has no hidden entry and appears visible, violating the 'Unreadable file: stays hidden' scenario (e.g. transient Windows sharing violation while the hook appends). Keep hidden entries for ids whose files were skipped (or prune only by file absence) and add a regression test through the readSessions/refresh path; current tests cover only pure helpers."
+          },
+          {
+            "id": "order-key-not-unique-within-project",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "Order lists are keyed by session.name (status-core orderedGroups, sessions-view drop). Untitled sessions are named after their folder and latestPerTitle does not merge them, so two hand-started sessions in rehlko-portal are both 'rehlko-portal'. Dragging one moves both (moveBefore removes all equal keys), dropping one onto its twin always places it last (target removed from `without`), and duplicate keys are stored. This contradicts design.md's premise that names are unique within a project. Key untitled sessions by id (titled by name) and add a duplicate-name test."
+          },
+          {
+            "id": "drop-discards-offscreen-placements",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "SessionsProvider.drop builds the new projects/sessions list from this.groups (visible only) and overwrites the stored list. A placed session that is currently hidden, or a placed project with no live sessions, loses its placement whenever siblings are reordered and returns at the end by urgency, contradicting 'your order is kept'. Apply moveBefore to the stored order merged with displayed keys (displayed order plus stored keys not displayed) instead of replacing it; add a test with a hidden/absent placed item."
+          },
+          {
+            "id": "reorder-drag-only-no-keyboard-alternative",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "Manual ordering is only reachable through the TreeDragAndDropController; there is no keyboard or single-pointer way to move a session or project (WCAG 2.2 2.1.1 Keyboard, 2.5.7 Dragging Movements). Keyboard and assistive-technology users cannot use the feature. Add native 'Move up'/'Move down' item commands (context menu/inline) reusing moveBefore and persist."
+          },
+          {
+            "id": "drop-stale-group-typeerror",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "sessions-view.js drop(): `group` from this.groups.find may be undefined if a refresh removed the project during the drag; `group.sessions` then throws inside handleDrop and the drop silently fails. Guard for a missing group."
+          },
+          {
+            "id": "duplicated-group-comparator",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "orderedGroups' fallback `byUrgency(first.top, second.top) || first.project.localeCompare(second.project)` duplicates the comparator in groupByProject; export one shared comparator to avoid drift."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:4347fc4f2fc226f9cbb8fe0a7ebbdf7898ddb22bd7ce26cc910f947cf6f17adc",
+        "sourceDigest": "sha256:5835e9fe154ccdfc7ca3898ed5bbfbf238002a2d0018a167c94b481ad464a8d1",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "unreadable-hidden-session-unhidden",
+            "severity": "high",
+            "status": "open",
+            "blocking": true,
+            "summary": "vscode/sessions-view.js readSessions now drops files with no parsed events, so an unreadable hidden session is absent from `all`; refresh() then calls status.pruneHidden(stored, all), which keeps only entries of present sessions, and persists the pruned map. On the next refresh with a readable file the session has no hidden entry and appears visible, violating the 'Unreadable file: stays hidden' scenario (e.g. transient Windows sharing violation while the hook appends). Keep hidden entries for ids whose files were skipped (or prune only by file absence) and add a regression test through the readSessions/refresh path; current tests cover only pure helpers."
+          },
+          {
+            "id": "order-key-not-unique-within-project",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "Order lists are keyed by session.name (status-core orderedGroups, sessions-view drop). Untitled sessions are named after their folder and latestPerTitle does not merge them, so two hand-started sessions in rehlko-portal are both 'rehlko-portal'. Dragging one moves both (moveBefore removes all equal keys), dropping one onto its twin always places it last (target removed from `without`), and duplicate keys are stored. This contradicts design.md's premise that names are unique within a project. Key untitled sessions by id (titled by name) and add a duplicate-name test."
+          },
+          {
+            "id": "drop-discards-offscreen-placements",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "SessionsProvider.drop builds the new projects/sessions list from this.groups (visible only) and overwrites the stored list. A placed session that is currently hidden, or a placed project with no live sessions, loses its placement whenever siblings are reordered and returns at the end by urgency, contradicting 'your order is kept'. Apply moveBefore to the stored order merged with displayed keys (displayed order plus stored keys not displayed) instead of replacing it; add a test with a hidden/absent placed item."
+          },
+          {
+            "id": "reorder-drag-only-no-keyboard-alternative",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "Manual ordering is only reachable through the TreeDragAndDropController; there is no keyboard or single-pointer way to move a session or project (WCAG 2.2 2.1.1 Keyboard, 2.5.7 Dragging Movements). Keyboard and assistive-technology users cannot use the feature. Add native 'Move up'/'Move down' item commands (context menu/inline) reusing moveBefore and persist."
+          },
+          {
+            "id": "drop-stale-group-typeerror",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "sessions-view.js drop(): `group` from this.groups.find may be undefined if a refresh removed the project during the drag; `group.sessions` then throws inside handleDrop and the drop silently fails. Guard for a missing group."
+          },
+          {
+            "id": "duplicated-group-comparator",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "orderedGroups' fallback `byUrgency(first.top, second.top) || first.project.localeCompare(second.project)` duplicates the comparator in groupByProject; export one shared comparator to avoid drift."
+          }
+        ],
+        "checks": 1,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:c88459ce27b4ac2d25a9c1992cf8f9c23984d3bafa8bc1b66e23eddeb228dac4",
+        "sourceDigest": "sha256:b5c60389c02d1e269927ec8976922d2806342c1819e2101fa854cbba78169e38",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      }
+    ],
+    "historyCount": 5,
+    "historyDigest": "sha256:0b06b069ca5b5e9836375435c549fc5fe7db30b57b2391fd0359f4cd53687359"
+  },
+  "schemaVersion": 2,
+  "createdAt": "2026-11-18T15:31:17.272Z",
+  "definitionOfDone": {
+    "status": "PASS",
+    "blockers": []
+  },
+  "status": "complete",
+  "nextAction": "No further SDD action is required."
+}

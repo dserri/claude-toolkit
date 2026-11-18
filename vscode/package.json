@@ -45,12 +45,24 @@
         "icon": "$(eye)"
       },
       {
+        "command": "claudeToolkit.resetOrder",
+        "title": "Toolkit: Reset session order"
+      },
+      {
         "command": "claudeToolkit.focusMostUrgent",
         "title": "Toolkit: Show the session waiting longest"
       },
       {
         "command": "claudeToolkit.nextWaiting",
         "title": "Toolkit: Next waiting session"
+      },
+      {
+        "command": "claudeToolkit.moveUp",
+        "title": "Toolkit: Move up"
+      },
+      {
+        "command": "claudeToolkit.moveDown",
+        "title": "Toolkit: Move down"
       }
     ],
     "viewsContainers": {
@@ -88,9 +100,27 @@
           "command": "claudeToolkit.showSessionAgain",
           "when": "view == claudeToolkit.sessions && viewItem == hiddenSession",
           "group": "inline"
+        },
+        {
+          "command": "claudeToolkit.moveUp",
+          "when": "view == claudeToolkit.sessions && viewItem =~ /^(session|project)$/",
+          "group": "order@1"
+        },
+        {
+          "command": "claudeToolkit.moveDown",
+          "when": "view == claudeToolkit.sessions && viewItem =~ /^(session|project)$/",
+          "group": "order@2"
         }
       ],
       "commandPalette": [
+        {
+          "command": "claudeToolkit.moveUp",
+          "when": "false"
+        },
+        {
+          "command": "claudeToolkit.moveDown",
+          "when": "false"
+        },
         {
           "command": "claudeToolkit.focusSession",
           "when": "false"

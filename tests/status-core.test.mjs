@@ -220,6 +220,82 @@ test('hidden sessions are split out, newest first, and come back with a newer ev
   assert.deepEqual(status.splitHidden(sessions, {}).hidden, []);
 });
 
+test('placed items keep the stored order, the rest follow by the fallback', () => {
+  const items = ['idle', 'waiting', 'working', 'new'].map((name) => ({ name }));
+  const ordered = status.applyOrder(items, ['working', 'idle', 'gone'], (item) => item.name, (first, second) => first.name.localeCompare(second.name));
+
+  assert.deepEqual(ordered.map((item) => item.name), ['working', 'idle', 'new', 'waiting']);
+  assert.deepEqual(status.applyOrder(items, [], (item) => item.name, () => 0).map((item) => item.name), ['idle', 'waiting', 'working', 'new']);
+});
+
+test('moving a key places it before the target, or last without one', () => {
+  assert.deepEqual(status.moveBefore(['a', 'b', 'c', 'd'], 'd', 'b'), ['a', 'd', 'b', 'c']);
+  assert.deepEqual(status.moveBefore(['a', 'b', 'c'], 'a', 'c'), ['b', 'a', 'c']);
+  assert.deepEqual(status.moveBefore(['a', 'b', 'c'], 'a', undefined), ['b', 'c', 'a']);
+  assert.deepEqual(status.moveBefore(['a', 'b'], 'x', 'b'), ['a', 'x', 'b']);
+  assert.deepEqual(status.moveBefore(['a', 'b'], 'a', 'missing'), ['b', 'a']);
+});
+
+test('the developer order wins over urgency for projects and sessions; unplaced ones follow by urgency', () => {
+  const card = (name, project, sessionStatus, since) => ({ name, titled: true, project, status: sessionStatus, since });
+  const groups = status.groupByProject([
+    card('portal-idle', 'rehlko-portal', 'idle', 1),
+    card('portal-asks', 'rehlko-portal', 'question', 5),
+    card('portal-new', 'rehlko-portal', 'permission', 9),
+    card('api-work', 'api', 'working', 2),
+    card('web-done', 'web', 'finished', 3),
+  ]);
+  const ordered = status.orderedGroups(groups, {
+    projects: ['api', 'rehlko-portal'],
+    sessions: { 'rehlko-portal': ['portal-idle', 'portal-asks'] },
+  });
+
+  assert.deepEqual(ordered.map((group) => group.project), ['api', 'rehlko-portal', 'web']);
+  assert.deepEqual(ordered[1].sessions.map((session) => session.name), ['portal-idle', 'portal-asks', 'portal-new']);
+  assert.deepEqual(status.orderedGroups(groups, {}).map((group) => group.project), ['rehlko-portal', 'web', 'api']);
+});
+
+test('a reorder keeps placed items that are not displayed, next to their stored neighbour', () => {
+  assert.deepEqual(status.mergeOrder(['b', 'a'], ['a', 'x', 'b', 'y']), ['b', 'y', 'a', 'x']);
+  assert.deepEqual(status.mergeOrder(['a', 'b'], ['gone', 'a']), ['gone', 'a', 'b']);
+  assert.deepEqual(status.mergeOrder(['a'], []), ['a']);
+  assert.deepEqual(status.moveBefore(status.mergeOrder(['b', 'a'], ['a', 'hidden', 'b']), 'b', 'a'), ['b', 'a', 'hidden']);
+});
+
+test('titled sessions are keyed by name, untitled ones by id, so twins never move together', () => {
+  const twins = [
+    { id: 'one', name: 'rehlko-portal', titled: false, status: 'working', since: 1 },
+    { id: 'two', name: 'rehlko-portal', titled: false, status: 'working', since: 2 },
+    { id: 'three', name: 'rehlko-portal-tester', titled: true, status: 'working', since: 3 },
+  ];
+
+  assert.deepEqual(twins.map(status.sessionKey), ['id:one', 'id:two', 'rehlko-portal-tester']);
+
+  const keys = status.moveBefore(twins.map(status.sessionKey), 'id:two', 'id:one');
+  const [group] = status.orderedGroups([{ project: 'rehlko-portal', sessions: twins, top: twins[0] }], { sessions: { 'rehlko-portal': keys } });
+
+  assert.deepEqual(group.sessions.map((session) => session.id), ['two', 'one', 'three']);
+});
+
+test('one step up or down targets the right neighbour, and the ends do nothing', () => {
+  const keys = ['a', 'b', 'c'];
+
+  assert.equal(status.stepTarget(keys, 'b', -1), 'a');
+  assert.equal(status.stepTarget(keys, 'a', 1), 'c');
+  assert.equal(status.stepTarget(keys, 'b', 1), undefined);
+  assert.equal(status.stepTarget(keys, 'a', -1), null);
+  assert.equal(status.stepTarget(keys, 'c', 1), null);
+  assert.equal(status.stepTarget(keys, 'x', 1), null);
+  assert.deepEqual(status.moveBefore(keys, 'b', status.stepTarget(keys, 'b', 1)), ['a', 'c', 'b']);
+  assert.deepEqual(status.moveBefore(keys, 'c', status.stepTarget(keys, 'c', -1)), ['a', 'c', 'b']);
+});
+
+test('hidden entries of unreadable files are kept', () => {
+  const sessions = [{ id: 'a', lastEventAt: 100 }];
+
+  assert.deepEqual(status.pruneHidden({ a: 100, flaky: 50, gone: 10 }, sessions, new Set(['flaky'])), { a: 100, flaky: 50 });
+});
+
 test('pruning keeps only hidden entries of existing sessions without newer events', () => {
   const sessions = [{ id: 'a', lastEventAt: 100 }, { id: 'b', lastEventAt: 300 }];
 

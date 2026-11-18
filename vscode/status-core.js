@@ -155,6 +155,55 @@ const waitingCount = (sessions) => sessions.filter((session) => WAITING.has(sess
 
 const isVisible = (session, hiddenAt) => hiddenAt === undefined || session.lastEventAt > hiddenAt;
 
+const applyOrder = (items, keys, keyOf, fallback) => {
+  const position = new Map(keys.map((key, index) => [key, index]));
+  const placed = items.filter((item) => position.has(keyOf(item))).sort((first, second) => position.get(keyOf(first)) - position.get(keyOf(second)));
+  const rest = items.filter((item) => !position.has(keyOf(item))).sort(fallback);
+
+  return [...placed, ...rest];
+};
+
+const moveBefore = (keys, moved, target) => {
+  const without = keys.filter((key) => key !== moved);
+  const index = target === undefined ? -1 : without.indexOf(target);
+
+  return index === -1 ? [...without, moved] : [...without.slice(0, index), moved, ...without.slice(index)];
+};
+
+const mergeOrder = (displayed, stored) => {
+  const merged = [...displayed];
+
+  stored.forEach((key, index) => {
+    if (merged.includes(key))
+      return;
+
+    const predecessor = stored.slice(0, index).reverse().find((candidate) => merged.includes(candidate));
+
+    merged.splice(predecessor === undefined ? 0 : merged.indexOf(predecessor) + 1, 0, key);
+  });
+
+  return merged;
+};
+
+const stepTarget = (keys, key, step) => {
+  const index = keys.indexOf(key);
+  const destination = index + step;
+
+  if (index === -1 || destination < 0 || destination >= keys.length)
+    return null;
+
+  return step < 0 ? keys[destination] : keys[destination + 1];
+};
+
+const sessionKey = (session) => (session.titled ? session.name : `id:${session.id}`);
+
+const orderedGroups = (groups, order) => applyOrder(
+  groups.map((group) => ({ ...group, sessions: applyOrder(group.sessions, order.sessions?.[group.project] ?? [], sessionKey, byUrgency) })),
+  order.projects ?? [],
+  (group) => group.project,
+  byGroupUrgency,
+);
+
 const splitHidden = (sessions, hidden) => ({
   visible: sessions.filter((session) => isVisible(session, hidden[session.id])),
   hidden: sessions
@@ -162,11 +211,12 @@ const splitHidden = (sessions, hidden) => ({
     .sort((first, second) => second.lastEventAt - first.lastEventAt),
 });
 
-const pruneHidden = (hidden, sessions) => Object.fromEntries(
-  sessions
+const pruneHidden = (hidden, sessions, unreadableIds = new Set()) => Object.fromEntries([
+  ...sessions
     .filter((session) => hidden[session.id] !== undefined && !isVisible(session, hidden[session.id]))
     .map((session) => [session.id, hidden[session.id]]),
-);
+  ...[...unreadableIds].filter((id) => hidden[id] !== undefined).map((id) => [id, hidden[id]]),
+]);
 
 const latestPerTitle = (sessions) => {
   const latest = new Map();
@@ -181,6 +231,8 @@ const latestPerTitle = (sessions) => {
   return sessions.filter((session) => !session.titled || latest.get(session.name) === session);
 };
 
+const byGroupUrgency = (first, second) => byUrgency(first.top, second.top) || first.project.localeCompare(second.project);
+
 const groupByProject = (sessions) => {
   const groups = new Map();
 
@@ -189,7 +241,7 @@ const groupByProject = (sessions) => {
 
   return [...groups.entries()]
     .map(([project, members]) => ({ project, sessions: members, top: members[0], waiting: waitingCount(members) }))
-    .sort((first, second) => byUrgency(first.top, second.top) || first.project.localeCompare(second.project));
+    .sort(byGroupUrgency);
 };
 
 const groupDescription = (group) => {
@@ -255,6 +307,12 @@ module.exports = {
   latestPerTitle,
   liveWindows,
   locationLabel,
+  applyOrder,
+  mergeOrder,
+  moveBefore,
+  sessionKey,
+  stepTarget,
+  orderedGroups,
   parseEvents,
   pruneHidden,
   sessionLocation,
