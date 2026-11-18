@@ -185,6 +185,18 @@ test('after /resume or /clear only the newest session of a process is kept; sess
   assert.deepEqual(kept.map((entry) => entry.id), ['test-chat', 'other-tab', 'old-a', 'old-b']);
 });
 
+test('sessions whose Claude process ended are dropped; sessions without a process id stay', () => {
+  const sessions = [{ id: 'live', pid: 1 }, { id: 'closed', pid: 2 }, { id: 'old', pid: undefined }];
+
+  assert.deepEqual(status.dropEnded(sessions, (pid) => pid === 1).map((session) => session.id), ['live', 'old']);
+});
+
+test('order pruning drops ids of sessions that no longer exist and keeps titled names', () => {
+  const sessions = [{ id: 'a' }, { id: 'b' }];
+
+  assert.deepEqual(status.pruneOrderKeys(['id:a', 'rehlko-portal-tester', 'id:gone', 'id:b', 'api-coordinator'], sessions), ['id:a', 'rehlko-portal-tester', 'id:b', 'api-coordinator']);
+});
+
 test('a plain tab is renamed to the session now running in its process, and only then', () => {
   const sessions = [{ name: 'test-chat', pid: 7 }, { name: 'api-coordinator', pid: 9 }];
 

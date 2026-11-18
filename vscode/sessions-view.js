@@ -49,6 +49,7 @@ class SessionsProvider {
     this.plainTabs = plainTabs;
     this.globalState = globalState;
     this.sessions = [];
+    this.allSessions = [];
     this.hiddenSessions = [];
     this.groups = [];
     this.windows = [];
@@ -67,8 +68,10 @@ class SessionsProvider {
     this.windows = readWindows();
 
     const { sessions, unreadableIds } = readSessions(now, stuckMs);
-    const all = status.latestPerProcess(status.latestPerTitle(sessions));
+    const all = status.latestPerProcess(status.latestPerTitle(status.dropEnded(sessions, isAlive)));
     const stored = this.storedHidden();
+
+    this.allSessions = all;
     const hidden = status.pruneHidden(stored, all, unreadableIds);
 
     if (Object.keys(hidden).length !== Object.keys(stored).length)
@@ -136,7 +139,7 @@ class SessionsProvider {
       return;
 
     const order = this.globalState.get(SESSION_ORDER, {});
-    const keys = status.mergeOrder(group.sessions.map(status.sessionKey), order.sessions?.[project] ?? []);
+    const keys = status.pruneOrderKeys(status.mergeOrder(group.sessions.map(status.sessionKey), order.sessions?.[project] ?? []), this.allSessions);
 
     this.persist(SESSION_ORDER, { ...order, sessions: { ...order.sessions, [project]: status.moveBefore(keys, moved, target) } });
   }

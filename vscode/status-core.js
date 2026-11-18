@@ -237,6 +237,14 @@ const latestPerTitle = (sessions) => {
 
 const byGroupUrgency = (first, second) => byUrgency(first.top, second.top) || first.project.localeCompare(second.project);
 
+const dropEnded = (sessions, isAlive) => sessions.filter((session) => session.pid === undefined || isAlive(session.pid));
+
+const pruneOrderKeys = (keys, sessions) => {
+  const ids = new Set(sessions.map((session) => `id:${session.id}`));
+
+  return keys.filter((key) => !key.startsWith('id:') || ids.has(key));
+};
+
 const plainTabRename = (tabName, tabPid, sessions) => {
   if (tabPid === undefined)
     return null;
@@ -333,8 +341,10 @@ module.exports = {
   groupByProject,
   groupDescription,
   isVisible,
+  dropEnded,
   latestPerProcess,
   plainTabRename,
+  pruneOrderKeys,
   latestPerTitle,
   liveWindows,
   locationLabel,
