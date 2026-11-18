@@ -1,0 +1,44 @@
+{
+  "name": "claude-toolkit",
+  "displayName": "Claude Toolkit",
+  "description": "Opens a Claude Code project coordinator and its worker sessions as named editor tabs.",
+  "publisher": "dserri",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "claudeToolkit.enable",
+        "title": "Toolkit: Enable coordinator in this folder"
+      },
+      {
+        "command": "claudeToolkit.start",
+        "title": "Toolkit: Start coordinator"
+      }
+    ],
+    "configuration": {
+      "title": "Claude Toolkit",
+      "properties": {
+        "claudeToolkit.claudePath": {
+          "type": "string",
+          "scope": "machine",
+          "default": "",
+          "description": "Path to the Claude Code executable. Empty uses `claude` from PATH."
+        },
+        "claudeToolkit.pluginDir": {
+          "type": "string",
+          "scope": "machine",
+          "default": "",
+          "description": "Path to the toolkit plugin folder. Empty uses plugins/toolkit next to this extension's real folder."
+        }
+      }
+    }
+  }
+}
