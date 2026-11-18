@@ -1,0 +1,476 @@
+{
+  "route": "full",
+  "request": {
+    "digest": "sha256:0169b2ca913492f7eeae97015c903ae6ac21e8ea558b1675f37e9383eefe56b5",
+    "route": "full",
+    "changeName": "fix-session-tab-identity",
+    "kind": "bugfix",
+    "summary": "Root cause (observed in the session files): /resume switches the session inside the same Claude process with no SessionEnd, and cards were linked to tabs by session name. Fix: status-hook records pid (CLAUDE_PID, positive integer only) on SessionStart and UserPromptSubmit; sessionState exposes the latest pid; latestPerProcess keeps only the newest session per pid (sessions without pid untouched); window registry entries add pids (terminal.processId of each tab; publishWindow async, failures reported); sessionLocation matches pids first then names; focus requests carry pid and the receiver shows the tab by pid then name; closing a tab hides sessions with its pid or name. Plain tab title: VS Code has no terminal rename API, so when the active terminal is a plain tab of this window and the session on its process has another name (plainTabRename), the extension runs workbench.action.terminal.renameWithArg; checked on every refresh and on active-terminal changes; coordinator/worker tabs keep their identifying names. Developer acceptance in VS Code: after /resume the old card disappears, the resumed card is in this window and focusable, and the tab title shows the resumed chat. Tests: node --test 200 passed. Regression tests reproduce the report: two sessions on one process (only the newest kept) and location by process for a renamed resumed session. Round 1 fixes: openTab's already-open check uses core.tabAlreadyOpen (the terminal tracked for the session name, if still open, before the title), so a renamed plain tab is not opened twice (regression test); renameActivePlainTab re-checks the active terminal right before the command and reports a rejected rename; publishWindow refreshes inside its error handling; plainTabs passed through the provider constructor.",
+    "surfaces": [
+      "accessibility",
+      "ui"
+    ],
+    "acceptance": [
+      "session-status#resume-inside-a-tab",
+      "session-status#clear-inside-a-tab",
+      "session-status#plain-tab-follows-its-chat",
+      "session-status#unknown-process"
+    ]
+  },
+  "repository": {
+    "baseDigest": "sha256:882df2d6a8433d06d7ed2f1dba95ed4c6603053e8afafb24d09fe46096c129f3",
+    "finalDigest": "sha256:2ddf95c7c7ca49dc3c8c793923ace598318dd966afeb3edc9b3ebc40fae421f5",
+    "configDigest": "sha256:64bd5ebc09005459de6436345630a01be4c3dc35cc91efe3a1df741b0630a62a",
+    "dependencyDigest": "sha256:64bd5ebc09005459de6436345630a01be4c3dc35cc91efe3a1df741b0630a62a",
+    "environmentDigest": "sha256:2385622c4dfd2867cf84e02a9e8f8b0036331258ca50e36a0af283b95c6f450e",
+    "affectedFiles": [
+      "openspec/changes/fix-session-tab-identity/.openspec.yaml",
+      "openspec/changes/fix-session-tab-identity/design.md",
+      "openspec/changes/fix-session-tab-identity/proposal.md",
+      "openspec/changes/fix-session-tab-identity/specs/session-status/spec.md",
+      "openspec/changes/fix-session-tab-identity/tasks.md",
+      "status/status-hook.mjs",
+      "tests/status-core.test.mjs",
+      "tests/status-hook.test.mjs",
+      "tests/vscode-core.test.mjs",
+      "vscode/core.js",
+      "vscode/extension.js",
+      "vscode/sessions-view.js",
+      "vscode/status-core.js"
+    ],
+    "unrelatedWorkPreserved": true,
+    "recoverable": true
+  },
+  "implementation": {
+    "summary": "Root cause (observed in the session files): /resume switches the session inside the same Claude process with no SessionEnd, and cards were linked to tabs by session name. Fix: status-hook records pid (CLAUDE_PID, positive integer only) on SessionStart and UserPromptSubmit; sessionState exposes the latest pid; latestPerProcess keeps only the newest session per pid (sessions without pid untouched); window registry entries add pids (terminal.processId of each tab; publishWindow async, failures reported); sessionLocation matches pids first then names; focus requests carry pid and the receiver shows the tab by pid then name; closing a tab hides sessions with its pid or name. Plain tab title: VS Code has no terminal rename API, so when the active terminal is a plain tab of this window and the session on its process has another name (plainTabRename), the extension runs workbench.action.terminal.renameWithArg; checked on every refresh and on active-terminal changes; coordinator/worker tabs keep their identifying names. Developer acceptance in VS Code: after /resume the old card disappears, the resumed card is in this window and focusable, and the tab title shows the resumed chat. Tests: node --test 200 passed. Regression tests reproduce the report: two sessions on one process (only the newest kept) and location by process for a renamed resumed session. Round 1 fixes: openTab's already-open check uses core.tabAlreadyOpen (the terminal tracked for the session name, if still open, before the title), so a renamed plain tab is not opened twice (regression test); renameActivePlainTab re-checks the active terminal right before the command and reports a rejected rename; publishWindow refreshes inside its error handling; plainTabs passed through the provider constructor.",
+    "builder": {
+      "provider": "claude",
+      "identityStrength": "operator-asserted"
+    }
+  },
+  "validation": [
+    {
+      "id": "tests",
+      "lane": "test",
+      "coverage": [
+        "test",
+        "regression",
+        "ui",
+        "accessibility"
+      ],
+      "kind": "command",
+      "key": "sha256:2104f5f96aaac978c990563798252958121f972675f2de63a3bc789bb1b50a76",
+      "codeDigest": "sha256:2ddf95c7c7ca49dc3c8c793923ace598318dd966afeb3edc9b3ebc40fae421f5",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          "status/status-hook.mjs",
+          "vscode/extension.js",
+          "vscode/sessions-view.js",
+          "vscode/status-core.js",
+          "tests/status-core.test.mjs",
+          "tests/status-hook.test.mjs",
+          "vscode/core.js",
+          "tests/vscode-core.test.mjs"
+        ]
+      },
+      "summary": "✔ marketplace.json exists at the repository root and parses (4.0834ms)\n✔ marketplace is named claude-toolkit with an owner and plugins (0.7239ms)\n✔ marketplace lists exactly one plugin named toolkit (0.5945ms)\n✔ every plugin source is a relative path inside the repository root (1.3985ms)\n✔ source containment check rejects escaping and absolute sources (1.5336ms)\n✔ toolkit source is a directory with plugin.json named toolkit (1.6939ms)\n✔ every listed plugin source has a plugin.json whose name matches its listing (1.0356ms)\n✔ toolkit plugin.json declares no version (0.811ms)\n✔ toolkit marketplace entry declares no version (0.6212ms)\n✔ the listed plugins ship no skills yet (1.7553ms)\n✔ every SKILL.md frontmatter name matches its directory and none is sdd (0.7357ms)\n✔ no listed plugin ships an sdd skill directory or agent file (1.0429ms)\n✔ claude plugin validate accepts the marketplace and the toolkit plugin (2891.3729ms)\n▶ isWorkerName\n  ✔ accepts valid names (0.7063ms)\n  ✔ rejects invalid names (0.1611ms)\n✔ isWorkerName (1.7605ms)\n▶ sessionPrefix\n  ✔ normalises the base name (0.3612ms)\n  ✔ uses project when nothing remains (0.139ms)\n✔ sessionPrefix (0.6209ms)\n▶ workerSessionName\n  ✔ joins prefix and name (0.2257ms)\n  ✔ throws for invalid names (0.543ms)\n✔ workerSessionName (0.911ms)\n▶ coordinatorArgs\n  ✔ contains the required flags and a fixed prompt (0.3486ms)\n✔ coordinatorArgs (0.4738ms)\n▶ newWorkerArgs\n  ✔ contains the requir\n[... diagnostic truncated ...]\nnState without title or folder (0.8599ms)\n✔ hook records events with folder from cwd (418.18ms)\n✔ hook prefers CLAUDE_PROJECT_DIR for folder (352.2175ms)\n✔ SessionEnd deletes the file, leaves a marker and blocks later events (1000.0704ms)\n✔ SessionStart after SessionEnd removes the marker and records (908.7199ms)\n✔ SessionStart removes files older than six hours, including markers (172.1585ms)\nℹ tests 201\nℹ suites 18\nℹ pass 201\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 7513.4692\n",
+      "exitCode": 0,
+      "durationMs": 7667,
+      "reused": true
+    },
+    {
+      "id": "e2e",
+      "lane": "test",
+      "coverage": [
+        "test"
+      ],
+      "kind": "command",
+      "key": "sha256:e06e8f0bcd8de05b6a0c9c1ef6b4fb7a93d06649766d04670855af3a1abf9d07",
+      "codeDigest": "sha256:2ddf95c7c7ca49dc3c8c793923ace598318dd966afeb3edc9b3ebc40fae421f5",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          "tests/status-entrypoint.e2e.mjs",
+          "status/status-hook.mjs"
+        ]
+      },
+      "summary": "✔ the installed Claude Code tells hooks of a headless session that its entrypoint is sdk-* (14230.9929ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 15401.4675\n",
+      "exitCode": 0,
+      "durationMs": 15569
+    }
+  ],
+  "review": {
+    "verdict": "PASS",
+    "reviewedDigest": "sha256:2ddf95c7c7ca49dc3c8c793923ace598318dd966afeb3edc9b3ebc40fae421f5",
+    "concerns": [
+      "accessibility: the only UI changes are the tab title, the card's location label and a warning if the rename is rejected. No keyboard, focus or labelling regression; the tab title now names its chat more accurately.",
+      "combined: process-id linking is unit-tested with the reported scenario. The VS Code side (sessions-view.js) has only developer acceptance plus the pending e2e run; CLAUDE_PID is validated and no secrets or injection risks were found."
+    ],
+    "findings": [
+      {
+        "id": "plain-tab-manual-rename-overwritten",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "vscode/sessions-view.js renameActivePlainTab runs on every refresh (every 15 s and on file or active-terminal events). While a plain tab is active, any name the developer gives it by hand is reverted to the session name. This follows the spec, but it is not documented as a deliberate trade-off."
+      },
+      {
+        "id": "plain-tab-rename-name-collision",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "A resumed chat whose name equals a worker name or 'coordinator' renames the plain tab to that name. extension.js handleRequest (openTabs: openTabNames()) and openTab's name check would then reject or skip the real worker or coordinator tab as 'already open'. The rename should skip names reserved for toolkit tabs, or this edge case should be documented."
+      },
+      {
+        "id": "openspec-impact-tasks-incomplete",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "In openspec/changes/fix-session-tab-identity, the proposal.md Impact section leaves out vscode/core.js and vscode/extension.js. tasks.md has no task or acceptance item for the plain-tab rename, although the spec defines the 'Plain tab follows its chat' scenario."
+      }
+    ],
+    "coverage": "complete",
+    "independent": true,
+    "fresh": true,
+    "readOnly": true,
+    "reviewer": {
+      "provider": "claude",
+      "contextId": "d2eddf54-0d4e-4755-b595-22021be80721"
+    },
+    "policyDigest": "sha256:3d1392720a009261f41e55ef9d5d9f6c279b29c84d5f56e4cfd232bde6bd996c",
+    "inputs": {
+      "intentDigest": "sha256:ec8a174aa21734e6c4a72daca5fc3eedd88dad8d1b8b1d5097c344542c16c12d",
+      "files": {
+        "openspec/changes/fix-session-tab-identity/.openspec.yaml": "sha256:cb5c6e0a95dc5be3c8d1c06031a5387eab2cfbe299554b1c8915267b37fb9535",
+        "openspec/changes/fix-session-tab-identity/design.md": "sha256:95212dc66665a99746497259337e30663139c8fec0d7ecf85d013f2a9db38b6f",
+        "openspec/changes/fix-session-tab-identity/proposal.md": "sha256:a1784819ecf0579d4239ffa41c661724aa97db77d8be86ad003225044af175f1",
+        "openspec/changes/fix-session-tab-identity/specs/session-status/spec.md": "sha256:80b67f4f5bd7743aa92f6fd07f12ccaebd1d5ada669e409b5df7bb4ed35e0cc2",
+        "openspec/changes/fix-session-tab-identity/tasks.md": "sha256:9fb699077ad0f822ff6ab522d8f7b128b69fa8234614c644db3ca613bb6edbfe",
+        "status/status-hook.mjs": "sha256:e07117833c6e55c34a84ed295df8091f5297a72d52c8f0ce9d3d1be4ba5d175c",
+        "tests/status-core.test.mjs": "sha256:cc7a7e8711f29a6ee30250886015f6225d6eedce19f20baa74865e09b19d6287",
+        "tests/status-hook.test.mjs": "sha256:544409c1845f60c8833686913649b09f89e356a9c278323d2689ff9c0482a06f",
+        "tests/vscode-core.test.mjs": "sha256:b9c18ddc892fad75cea29eb6df2a360aafa0b07c6361257a9f15e97f18f16d33",
+        "vscode/core.js": "sha256:53ca4c3e785f5601989509207a6d022fbba05e4cab2be8ab9dc1c7bd5450ac4a",
+        "vscode/extension.js": "sha256:96e3ae7151a716fc3da002358e175057dae8a7b16c95f8fc29114df7146ce373",
+        "vscode/sessions-view.js": "sha256:abaf55685a9b908754bb09f3df0b163fe07c301a4ad25ee5fae47d3525685363",
+        "vscode/status-core.js": "sha256:7ebb6a5b5381e2b1552f654c85e56a59e6a42d212f4eeb8061ef1c8ee6965d65"
+      },
+      "sources": [
+        {
+          "path": "openspec/changes/fix-session-tab-identity/.openspec.yaml",
+          "content": "schema: spec-driven\ncreated: 2026-11-18\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/fix-session-tab-identity/design.md",
+          "content": "# Design\n\n## Context\n\nObserved: after `/resume` in the plain tab, the session files show the old session (`backoffices-claude`, SessionStart only) and the resumed one (`test-chat`, SessionStart with source `resume`); no SessionEnd for the old one. Hooks receive `CLAUDE_PID`, the Claude process id; the extension starts Claude directly as the terminal process, so `terminal.processId` is that same process.\n\n## Decisions\n\n- **Hook:** SessionStart and UserPromptSubmit lines carry `pid` (integer from `CLAUDE_PID`, omitted when absent or invalid). These two events are enough: every session switch starts with one of them.\n- **Fold:** `sessionState` exposes the latest `pid`. `latestPerProcess(sessions)` keeps, among sessions with the same pid, only the one with the latest event; sessions without pid are untouched. Applied together with `latestPerTitle`.\n- **Registry:** window entries gain `pids` (process ids of the tabs in `tabsBySession`, read through `terminal.processId`); publishing becomes asynchronous. `sessionLocation` matches `pids` first, then names. Focus requests carry the session's pid and name; the receiving window shows the tab whose process id matches, else the tab with that name.\n- **Plain tab name** (developer request during the fix): VS Code offers no API to rename a terminal, only the command `workbench.action.terminal.renameWithArg`, which acts on the active terminal. So on every refresh and whenever the active terminal changes, if the active terminal is a plain tab this window opened and the session on its process has another name, the extension runs that command. Coordinator and worker tabs keep their names, which identify them for duplicate checks and requests.\n- **Duplicate check by terminal** (found in review): a renamed plain tab no longer has the title `claude`, so \"already open\" checks the terminal tracked for that session name first (still among VS Code's terminals), then the title.\n- **Closing a tab** hides the cards of sessions with that tab's process id, or its name.\n\n## Risks / Trade-offs\n\n- [Process ids are reused by the OS] → only sessions within the 6-hour window are compared, and the older one is the one dropped.\n- [A Claude launcher process between the terminal and Claude would break pid matching] → name fallback keeps today's behaviour; acceptance checks the pid match on this machine.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/fix-session-tab-identity/proposal.md",
+          "content": "# Proposal\n\n## Why\n\nBug reported by the developer: in a plain `claude` tab they used `/resume` to continue a chat started in another terminal. The tab now runs the resumed session, but the old `<project>-claude` card stayed, and the resumed chat's card said \"not in a toolkit tab\". `/resume` (and `/clear`) switch the session inside the same Claude process without a SessionEnd, and the view links cards to tabs by session name, which changes on resume, clear and rename.\n\n## What Changes\n\n- The status hook records the Claude process id (`CLAUDE_PID`) with each session.\n- Each window publishes the process ids of the tabs it opened; cards are linked to tabs by process id first, name second.\n- When a newer session reports the same process id, older sessions of that process are no longer shown.\n\n## Capabilities\n\n### New Capabilities\n\nNone.\n\n### Modified Capabilities\n\n- `session-status`: tab identity by process, superseded sessions.\n\n## Impact\n\n`status/status-hook.mjs`, `vscode/status-core.js`, `vscode/sessions-view.js`, tests.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/fix-session-tab-identity/specs/session-status/spec.md",
+          "content": "# Spec Delta\n\n## ADDED Requirements\n\n### Requirement: Tab identity follows the Claude process\n\nThe status hook SHALL record the Claude process id with the session's events. Each window SHALL publish the process ids of the tabs it opened, and a card SHALL be linked to a tab by process id, falling back to the session name when either id is unknown. When several sessions report the same process id, only the one with the latest event SHALL be shown.\n\n#### Scenario: Resume inside a tab\n\n- **WHEN** the developer runs `/resume` in the plain `claude` tab and picks a chat named `test-chat`\n- **THEN** the `<project>-claude` card disappears, the `test-chat` card says \"in this window\", and clicking it focuses that tab\n\n#### Scenario: Clear inside a tab\n\n- **WHEN** the developer runs `/clear` in a worker tab\n- **THEN** only the new session's card is shown for that tab\n\n#### Scenario: Plain tab follows its chat\n\n- **WHEN** the plain `claude` tab is the active tab and its Claude process now runs a session with another name (after `/resume` or a rename)\n- **THEN** the tab is renamed to that session's name; coordinator and worker tabs keep their names, which the extension uses to track them\n\n#### Scenario: Unknown process\n\n- **WHEN** a session's events carry no process id (recorded before this change)\n- **THEN** it is linked by name as before\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/fix-session-tab-identity/tasks.md",
+          "content": "# Tasks\n\n## 1. Fix\n\n- [x] 1.1 Record `pid` in the hook; add `latestPerProcess` and pid matching in `status-core.js`; verify with hook and core tests\n- [x] 1.2 Publish tab process ids, match focus and close by pid in `sessions-view.js`; verify VS Code loads it\n\n## 2. Acceptance\n\n- [x] 2.1 With the developer: `/resume` in the plain tab leaves one card, linked to the tab and focusable\n",
+          "mode": 438
+        },
+        {
+          "path": "status/status-hook.mjs",
+          "content": "import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';\nimport { homedir } from 'node:os';\nimport { basename, join } from 'node:path';\nimport { text } from 'node:stream/consumers';\n\nconst STALE_HOURS = 6;\nconst LAST_LINE_LENGTH = 200;\nconst SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst STATUS_LINE = /^STATUS:\\s*(QUESTION|DONE)\\s*$/i;\n\nconst statusDir = join(homedir(), '.agent-status');\nconst sessionsDir = join(statusDir, 'sessions');\n\nconst log = (message) => {\n  try {\n    mkdirSync(statusDir, { recursive: true });\n    appendFileSync(join(statusDir, 'hook.log'), `${new Date().toISOString()} ${message}\\n`);\n  } catch {\n    return;\n  }\n};\n\nconst isHeadless = () => (process.env.CLAUDE_CODE_ENTRYPOINT ?? '').startsWith('sdk');\n\nconst messageLines = (message) => String(message ?? '').split(/\\r?\\n/).map((line) => line.trim()).filter(Boolean);\n\nconst describeStop = (message) => {\n  const lines = messageLines(message);\n  const statusMatch = lines.length ? STATUS_LINE.exec(lines.at(-1)) : null;\n  const content = statusMatch ? lines.slice(0, -1) : lines;\n  const last = content.at(-1) ?? '';\n\n  return {\n    asks: statusMatch ? statusMatch[1].toUpperCase() === 'QUESTION' : last.endsWith('?'),\n    last: last.slice(0, LAST_LINE_LENGTH),\n  };\n};\n\nconst eventRecord = (input) => {\n  const record = { t: Date.now(), event: input.hook_event_name, promptId: input.prompt_id, tool: input.tool_name, title: input.session_title };\n\n  if (input.hook_event_name === 'SessionStart' || input.hook_event_name === 'UserPromptSubmit') {\n    const pid = Number(process.env.CLAUDE_PID);\n\n    record.folder = basename(process.env.CLAUDE_PROJECT_DIR || input.cwd || '');\n\n    if (Number.isInteger(pid) && pid > 0)\n      record.pid = pid;\n  }\n\n  if (input.hook_event_name === 'Stop')\n    Object.assign(record, describeStop(input.last_assistant_message));\n\n  return record;\n};\n\nconst removeIfStale = (file, now) => {\n  try {\n    if (now - statSync(file).mtimeMs > STALE_HOURS * 3_600_000)\n      rmSync(file, { force: true });\n  } catch (error) {\n    log(`stale check skipped for ${basename(file)}: ${error.message}`);\n  }\n};\n\nconst removeStaleSessions = (now) => {\n  for (const entry of readdirSync(sessionsDir))\n    removeIfStale(join(sessionsDir, entry), now);\n};\n\nconst startTurn = (file, line) => {\n  let firstLine = '';\n\n  try {\n    firstLine = readFileSync(file, 'utf8').split('\\n')[0];\n  } catch {\n    firstLine = '';\n  }\n\n  const temporary = `${file}.${process.pid}.tmp`;\n\n  try {\n    writeFileSync(temporary, firstLine ? `${firstLine}\\n${line}` : line);\n    renameSync(temporary, file);\n  } catch (error) {\n    rmSync(temporary, { force: true });\n    log(`compaction skipped for ${basename(file)}: ${error.message}`);\n    appendFileSync(file, line);\n  }\n};\n\nconst record = (input) => {\n  if (!SESSION_ID.test(input.session_id ?? '')) {\n    log(`ignored ${input.hook_event_name}: missing or invalid session_id`);\n\n    return;\n  }\n\n  const file = join(sessionsDir, `${input.session_id}.jsonl`);\n  const endedMarker = join(sessionsDir, `${input.session_id}.ended`);\n\n  mkdirSync(sessionsDir, { recursive: true });\n\n  if (input.hook_event_name === 'SessionEnd') {\n    rmSync(file, { force: true });\n    writeFileSync(endedMarker, '');\n\n    return;\n  }\n\n  if (input.hook_event_name === 'SessionStart')\n    rmSync(endedMarker, { force: true });\n  else if (existsSync(endedMarker))\n    return;\n\n  const line = `${JSON.stringify(eventRecord(input))}\\n`;\n\n  if (input.hook_event_name === 'SessionStart')\n    removeStaleSessions(Date.now());\n\n  if (input.hook_event_name === 'UserPromptSubmit')\n    startTurn(file, line);\n  else\n    appendFileSync(file, line);\n};\n\nconst main = async () => {\n  if (isHeadless())\n    return;\n\n  try {\n    record(JSON.parse(await text(process.stdin)));\n  } catch (error) {\n    log(`error: ${error.message}`);\n  }\n};\n\nawait main();\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/status-core.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport status from '../vscode/status-core.js';\n\nconst now = 1_000_000_000;\nconst stuckMs = 10 * 60_000;\nconst id = '7fa97870-6578-4ed2-b7c9-1dc4c9a2ef09';\n\nconst at = (secondsAgo, event, extra = {}) => ({ t: now - secondsAgo * 1000, event, ...extra });\nconst stateOf = (events) => status.sessionState({ id, events: [...events].sort((first, second) => first.t - second.t), now, stuckMs });\n\ntest('a fresh session is idle and named after its title, else its folder', () => {\n  assert.equal(stateOf([at(60, 'SessionStart', { title: 'portal-tester', folder: 'rehlko-portal' })]).name, 'portal-tester');\n\n  const session = stateOf([at(60, 'SessionStart', { folder: 'rehlko-portal' })]);\n\n  assert.equal(session.name, 'rehlko-portal');\n  assert.equal(session.status, 'idle');\n});\n\ntest('a prompt and its tools mean working, with the current tool', () => {\n  const session = stateOf([\n    at(90, 'SessionStart'),\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(30, 'PostToolUse', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'working');\n  assert.equal(session.tool, 'Bash');\n  assert.equal(session.since, now - 60_000);\n});\n\ntest('a permission request waits for the developer, and the next tool result returns to working', () => {\n  const waiting = [at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(40, 'PermissionRequest', { promptId: 'p1', tool: 'Edit' })];\n\n  assert.equal(stateOf(waiting).status, 'permission');\n  assert.equal(stateOf([...waiting, at(10, 'PostToolUse', { promptId: 'p1', tool: 'Edit' })]).status, 'working');\n});\n\ntest('AskUserQuestion and asking stops wait for an answer; other stops need review', () => {\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'PreToolUse', { promptId: 'p1', tool: 'AskUserQuestion' })]).status, 'question');\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'Stop', { promptId: 'p1', asks: true, last: 'Which one?' })]).status, 'question');\n\n  const finished = stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'Stop', { promptId: 'p1', asks: false, last: 'All tests pass.' })]);\n\n  assert.equal(finished.status, 'finished');\n  assert.equal(finished.last, 'All tests pass.');\n});\n\ntest('a tool event of a turn recorded after its stop does not reopen it', () => {\n  const session = stateOf([\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(20, 'Stop', { promptId: 'p1', asks: false, last: 'Done.' }),\n    at(19, 'PostToolUse', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'finished');\n});\n\ntest('late events of an earlier turn do not change the current one', () => {\n  const session = stateOf([\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(30, 'UserPromptSubmit', { promptId: 'p2' }),\n    at(20, 'PermissionRequest', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'working');\n});\n\ntest('a working session without events past the threshold is possibly stuck, keeping its tool', () => {\n  const session = stateOf([at(1200, 'UserPromptSubmit', { promptId: 'p1' }), at(700, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]);\n\n  assert.equal(session.status, 'stuck');\n  assert.equal(session.tool, 'Bash');\n  assert.equal(status.cardDescription(session, now), 'possibly stuck · after Bash · 11m');\n  assert.equal(status.cardDescription({ status: 'permission', tool: 'Edit', since: now - 5000 }, now), 'waiting for permission · Edit · 5s');\n  assert.equal(status.cardDescription({ status: 'finished', tool: 'Bash', since: now - 5000 }, now), 'finished, needs review · 5s');\n  assert.equal(stateOf([at(1200, 'UserPromptSubmit', { promptId: 'p1' }), at(500, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).status, 'working');\n});\n\ntest('unreadable lines are skipped and lines are ordered by time', () => {\n  const events = status.parseEvents('{\"t\":2,\"event\":\"Stop\"}\\nnot json\\n\\n{\"t\":1,\"event\":\"SessionStart\"}\\n{\"event\":\"NoTime\"}\\n');\n\n  assert.deepEqual(events.map((event) => event.event), ['SessionStart', 'Stop']);\n});\n\ntest('cards are sorted with waiting sessions first, longest waiting first, then stuck, finished, working, idle', () => {\n  const card = (name, sessionStatus, since) => ({ name, status: sessionStatus, since });\n  const sorted = [\n    card('idle', 'idle', 1),\n    card('working', 'working', 1),\n    card('question-new', 'question', 50),\n    card('finished', 'finished', 1),\n    card('permission-old', 'permission', 10),\n    card('stuck', 'stuck', 1),\n  ].sort(status.byUrgency);\n\n  assert.deepEqual(sorted.map((session) => session.name), ['permission-old', 'question-new', 'stuck', 'finished', 'working', 'idle']);\n  assert.equal(status.waitingCount(sorted), 2);\n});\n\ntest('sessions are grouped by project, the most urgent project first, each sorted by urgency', () => {\n  const card = (name, project, sessionStatus, since) => ({ name, project, status: sessionStatus, since });\n  const groups = status.groupByProject([\n    card('api-worker', 'api', 'working', 5),\n    card('portal-idle', 'rehlko-portal', 'idle', 1),\n    card('portal-asks', 'rehlko-portal', 'question', 20),\n    card('api-done', 'api', 'finished', 3),\n    card('portal-perm', 'rehlko-portal', 'permission', 10),\n  ]);\n\n  assert.deepEqual(groups.map((group) => group.project), ['rehlko-portal', 'api']);\n  assert.deepEqual(groups[0].sessions.map((session) => session.name), ['portal-perm', 'portal-asks', 'portal-idle']);\n  assert.deepEqual(groups[1].sessions.map((session) => session.name), ['api-done', 'api-worker']);\n  assert.equal(groups[0].top.name, 'portal-perm');\n  assert.equal(status.groupDescription(groups[0]), '2 waiting · 3 sessions');\n  assert.equal(status.groupDescription({ sessions: [card('a', 'x', 'working', 1)], waiting: 0 }), '1 session');\n});\n\ntest('a session takes its project from the first folder recorded, or a placeholder', () => {\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1', folder: 'rehlko-portal' })]).project, 'rehlko-portal');\n  assert.equal(stateOf([\n    at(90, 'SessionStart', { folder: 'rehlko-portal', title: 'rehlko-portal-coordinator' }),\n    at(60, 'UserPromptSubmit', { promptId: 'p1', folder: '.coord' }),\n  ]).project, 'rehlko-portal');\n  assert.equal(stateOf([at(60, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).project, 'unknown project');\n});\n\ntest('only the latest session per title is kept; untitled sessions are never merged', () => {\n  const session = (sessionId, name, titled, lastEventAt) => ({ id: sessionId, name, titled, lastEventAt });\n  const kept = status.latestPerTitle([\n    session('old', 'rehlko-portal-coordinator', true, 100),\n    session('new', 'rehlko-portal-coordinator', true, 200),\n    session('tester', 'rehlko-portal-tester', true, 50),\n    session('plain-1', 'rehlko-portal', false, 10),\n    session('plain-2', 'rehlko-portal', false, 20),\n  ]);\n\n  assert.deepEqual(kept.map((entry) => entry.id), ['new', 'tester', 'plain-1', 'plain-2']);\n});\n\ntest('a titled session reports it, a folder-named one does not', () => {\n  assert.equal(stateOf([at(60, 'SessionStart', { title: 'portal-tester', folder: 'portal' })]).titled, true);\n  assert.equal(stateOf([at(60, 'SessionStart', { folder: 'portal' })]).titled, false);\n});\n\ntest('waiting sessions come in urgency order and the next one wraps around', () => {\n  const session = (id, sessionStatus, since) => ({ id, status: sessionStatus, since });\n  const waiting = status.waitingSessions([\n    session('working', 'working', 1),\n    session('question-new', 'question', 30),\n    session('permission-old', 'permission', 10),\n    session('finished', 'finished', 1),\n  ]);\n\n  assert.deepEqual(waiting.map((entry) => entry.id), ['permission-old', 'question-new']);\n  assert.equal(status.nextWaiting(waiting, undefined).id, 'permission-old');\n  assert.equal(status.nextWaiting(waiting, 'permission-old').id, 'question-new');\n  assert.equal(status.nextWaiting(waiting, 'question-new').id, 'permission-old');\n  assert.equal(status.nextWaiting(waiting, 'gone').id, 'permission-old');\n  assert.equal(status.nextWaiting([], 'permission-old'), undefined);\n});\n\ntest('a click shows an own tab, raises another window, or explains', () => {\n  assert.equal(status.clickAction({ kind: 'here' }), 'show');\n  assert.equal(status.clickAction({ kind: 'other', window: { pid: 2 } }), 'raise');\n  assert.equal(status.clickAction({ kind: 'none' }), 'message');\n});\n\ntest('a session reports the latest Claude process id it recorded', () => {\n  assert.equal(stateOf([at(90, 'SessionStart', { pid: 100 }), at(60, 'UserPromptSubmit', { promptId: 'p1', pid: 100 })]).pid, 100);\n  assert.equal(stateOf([at(90, 'SessionStart')]).pid, undefined);\n});\n\ntest('after /resume or /clear only the newest session of a process is kept; sessions without pid are untouched', () => {\n  const session = (id, pid, lastEventAt) => ({ id, pid, lastEventAt });\n  const kept = status.latestPerProcess([\n    session('backoffices-claude', 7, 100),\n    session('test-chat', 7, 200),\n    session('other-tab', 8, 50),\n    session('old-a', undefined, 10),\n    session('old-b', undefined, 20),\n  ]);\n\n  assert.deepEqual(kept.map((entry) => entry.id), ['test-chat', 'other-tab', 'old-a', 'old-b']);\n});\n\ntest('a plain tab is renamed to the session now running in its process, and only then', () => {\n  const sessions = [{ name: 'test-chat', pid: 7 }, { name: 'api-coordinator', pid: 9 }];\n\n  assert.equal(status.plainTabRename('claude', 7, sessions), 'test-chat');\n  assert.equal(status.plainTabRename('test-chat', 7, sessions), null);\n  assert.equal(status.plainTabRename('claude', 99, sessions), null);\n  assert.equal(status.plainTabRename('claude', undefined, sessions), null);\n});\n\ntest('a session is located by its process first, then by name', () => {\n  const windows = [\n    { pid: 10, folder: 'P:\\\\repos\\\\Rehlko\\\\backoffices', sessions: ['backoffices-claude'], pids: [7] },\n    { pid: 20, folder: 'P:\\\\repos\\\\Rehlko\\\\api', sessions: ['api-coordinator'], pids: [9] },\n  ];\n\n  assert.equal(status.sessionLocation('test-chat', 10, windows, 7).kind, 'here');\n  assert.equal(status.sessionLocation('test-chat', 20, windows, 7).window.pid, 10);\n  assert.equal(status.sessionLocation('api-coordinator', 10, windows, undefined).window.pid, 20);\n  assert.equal(status.sessionLocation('test-chat', 10, windows, 99).kind, 'none');\n  assert.equal(status.sessionLocation('api-coordinator', 10, [{ pid: 20, folder: 'x', sessions: ['api-coordinator'] }], 9).window.pid, 20);\n});\n\ntest('only well-formed entries of running windows count', () => {\n  const entries = [\n    { pid: 10, folder: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal', sessions: ['rehlko-portal-coordinator'] },\n    { pid: 20, folder: 'P:\\\\repos\\\\Rehlko\\\\api', sessions: ['api-coordinator'] },\n    { pid: 30, folder: 'P:\\\\repos\\\\gone', sessions: [] },\n    { pid: '40', folder: 'x', sessions: [] },\n    { pid: 50, sessions: [] },\n    null,\n  ];\n\n  assert.deepEqual(status.liveWindows(entries, (pid) => pid !== 30).map((entry) => entry.pid), [10, 20]);\n});\n\ntest('a session is located in this window, another window, or none', () => {\n  const windows = [\n    { pid: 10, folder: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal', sessions: ['rehlko-portal-coordinator', 'rehlko-portal-tester'] },\n    { pid: 20, folder: 'P:\\\\repos\\\\Rehlko\\\\api', sessions: ['api-coordinator'] },\n  ];\n  const here = status.sessionLocation('rehlko-portal-tester', 10, windows);\n  const other = status.sessionLocation('api-coordinator', 10, windows);\n  const none = status.sessionLocation('vs-code skill upgrade', 10, windows);\n\n  assert.equal(here.kind, 'here');\n  assert.equal(other.kind, 'other');\n  assert.equal(other.window.pid, 20);\n  assert.equal(none.kind, 'none');\n  assert.equal(status.locationLabel(here), 'in this window');\n  assert.equal(status.locationLabel(other), 'in window api');\n  assert.equal(status.locationLabel({ kind: 'other', window: { folder: '/home/dev/app/' } }), 'in window app');\n  assert.equal(status.locationLabel(none), 'not in a toolkit tab');\n});\n\ntest('durations read as seconds, minutes, then hours and minutes', () => {\n  assert.equal(status.formatDuration(45_000), '45s');\n  assert.equal(status.formatDuration(12 * 60_000), '12m');\n  assert.equal(status.formatDuration((2 * 60 + 5) * 60_000), '2h 05m');\n  assert.equal(status.formatDuration(-5), '0s');\n});\n\ntest('hidden sessions are split out, newest first, and come back with a newer event', () => {\n  const sessions = [\n    { id: 'a', lastEventAt: 100 },\n    { id: 'b', lastEventAt: 300 },\n    { id: 'c', lastEventAt: 200 },\n    { id: 'd', lastEventAt: 500 },\n  ];\n  const { visible, hidden } = status.splitHidden(sessions, { b: 300, c: 200, d: 400 });\n\n  assert.deepEqual(visible.map((session) => session.id), ['a', 'd']);\n  assert.deepEqual(hidden.map((session) => session.id), ['b', 'c']);\n  assert.deepEqual(status.splitHidden(sessions, {}).hidden, []);\n});\n\ntest('placed items keep the stored order, the rest follow by the fallback', () => {\n  const items = ['idle', 'waiting', 'working', 'new'].map((name) => ({ name }));\n  const ordered = status.applyOrder(items, ['working', 'idle', 'gone'], (item) => item.name, (first, second) => first.name.localeCompare(second.name));\n\n  assert.deepEqual(ordered.map((item) => item.name), ['working', 'idle', 'new', 'waiting']);\n  assert.deepEqual(status.applyOrder(items, [], (item) => item.name, () => 0).map((item) => item.name), ['idle', 'waiting', 'working', 'new']);\n});\n\ntest('moving a key places it before the target, or last without one', () => {\n  assert.deepEqual(status.moveBefore(['a', 'b', 'c', 'd'], 'd', 'b'), ['a', 'd', 'b', 'c']);\n  assert.deepEqual(status.moveBefore(['a', 'b', 'c'], 'a', 'c'), ['b', 'a', 'c']);\n  assert.deepEqual(status.moveBefore(['a', 'b', 'c'], 'a', undefined), ['b', 'c', 'a']);\n  assert.deepEqual(status.moveBefore(['a', 'b'], 'x', 'b'), ['a', 'x', 'b']);\n  assert.deepEqual(status.moveBefore(['a', 'b'], 'a', 'missing'), ['b', 'a']);\n});\n\ntest('the developer order wins over urgency for projects and sessions; unplaced ones follow by urgency', () => {\n  const card = (name, project, sessionStatus, since) => ({ name, titled: true, project, status: sessionStatus, since });\n  const groups = status.groupByProject([\n    card('portal-idle', 'rehlko-portal', 'idle', 1),\n    card('portal-asks', 'rehlko-portal', 'question', 5),\n    card('portal-new', 'rehlko-portal', 'permission', 9),\n    card('api-work', 'api', 'working', 2),\n    card('web-done', 'web', 'finished', 3),\n  ]);\n  const ordered = status.orderedGroups(groups, {\n    projects: ['api', 'rehlko-portal'],\n    sessions: { 'rehlko-portal': ['portal-idle', 'portal-asks'] },\n  });\n\n  assert.deepEqual(ordered.map((group) => group.project), ['api', 'rehlko-portal', 'web']);\n  assert.deepEqual(ordered[1].sessions.map((session) => session.name), ['portal-idle', 'portal-asks', 'portal-new']);\n  assert.deepEqual(status.orderedGroups(groups, {}).map((group) => group.project), ['rehlko-portal', 'web', 'api']);\n});\n\ntest('a reorder keeps placed items that are not displayed, next to their stored neighbour', () => {\n  assert.deepEqual(status.mergeOrder(['b', 'a'], ['a', 'x', 'b', 'y']), ['b', 'y', 'a', 'x']);\n  assert.deepEqual(status.mergeOrder(['a', 'b'], ['gone', 'a']), ['gone', 'a', 'b']);\n  assert.deepEqual(status.mergeOrder(['a'], []), ['a']);\n  assert.deepEqual(status.moveBefore(status.mergeOrder(['b', 'a'], ['a', 'hidden', 'b']), 'b', 'a'), ['b', 'a', 'hidden']);\n});\n\ntest('titled sessions are keyed by name, untitled ones by id, so twins never move together', () => {\n  const twins = [\n    { id: 'one', name: 'rehlko-portal', titled: false, status: 'working', since: 1 },\n    { id: 'two', name: 'rehlko-portal', titled: false, status: 'working', since: 2 },\n    { id: 'three', name: 'rehlko-portal-tester', titled: true, status: 'working', since: 3 },\n  ];\n\n  assert.deepEqual(twins.map(status.sessionKey), ['id:one', 'id:two', 'rehlko-portal-tester']);\n\n  const keys = status.moveBefore(twins.map(status.sessionKey), 'id:two', 'id:one');\n  const [group] = status.orderedGroups([{ project: 'rehlko-portal', sessions: twins, top: twins[0] }], { sessions: { 'rehlko-portal': keys } });\n\n  assert.deepEqual(group.sessions.map((session) => session.id), ['two', 'one', 'three']);\n});\n\ntest('one step up or down targets the right neighbour, and the ends do nothing', () => {\n  const keys = ['a', 'b', 'c'];\n\n  assert.equal(status.stepTarget(keys, 'b', -1), 'a');\n  assert.equal(status.stepTarget(keys, 'a', 1), 'c');\n  assert.equal(status.stepTarget(keys, 'b', 1), undefined);\n  assert.equal(status.stepTarget(keys, 'a', -1), null);\n  assert.equal(status.stepTarget(keys, 'c', 1), null);\n  assert.equal(status.stepTarget(keys, 'x', 1), null);\n  assert.deepEqual(status.moveBefore(keys, 'b', status.stepTarget(keys, 'b', 1)), ['a', 'c', 'b']);\n  assert.deepEqual(status.moveBefore(keys, 'c', status.stepTarget(keys, 'c', -1)), ['a', 'c', 'b']);\n});\n\ntest('hidden entries of unreadable files are kept', () => {\n  const sessions = [{ id: 'a', lastEventAt: 100 }];\n\n  assert.deepEqual(status.pruneHidden({ a: 100, flaky: 50, gone: 10 }, sessions, new Set(['flaky'])), { a: 100, flaky: 50 });\n});\n\ntest('pruning keeps only hidden entries of existing sessions without newer events', () => {\n  const sessions = [{ id: 'a', lastEventAt: 100 }, { id: 'b', lastEventAt: 300 }];\n\n  assert.deepEqual(status.pruneHidden({ a: 100, b: 200, gone: 50 }, sessions), { a: 100 });\n  assert.deepEqual(status.pruneHidden({}, sessions), {});\n});\n\ntest('a hidden card comes back only with a newer event', () => {\n  assert.equal(status.isVisible({ lastEventAt: 100 }, undefined), true);\n  assert.equal(status.isVisible({ lastEventAt: 100 }, 100), false);\n  assert.equal(status.isVisible({ lastEventAt: 101 }, 100), true);\n});\n\ntest('every status has a label and a theme colour', () => {\n  for (const [name, look] of Object.entries(status.STATUS)) {\n    assert.match(look.label, /\\w/, name);\n    assert.match(look.color, /^[a-zA-Z.]+$/, name);\n  }\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/status-hook.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { spawnSync } from 'node:child_process';\nimport { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';\nimport { tmpdir } from 'node:os';\nimport { join } from 'node:path';\nimport { fileURLToPath } from 'node:url';\n\nconst hook = fileURLToPath(new URL('../status/status-hook.mjs', import.meta.url));\nconst sessionId = '7fa97870-6578-4ed2-b7c9-1dc4c9a2ef09';\n\nconst withHome = (run) => {\n  const home = mkdtempSync(join(tmpdir(), 'toolkit-status-'));\n\n  try {\n    return run(home);\n  } finally {\n    rmSync(home, { recursive: true, force: true });\n  }\n};\n\nconst runHook = (home, input, entrypoint = 'cli') => spawnSync(process.execPath, [hook], {\n  input: typeof input === 'string' ? input : JSON.stringify(input),\n  encoding: 'utf8',\n  env: { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_CODE_ENTRYPOINT: entrypoint },\n});\n\nconst sessionFile = (home, id = sessionId) => join(home, '.agent-status', 'sessions', `${id}.jsonl`);\nconst lines = (home) => readFileSync(sessionFile(home), 'utf8').trim().split('\\n').map((line) => JSON.parse(line));\n\nconst event = (name, extra = {}) => ({ session_id: sessionId, hook_event_name: name, cwd: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal', ...extra });\n\nconst runQuietly = (home, input, entrypoint) => {\n  const result = runHook(home, input, entrypoint);\n\n  assert.equal(result.status, 0, result.stderr);\n  assert.equal(result.stdout, '');\n\n  return result;\n};\n\ntest('session start records the name and folder, tool events append', () => {\n  withHome((home) => {\n    runQuietly(home, event('SessionStart', { session_title: 'rehlko-portal-tester', source: 'startup' }));\n    runQuietly(home, event('PostToolUse', { prompt_id: 'p1', tool_name: 'Bash' }));\n\n    const [start, tool] = lines(home);\n\n    assert.equal(start.event, 'SessionStart');\n    assert.equal(start.title, 'rehlko-portal-tester');\n    assert.equal(start.folder, 'rehlko-portal');\n    assert.equal(tool.event, 'PostToolUse');\n    assert.equal(tool.promptId, 'p1');\n    assert.equal(tool.tool, 'Bash');\n    assert.equal(typeof tool.t, 'number');\n  });\n});\n\ntest('the project folder comes from CLAUDE_PROJECT_DIR, not the current folder', () => {\n  withHome((home) => {\n    const result = spawnSync(process.execPath, [hook], {\n      input: JSON.stringify(event('UserPromptSubmit', { prompt_id: 'p1', cwd: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal\\\\.coord' })),\n      encoding: 'utf8',\n      env: { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_CODE_ENTRYPOINT: 'cli', CLAUDE_PROJECT_DIR: 'P:/repos/Rehlko/rehlko-portal' },\n    });\n\n    assert.equal(result.status, 0, result.stderr);\n    assert.equal(lines(home)[0].folder, 'rehlko-portal');\n  });\n});\n\ntest('session start and prompts record the Claude process id; invalid values are left out', () => {\n  for (const [value, expected] of [['4242', 4242], ['', undefined], ['abc', undefined], ['-3', undefined]]) {\n    withHome((home) => {\n      const result = spawnSync(process.execPath, [hook], {\n        input: JSON.stringify(event('SessionStart')),\n        encoding: 'utf8',\n        env: { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_CODE_ENTRYPOINT: 'cli', CLAUDE_PID: value },\n      });\n\n      assert.equal(result.status, 0, result.stderr);\n      assert.equal(lines(home)[0].pid, expected, value);\n    });\n  }\n});\n\ntest('a new prompt keeps only the first line and the new turn', () => {\n  withHome((home) => {\n    runQuietly(home, event('SessionStart', { session_title: 'portal' }));\n    runQuietly(home, event('PostToolUse', { prompt_id: 'p1', tool_name: 'Read' }));\n    runQuietly(home, event('Stop', { prompt_id: 'p1', last_assistant_message: 'done' }));\n    runQuietly(home, event('UserPromptSubmit', { prompt_id: 'p2', session_title: 'portal' }));\n\n    assert.deepEqual(lines(home).map((line) => line.event), ['SessionStart', 'UserPromptSubmit']);\n    assert.equal(lines(home)[1].folder, 'rehlko-portal');\n  });\n});\n\ntest('stop records the last line and whether the agent asks, honouring the STATUS line', () => {\n  const cases = [\n    ['Here is the plan.\\nShall I start?\\nSTATUS: DONE', false, 'Shall I start?'],\n    ['Tests pass.\\nSTATUS: QUESTION', true, 'Tests pass.'],\n    ['Which branch should I use?', true, 'Which branch should I use?'],\n    ['All done.\\n\\n', false, 'All done.'],\n    ['', false, ''],\n  ];\n\n  for (const [message, asks, last] of cases) {\n    withHome((home) => {\n      runQuietly(home, event('Stop', { prompt_id: 'p1', last_assistant_message: message }));\n\n      const [stop] = lines(home);\n\n      assert.equal(stop.asks, asks, message);\n      assert.equal(stop.last, last, message);\n    });\n  }\n});\n\ntest('the last line is cut to 200 characters', () => {\n  withHome((home) => {\n    runQuietly(home, event('Stop', { prompt_id: 'p1', last_assistant_message: 'x'.repeat(500) }));\n    assert.equal(lines(home)[0].last.length, 200);\n  });\n});\n\ntest('session end deletes the session file', () => {\n  withHome((home) => {\n    runQuietly(home, event('SessionStart'));\n    runQuietly(home, event('SessionEnd', { reason: 'prompt_input_exit' }));\n    assert.equal(existsSync(sessionFile(home)), false);\n  });\n});\n\ntest('events arriving after session end do not bring the session back, a new start does', () => {\n  withHome((home) => {\n    runQuietly(home, event('SessionStart'));\n    runQuietly(home, event('SessionEnd', { reason: 'other' }));\n    runQuietly(home, event('Stop', { prompt_id: 'p1', last_assistant_message: 'late' }));\n    runQuietly(home, event('PostToolUse', { prompt_id: 'p1', tool_name: 'Bash' }));\n\n    assert.equal(existsSync(sessionFile(home)), false);\n\n    runQuietly(home, event('SessionStart', { source: 'resume' }));\n\n    assert.equal(existsSync(sessionFile(home)), true);\n    assert.equal(existsSync(join(home, '.agent-status', 'sessions', `${sessionId}.ended`)), false);\n  });\n});\n\ntest('ended markers are removed with the other stale files', () => {\n  withHome((home) => {\n    const sessions = join(home, '.agent-status', 'sessions');\n    const marker = join(sessions, '33333333-3333-3333-3333-333333333333.ended');\n    const sevenHoursAgo = (Date.now() - 7 * 3_600_000) / 1000;\n\n    mkdirSync(sessions, { recursive: true });\n    writeFileSync(marker, '');\n    utimesSync(marker, sevenHoursAgo, sevenHoursAgo);\n    runQuietly(home, event('SessionStart'));\n\n    assert.equal(existsSync(marker), false);\n  });\n});\n\ntest('headless sessions are not recorded', () => {\n  withHome((home) => {\n    runQuietly(home, event('SessionStart'), 'sdk-cli');\n    runQuietly(home, event('UserPromptSubmit', { prompt_id: 'p1' }), 'sdk-ts');\n    assert.equal(existsSync(join(home, '.agent-status')), false);\n  });\n});\n\ntest('unreadable input and invalid session ids are logged, never printed, and record nothing', () => {\n  withHome((home) => {\n    runQuietly(home, 'not json');\n    runQuietly(home, event('SessionStart', { session_id: '../../evil' }));\n\n    const log = readFileSync(join(home, '.agent-status', 'hook.log'), 'utf8');\n\n    assert.match(log, /error: /);\n    assert.match(log, /invalid session_id/);\n    assert.equal(existsSync(join(home, '.agent-status', 'sessions')), false);\n  });\n});\n\ntest('a session start removes session files idle for more than six hours', () => {\n  withHome((home) => {\n    const sessions = join(home, '.agent-status', 'sessions');\n    const old = join(sessions, '11111111-1111-1111-1111-111111111111.jsonl');\n    const recent = join(sessions, '22222222-2222-2222-2222-222222222222.jsonl');\n    const sevenHoursAgo = (Date.now() - 7 * 3_600_000) / 1000;\n\n    mkdirSync(sessions, { recursive: true });\n    writeFileSync(old, '{}\\n');\n    writeFileSync(recent, '{}\\n');\n    utimesSync(old, sevenHoursAgo, sevenHoursAgo);\n    runQuietly(home, event('SessionStart'));\n\n    assert.equal(existsSync(old), false);\n    assert.equal(existsSync(recent), true);\n    assert.equal(existsSync(sessionFile(home)), true);\n  });\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/vscode-core.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { join } from 'node:path';\nimport core from '../vscode/core.js';\n\nconst projectFolder = join('P:', 'repos', 'Rehlko', 'rehlko-portal');\nconst pluginDir = join('P:', 'clone', 'plugins', 'toolkit');\n\nconst validate = (overrides) => core.validateRequest({\n  fileName: 'tester.json',\n  content: '{\"name\":\"tester\"}',\n  openTabs: ['coordinator'],\n  briefExists: () => true,\n  ...overrides,\n});\n\ntest('session prefix is the folder name made safe for session names', () => {\n  assert.equal(core.sessionPrefix(projectFolder), 'rehlko-portal');\n  assert.equal(core.sessionPrefix(join('P:', 'repos', 'AND EMILI')), 'and-emili');\n  assert.equal(core.sessionPrefix(join('P:', 'repos', '__')), 'project');\n});\n\ntest('a long folder name is cut to 50 characters, so every worker session name stays within the recorded-name limit', () => {\n  const prefix = core.sessionPrefix(join('P:', 'repos', `${'a'.repeat(49)}-${'b'.repeat(30)}`));\n\n  assert.equal(prefix, 'a'.repeat(49));\n  assert.equal(core.sessionPrefix(join('P:', 'repos', 'c'.repeat(80))).length, 50);\n  assert.match(core.workerSessionName(join('P:', 'repos', 'x'.repeat(200)), 'w'.repeat(40)), /^[a-z0-9][a-z0-9-]{0,99}$/);\n});\n\ntest('coordinator starts as a new named coordinator session in auto mode', () => {\n  const args = core.coordinatorArgs({ projectFolder, pluginDir });\n\n  assert.deepEqual(args.slice(0, -1), [\n    '--plugin-dir', pluginDir, '--permission-mode', 'auto',\n    '--agent', 'toolkit:coordinator', '--name', 'rehlko-portal-coordinator',\n  ]);\n  assert.match(args.at(-1), /^Start-up: report the team recap/);\n});\n\ntest('a new worker gets a fixed opening prompt naming its brief', () => {\n  assert.deepEqual(core.newWorkerArgs({ projectFolder, pluginDir, name: 'api-auth' }), [\n    '--plugin-dir', pluginDir, '--permission-mode', 'auto',\n    '--agent', 'toolkit:worker', '--name', 'rehlko-portal-api-auth',\n    'Read .coord/workers/api-auth/brief.md and follow it.',\n  ]);\n});\n\nconst sessionId = '7fa97870-6578-4ed2-b7c9-1dc4c9a2ef09';\nconst workerTail = ['--plugin-dir', pluginDir, '--permission-mode', 'auto', '--agent', 'toolkit:worker'];\n\ntest('an active worker with a session record is resumed by that exact session', () => {\n  assert.deepEqual(core.resumeWorkerArgs({ projectFolder, pluginDir, name: 'tester', sessionRecord: `${sessionId}\\n` }), ['--resume', sessionId, ...workerTail]);\n});\n\ntest('an active worker without a usable record is resumed by its session name', () => {\n  for (const sessionRecord of [undefined, '', 'not-an-id', `${sessionId} --dangerously-skip-permissions`]) {\n    assert.deepEqual(core.resumeWorkerArgs({ projectFolder, pluginDir, name: 'tester', sessionRecord }), ['--resume', 'rehlko-portal-tester', ...workerTail], String(sessionRecord));\n  }\n});\n\ntest('a requested worker with a session record continues that session with a fixed prompt', () => {\n  assert.deepEqual(core.requestedWorkerArgs({ projectFolder, pluginDir, name: 'tester', sessionRecord: sessionId }), [\n    '--resume', sessionId, ...workerTail, 'Read the newest section of .coord/workers/tester/brief.md and follow it.',\n  ]);\n});\n\ntest('a requested worker without a session record starts a new named session', () => {\n  assert.deepEqual(core.requestedWorkerArgs({ projectFolder, pluginDir, name: 'tester', sessionRecord: undefined }),\n    core.newWorkerArgs({ projectFolder, pluginDir, name: 'tester' }));\n});\n\ntest('the worker session name joins the project prefix and the worker name', () => {\n  assert.equal(core.workerSessionName(projectFolder, 'api-auth'), 'rehlko-portal-api-auth');\n});\n\ntest('session arguments refuse an invalid worker name', () => {\n  for (const name of ['../x', 'a b', 'Tester', 'coordinator', 'claude', '', 'x'.repeat(41)]) {\n    assert.throws(() => core.newWorkerArgs({ projectFolder, pluginDir, name }), /Invalid worker name/, name);\n    assert.throws(() => core.resumeWorkerArgs({ projectFolder, pluginDir, name }), /Invalid worker name/, name);\n    assert.throws(() => core.resumeWorkerArgs({ projectFolder, pluginDir, name, sessionRecord: sessionId }), /Invalid worker name/, name);\n    assert.throws(() => core.requestedWorkerArgs({ projectFolder, pluginDir, name, sessionRecord: sessionId }), /Invalid worker name/, name);\n    assert.throws(() => core.workerSessionName(projectFolder, name), /Invalid worker name/, name);\n  }\n});\n\ntest('worker names follow the pattern and leave out the coordinator tab', () => {\n  for (const name of ['tester', 'api-auth', '9lives', 'a'.repeat(40)]) {\n    assert.equal(core.isWorkerName(name), true, name);\n  }\n\n  for (const name of ['-x', 'a_b', 'a.b', 'a/b', 'a\\\\b', 'a\"b', 'a;b', 'a$b', 'a b', 'A', 'coordinator', 'claude', 'a'.repeat(41), 42]) {\n    assert.equal(core.isWorkerName(name), false, String(name));\n  }\n});\n\ntest('only active workers with valid names are reopened', () => {\n  const team = JSON.stringify([\n    { name: 'tester', role: 'Tests', state: 'active' },\n    { name: 'docs', role: 'Docs', state: 'done' },\n    { name: '../evil', role: 'x', state: 'active' },\n    { name: 'api', role: 'API', state: 'active' },\n  ]);\n\n  assert.deepEqual(core.activeWorkers(team), ['tester', 'api']);\n});\n\ntest('a team list that is not a JSON array is an error', () => {\n  assert.throws(() => core.activeWorkers('{\"name\":\"tester\"}'), /JSON array/);\n  assert.throws(() => core.activeWorkers('not json'), SyntaxError);\n});\n\ntest('a valid request opens the named worker', () => {\n  assert.deepEqual(validate({}), { ok: true, name: 'tester' });\n});\n\ntest('hostile or malformed requests are rejected with a reason', () => {\n  const cases = [\n    [{ fileName: '..json' }, /not <name>.json/],\n    [{ fileName: 'a b.json' }, /not <name>.json/],\n    [{ fileName: 'tester.txt' }, /not <name>.json/],\n    [{ fileName: 'coordinator.json', content: '{\"name\":\"coordinator\"}' }, /not <name>.json/],\n    [{ fileName: 'x;calc.json', content: '{\"name\":\"x;calc\"}' }, /not <name>.json/],\n    [{ content: 'nope' }, /not valid JSON/],\n    [{ content: '{\"name\":\"other\"}' }, /exactly/],\n    [{ content: '{\"name\":\"tester\",\"prompt\":\"rm -rf /\"}' }, /exactly/],\n    [{ content: '[\"tester\"]' }, /exactly/],\n    [{ content: 'null' }, /exactly/],\n    [{ openTabs: ['coordinator', 'tester'] }, /already open/],\n    [{ briefExists: () => false }, /brief.md does not exist/],\n  ];\n\n  for (const [overrides, reason] of cases) {\n    const result = validate(overrides);\n\n    assert.equal(result.ok, false, JSON.stringify(overrides));\n    assert.match(result.reason, reason, JSON.stringify(overrides));\n  }\n});\n\ntest('only unreadable JSON is marked incomplete, so a request still being written can wait', () => {\n  assert.equal(validate({ content: '{\"name\":\"tes' }).incomplete, true);\n  assert.equal(validate({ content: '' }).incomplete, true);\n\n  for (const overrides of [{ fileName: 'a b.json' }, { content: '{\"name\":\"other\"}' }, { openTabs: ['tester'] }, { briefExists: () => false }]) {\n    assert.equal(validate(overrides).incomplete, undefined, JSON.stringify(overrides));\n  }\n});\n\ntest('the brief check receives the validated name', () => {\n  const asked = [];\n\n  validate({ briefExists: (name) => asked.push(name) > 0 });\n  assert.deepEqual(asked, ['tester']);\n});\n\ntest('the Git exclude entry is added once', () => {\n  assert.equal(core.withExcludeEntry(''), '.coord/\\n');\n  assert.equal(core.withExcludeEntry('# git ls-files\\n*.log'), '# git ls-files\\n*.log\\n.coord/\\n');\n  assert.equal(core.withExcludeEntry('*.log\\n'), '*.log\\n.coord/\\n');\n  assert.equal(core.withExcludeEntry('*.log\\n.coord/\\n'), '*.log\\n.coord/\\n');\n  assert.equal(core.withExcludeEntry('/.coord/\\r\\n'), '/.coord/\\r\\n');\n});\n\ntest('tabs run Claude directly, are never restored by VS Code, and place workers by the chosen layout', () => {\n  const args = ['--agent', 'toolkit:worker'];\n  const options = (role, layout) => core.terminalOptions({ name: role, claudePath: 'claude', args, folder: projectFolder, role, layout });\n\n  assert.deepEqual(options('coordinator', 'beside'), {\n    name: 'coordinator', shellPath: 'claude', shellArgs: args, cwd: projectFolder, isTransient: true,\n    location: { viewColumn: 1, preserveFocus: false },\n  });\n  assert.deepEqual(options('coordinator', 'tabs').location, { viewColumn: 1, preserveFocus: false });\n  assert.deepEqual(options('worker', 'beside').location, { viewColumn: 2, preserveFocus: true });\n  assert.deepEqual(options('worker', undefined).location, { viewColumn: 2, preserveFocus: true });\n  assert.deepEqual(options('worker', 'tabs').location, { viewColumn: 1, preserveFocus: true });\n});\n\ntest('enablement is keyed by the resolved folder, case-insensitive on Windows only', () => {\n  assert.equal(core.folderKey('P:\\\\Repos\\\\Rehlko\\\\Portal', 'win32'), core.folderKey('p:\\\\repos\\\\rehlko\\\\portal', 'win32'));\n  assert.equal(core.folderKey('/repos/App', 'linux'), core.folderKey('/repos/App', 'linux'));\n  assert.notEqual(core.folderKey('/repos/App', 'linux'), core.folderKey('/repos/app', 'linux'));\n});\n\ntest('a folder is enabled only after it was recorded, and recording it twice keeps one entry', () => {\n  const folder = join('P:', 'repos', 'Rehlko', 'rehlko-portal');\n  const once = core.withEnabledFolder([], folder);\n\n  assert.equal(core.isEnabledFolder([], folder), false);\n  assert.equal(core.isEnabledFolder(once, folder), true);\n  assert.deepEqual(core.withEnabledFolder(once, folder), once);\n  assert.equal(core.isEnabledFolder(once, join('P:', 'repos', 'Rehlko', 'api')), false);\n});\n\ntest('a plain Claude tab starts without agent, plugin or prompt, named after the project', () => {\n  assert.deepEqual(core.plainArgs({ projectFolder }), ['--name', 'rehlko-portal-claude']);\n  assert.equal(core.plainSessionName(projectFolder), 'rehlko-portal-claude');\n  assert.equal(core.PLAIN_TAB, 'claude');\n  assert.deepEqual(core.terminalOptions({ name: 'claude', claudePath: 'claude', args: [], folder: projectFolder, role: 'plain', layout: 'tabs' }).location, { viewColumn: 1, preserveFocus: false });\n});\n\ntest('a tracked tab counts as open whatever its title, so a renamed plain tab is not opened twice', () => {\n  const renamedPlain = { name: 'test-chat' };\n  const openTerminals = [renamedPlain];\n\n  assert.equal(core.tabAlreadyOpen({ tracked: renamedPlain, openTerminals, name: 'claude', openNames: ['test-chat'] }), true);\n  assert.equal(core.tabAlreadyOpen({ tracked: renamedPlain, openTerminals: [], name: 'claude', openNames: [] }), false);\n  assert.equal(core.tabAlreadyOpen({ tracked: undefined, openTerminals, name: 'tester', openNames: ['tester'] }), true);\n  assert.equal(core.tabAlreadyOpen({ tracked: undefined, openTerminals, name: 'claude', openNames: ['test-chat'] }), false);\n});\n\ntest('the coordinator takes precedence over plain mode, and nothing starts without either', () => {\n  assert.equal(core.startMode({ coordinatorEnabled: true, plainEnabled: true }), 'coordinator');\n  assert.equal(core.startMode({ coordinatorEnabled: true, plainEnabled: false }), 'coordinator');\n  assert.equal(core.startMode({ coordinatorEnabled: false, plainEnabled: true }), 'plain');\n  assert.equal(core.startMode({ coordinatorEnabled: false, plainEnabled: false }), 'none');\n});\n\ntest('stopping removes only that folder from a record, case-insensitively on Windows', () => {\n  const portal = join('P:', 'repos', 'Rehlko', 'rehlko-portal');\n  const api = join('P:', 'repos', 'Rehlko', 'api');\n  const folders = core.withEnabledFolder(core.withEnabledFolder([], portal), api);\n\n  assert.deepEqual(core.withoutFolder(folders, portal), [core.folderKey(api)]);\n  assert.deepEqual(core.withoutFolder(folders, join('P:', 'repos', 'other')), folders);\n});\n\ntest('the plugin folder defaults to plugins/toolkit next to the extension folder', () => {\n  assert.equal(core.defaultPluginDir(join('P:', 'clone', 'vscode')), join('P:', 'clone', 'plugins', 'toolkit'));\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "vscode/core.js",
+          "content": "const path = require('node:path');\n\nconst WORKER_NAME = /^[a-z0-9][a-z0-9-]{0,39}$/;\nconst REQUEST_FILE = /^([^/\\\\]+)\\.json$/;\nconst COORDINATOR_TAB = 'coordinator';\nconst PLAIN_TAB = 'claude';\nconst COORDINATOR_PROMPT = 'Start-up: report the team recap if one is in your context, then read the board in .coord/ and summarize the open work and what you need from me.';\nconst EXCLUDE_ENTRY = '.coord/';\nconst SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst MAX_PREFIX_LENGTH = 50;\nconst FIRST_COLUMN = 1;\nconst SECOND_COLUMN = 2;\n\nconst RESERVED_TABS = new Set([COORDINATOR_TAB, PLAIN_TAB]);\n\nconst isWorkerName = (name) => typeof name === 'string' && WORKER_NAME.test(name) && !RESERVED_TABS.has(name);\n\nconst trimHyphens = (value) => value.replace(/^-+|-+$/g, '');\n\nconst sessionPrefix = (projectFolder) => {\n  const safeName = trimHyphens(path.basename(projectFolder).toLowerCase().replace(/[^a-z0-9]+/g, '-'));\n  const prefix = trimHyphens(safeName.slice(0, MAX_PREFIX_LENGTH));\n\n  return prefix || 'project';\n};\n\nconst assertWorkerName = (name) => {\n  if (!isWorkerName(name))\n    throw new Error(`Invalid worker name: ${JSON.stringify(name)}`);\n};\n\nconst workerSessionName = (projectFolder, name) => {\n  assertWorkerName(name);\n\n  return `${sessionPrefix(projectFolder)}-${name}`;\n};\n\nconst commonArgs = (pluginDir) => ['--plugin-dir', pluginDir, '--permission-mode', 'auto'];\n\nconst coordinatorSessionName = (projectFolder) => `${sessionPrefix(projectFolder)}-coordinator`;\n\nconst plainSessionName = (projectFolder) => `${sessionPrefix(projectFolder)}-claude`;\n\nconst plainArgs = ({ projectFolder }) => ['--name', plainSessionName(projectFolder)];\n\nconst tabAlreadyOpen = ({ tracked, openTerminals, name, openNames }) => (tracked !== undefined && openTerminals.includes(tracked)) || openNames.includes(name);\n\nconst startMode = ({ coordinatorEnabled, plainEnabled }) => {\n  if (coordinatorEnabled)\n    return 'coordinator';\n\n  return plainEnabled ? 'plain' : 'none';\n};\n\nconst withoutFolder = (folders, folder) => folders.filter((entry) => entry !== folderKey(folder));\n\nconst coordinatorArgs = ({ projectFolder, pluginDir }) => [\n  ...commonArgs(pluginDir),\n  '--agent', 'toolkit:coordinator',\n  '--name', coordinatorSessionName(projectFolder),\n  COORDINATOR_PROMPT,\n];\n\nconst newWorkerArgs = ({ projectFolder, pluginDir, name }) => [\n  ...commonArgs(pluginDir),\n  '--agent', 'toolkit:worker',\n  '--name', workerSessionName(projectFolder, name),\n  `Read .coord/workers/${name}/brief.md and follow it.`,\n];\n\nconst recordedSessionId = (sessionRecord) => {\n  const sessionId = sessionRecord?.trim();\n\n  return SESSION_ID.test(sessionId ?? '') ? sessionId : undefined;\n};\n\nconst resumeWorkerArgs = ({ projectFolder, pluginDir, name, sessionRecord }) => {\n  const sessionName = workerSessionName(projectFolder, name);\n\n  return [\n    '--resume', recordedSessionId(sessionRecord) ?? sessionName,\n    ...commonArgs(pluginDir),\n    '--agent', 'toolkit:worker',\n  ];\n};\n\nconst requestedWorkerArgs = ({ projectFolder, pluginDir, name, sessionRecord }) => {\n  const sessionId = recordedSessionId(sessionRecord);\n\n  if (!sessionId)\n    return newWorkerArgs({ projectFolder, pluginDir, name });\n\n  assertWorkerName(name);\n\n  return [\n    '--resume', sessionId,\n    ...commonArgs(pluginDir),\n    '--agent', 'toolkit:worker',\n    `Read the newest section of .coord/workers/${name}/brief.md and follow it.`,\n  ];\n};\n\nconst activeWorkers = (teamJson) => {\n  const team = JSON.parse(teamJson);\n\n  if (!Array.isArray(team))\n    throw new Error('team.json must be a JSON array.');\n\n  return team\n    .filter((entry) => entry?.state === 'active' && isWorkerName(entry.name))\n    .map((entry) => entry.name);\n};\n\nconst isExactRequest = (request, name) =>\n  request !== null\n  && typeof request === 'object'\n  && !Array.isArray(request)\n  && Object.keys(request).join() === 'name'\n  && request.name === name;\n\nconst validateRequest = ({ fileName, content, openTabs, briefExists }) => {\n  const fileMatch = REQUEST_FILE.exec(fileName);\n\n  if (!fileMatch || !isWorkerName(fileMatch[1]))\n    return { ok: false, reason: `The request file name ${JSON.stringify(fileName)} is not <name>.json with a valid worker name.` };\n\n  const name = fileMatch[1];\n  let request;\n\n  try {\n    request = JSON.parse(content);\n  } catch {\n    return { ok: false, name, incomplete: true, reason: 'The request is not valid JSON.' };\n  }\n\n  if (!isExactRequest(request, name))\n    return { ok: false, name, reason: `The request must be exactly {\"name\": \"${name}\"}.` };\n\n  if (openTabs.includes(name))\n    return { ok: false, name, reason: `A tab named ${name} is already open.` };\n\n  if (!briefExists(name))\n    return { ok: false, name, reason: `.coord/workers/${name}/brief.md does not exist.` };\n\n  return { ok: true, name };\n};\n\nconst withExcludeEntry = (excludeText) => {\n  const lines = excludeText.split(/\\r?\\n/).map((line) => line.trim());\n\n  if (lines.includes(EXCLUDE_ENTRY) || lines.includes(`/${EXCLUDE_ENTRY}`))\n    return excludeText;\n\n  const separator = excludeText === '' || excludeText.endsWith('\\n') ? '' : '\\n';\n\n  return `${excludeText}${separator}${EXCLUDE_ENTRY}\\n`;\n};\n\nconst defaultPluginDir = (extensionRealPath) => path.join(extensionRealPath, '..', 'plugins', 'toolkit');\n\nconst folderKey = (folder, platform = process.platform) => {\n  const resolved = path.resolve(folder);\n\n  return platform === 'win32' ? resolved.toLowerCase() : resolved;\n};\n\nconst withEnabledFolder = (enabledFolders, folder) => {\n  const key = folderKey(folder);\n\n  return enabledFolders.includes(key) ? enabledFolders : [...enabledFolders, key];\n};\n\nconst isEnabledFolder = (enabledFolders, folder) => enabledFolders.includes(folderKey(folder));\n\nconst tabLocation = (role, layout) => {\n  if (role === 'coordinator' || role === 'plain')\n    return { viewColumn: FIRST_COLUMN, preserveFocus: false };\n\n  return { viewColumn: layout === 'tabs' ? FIRST_COLUMN : SECOND_COLUMN, preserveFocus: true };\n};\n\nconst terminalOptions = ({ name, claudePath, args, folder, role, layout }) => ({\n  name,\n  shellPath: claudePath,\n  shellArgs: args,\n  cwd: folder,\n  isTransient: true,\n  location: tabLocation(role, layout),\n});\n\nmodule.exports = {\n  COORDINATOR_TAB,\n  PLAIN_TAB,\n  plainArgs,\n  plainSessionName,\n  startMode,\n  tabAlreadyOpen,\n  withoutFolder,\n  activeWorkers,\n  coordinatorArgs,\n  coordinatorSessionName,\n  defaultPluginDir,\n  folderKey,\n  isEnabledFolder,\n  isWorkerName,\n  newWorkerArgs,\n  requestedWorkerArgs,\n  resumeWorkerArgs,\n  sessionPrefix,\n  terminalOptions,\n  validateRequest,\n  withEnabledFolder,\n  workerSessionName,\n  withExcludeEntry,\n};\n",
+          "mode": 438
+        },
+        {
+          "path": "vscode/extension.js",
+          "content": "const vscode = require('vscode');\nconst fs = require('node:fs');\nconst os = require('node:os');\nconst path = require('node:path');\nconst { execFileSync } = require('node:child_process');\nconst core = require('./core');\nconst { registerSessionsView } = require('./sessions-view');\n\nlet output;\nlet sessionsView;\nlet watching = false;\n\nconst ENABLED_FOLDERS = 'enabledFolders';\nconst PLAIN_FOLDERS = 'plainFolders';\n\nconst coordDir = (folder) => path.join(folder, '.coord');\n\nconst enabledFolders = (context) => context.globalState.get(ENABLED_FOLDERS, []);\n\nconst plainFolders = (context) => context.globalState.get(PLAIN_FOLDERS, []);\n\nconst isEnabled = (context, folder) => core.isEnabledFolder(enabledFolders(context), folder) && fs.existsSync(coordDir(folder));\n\nconst isPlain = (context, folder) => core.isEnabledFolder(plainFolders(context), folder);\n\nconst settings = (context) => {\n  const config = vscode.workspace.getConfiguration('claudeToolkit');\n\n  return {\n    claudePath: config.get('claudePath') || 'claude',\n    pluginDir: config.get('pluginDir') || core.defaultPluginDir(fs.realpathSync(context.extensionPath)),\n  };\n};\n\nconst openTabNames = () => vscode.window.terminals.map((terminal) => terminal.name);\n\nconst tabsBySession = new Map();\nconst plainTabs = new WeakSet();\n\nconst openTab = ({ name, sessionName, args, folder, claudePath, role }) => {\n  const layout = vscode.workspace.getConfiguration('claudeToolkit').get('workerLayout', 'beside');\n  const alreadyOpen = core.tabAlreadyOpen({\n    tracked: tabsBySession.get(sessionName),\n    openTerminals: vscode.window.terminals,\n    name,\n    openNames: openTabNames(),\n  });\n\n  if (alreadyOpen)\n    return;\n\n  output.appendLine(`Opening ${name}: ${claudePath} ${JSON.stringify(args)}`);\n\n  const terminal = vscode.window.createTerminal(core.terminalOptions({ name, claudePath, args, folder, role, layout }));\n\n  tabsBySession.set(sessionName, terminal);\n\n  if (role === 'plain')\n    plainTabs.add(terminal);\n\n  void sessionsView?.publishWindow();\n};\n\nconst readSessionRecord = (folder, name) => {\n  const recordFile = path.join(coordDir(folder), 'sessions', `${core.workerSessionName(folder, name)}.id`);\n\n  return fs.existsSync(recordFile) ? fs.readFileSync(recordFile, 'utf8') : undefined;\n};\n\nconst readActiveWorkers = (folder) => {\n  const teamFile = path.join(coordDir(folder), 'team.json');\n\n  if (!fs.existsSync(teamFile))\n    return [];\n\n  try {\n    return core.activeWorkers(fs.readFileSync(teamFile, 'utf8'));\n  } catch (error) {\n    void vscode.window.showErrorMessage(`Claude Toolkit: cannot read .coord/team.json: ${error.message}`);\n\n    return [];\n  }\n};\n\nconst rejectRequest = (requestsDir, fileName, result) => {\n  const noteName = result.name ? `${result.name}.rejected.md` : `request-${Date.now()}.rejected.md`;\n\n  fs.writeFileSync(path.join(requestsDir, noteName), `Request ${fileName} rejected: ${result.reason}\\n`);\n  output.appendLine(`Rejected ${fileName}: ${result.reason}`);\n};\n\nconst handleRequest = (context, folder, file, { waitForWrite }) => {\n  const fileName = path.basename(file);\n  const requestsDir = path.dirname(file);\n  let content;\n\n  try {\n    content = fs.readFileSync(file, 'utf8');\n  } catch {\n    return;\n  }\n\n  const result = core.validateRequest({\n    fileName,\n    content,\n    openTabs: openTabNames(),\n    briefExists: (name) => fs.existsSync(path.join(coordDir(folder), 'workers', name, 'brief.md')),\n  });\n\n  if (result.incomplete && waitForWrite) {\n    output.appendLine(`Waiting for ${fileName} to be fully written.`);\n\n    return;\n  }\n\n  fs.rmSync(file, { force: true });\n\n  if (!result.ok) {\n    rejectRequest(requestsDir, fileName, result);\n\n    return;\n  }\n\n  fs.rmSync(path.join(requestsDir, `${result.name}.rejected.md`), { force: true });\n\n  const { claudePath, pluginDir } = settings(context);\n  const sessionRecord = readSessionRecord(folder, result.name);\n  const args = core.requestedWorkerArgs({ projectFolder: folder, pluginDir, name: result.name, sessionRecord });\n\n  openTab({ name: result.name, sessionName: core.workerSessionName(folder, result.name), args, folder, claudePath, role: 'worker' });\n};\n\nconst watchRequests = (context, folder) => {\n  const requestsDir = path.join(coordDir(folder), 'requests');\n\n  fs.mkdirSync(requestsDir, { recursive: true });\n\n  for (const fileName of fs.readdirSync(requestsDir).filter((entry) => entry.endsWith('.json')))\n    handleRequest(context, folder, path.join(requestsDir, fileName), { waitForWrite: false });\n\n  const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(requestsDir, '*.json'));\n  const onWrite = (uri) => handleRequest(context, folder, uri.fsPath, { waitForWrite: true });\n\n  watcher.onDidCreate(onWrite);\n  watcher.onDidChange(onWrite);\n  context.subscriptions.push(watcher);\n};\n\nconst start = (context, folder) => {\n  const { claudePath, pluginDir } = settings(context);\n  const coordinatorArgs = core.coordinatorArgs({ projectFolder: folder, pluginDir });\n\n  openTab({ name: core.COORDINATOR_TAB, sessionName: core.coordinatorSessionName(folder), args: coordinatorArgs, folder, claudePath, role: 'coordinator' });\n\n  for (const name of readActiveWorkers(folder)) {\n    const sessionRecord = readSessionRecord(folder, name);\n    const args = core.resumeWorkerArgs({ projectFolder: folder, pluginDir, name, sessionRecord });\n\n    openTab({ name, sessionName: core.workerSessionName(folder, name), args, folder, claudePath, role: 'worker' });\n  }\n\n  if (!watching) {\n    watchRequests(context, folder);\n    watching = true;\n  }\n};\n\nconst excludeFile = (folder) => {\n  try {\n    const gitPath = execFileSync('git', ['-C', folder, 'rev-parse', '--git-path', 'info/exclude'], { cwd: os.homedir(), encoding: 'utf8' }).trim();\n\n    return path.resolve(folder, gitPath);\n  } catch {\n    return undefined;\n  }\n};\n\nconst addGitExclude = (folder) => {\n  const exclude = excludeFile(folder);\n\n  if (!exclude)\n    return;\n\n  const current = fs.existsSync(exclude) ? fs.readFileSync(exclude, 'utf8') : '';\n  const updated = core.withExcludeEntry(current);\n\n  if (updated === current)\n    return;\n\n  fs.mkdirSync(path.dirname(exclude), { recursive: true });\n  fs.writeFileSync(exclude, updated);\n};\n\nconst enable = async (context, folder) => {\n  await context.globalState.update(ENABLED_FOLDERS, core.withEnabledFolder(enabledFolders(context), folder));\n  fs.mkdirSync(path.join(coordDir(folder), 'workers'), { recursive: true });\n\n  const teamFile = path.join(coordDir(folder), 'team.json');\n\n  if (!fs.existsSync(teamFile))\n    fs.writeFileSync(teamFile, '[]\\n');\n\n  addGitExclude(folder);\n  start(context, folder);\n};\n\nconst projectFolder = () => vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;\n\nconst withFolder = (action) => () => {\n  const folder = projectFolder();\n\n  if (!folder) {\n    void vscode.window.showWarningMessage('Claude Toolkit: open a project folder first.');\n\n    return;\n  }\n\n  return action(folder);\n};\n\nconst startEnabled = (context, folder) => {\n  if (!isEnabled(context, folder)) {\n    void vscode.window.showWarningMessage('Claude Toolkit: this folder is not enabled. Run \"Toolkit: Enable coordinator in this folder\".');\n\n    return;\n  }\n\n  start(context, folder);\n};\n\nconst startPlain = (context, folder) => {\n  const { claudePath } = settings(context);\n\n  openTab({\n    name: core.PLAIN_TAB,\n    sessionName: core.plainSessionName(folder),\n    args: core.plainArgs({ projectFolder: folder }),\n    folder,\n    claudePath,\n    role: 'plain',\n  });\n};\n\nconst openOnStartup = async (context, folder) => {\n  await context.globalState.update(PLAIN_FOLDERS, core.withEnabledFolder(plainFolders(context), folder));\n\n  if (isEnabled(context, folder)) {\n    void vscode.window.showInformationMessage('Claude Toolkit: this folder starts the coordinator, which takes precedence over the plain Claude tab.');\n\n    return;\n  }\n\n  startPlain(context, folder);\n};\n\nconst stopOpening = async (context, folder) => {\n  await context.globalState.update(PLAIN_FOLDERS, core.withoutFolder(plainFolders(context), folder));\n  await context.globalState.update(ENABLED_FOLDERS, core.withoutFolder(enabledFolders(context), folder));\n  void vscode.window.showInformationMessage('Claude Toolkit: Claude will no longer open automatically in this folder.');\n};\n\nconst startForMode = (context, folder) => {\n  const mode = core.startMode({ coordinatorEnabled: isEnabled(context, folder), plainEnabled: isPlain(context, folder) });\n\n  if (mode === 'coordinator')\n    start(context, folder);\n  else if (mode === 'plain')\n    startPlain(context, folder);\n};\n\nconst activate = (context) => {\n  output = vscode.window.createOutputChannel('Claude Toolkit');\n  context.subscriptions.push(\n    output,\n    vscode.commands.registerCommand('claudeToolkit.enable', withFolder((folder) => enable(context, folder))),\n    vscode.commands.registerCommand('claudeToolkit.start', withFolder((folder) => startEnabled(context, folder))),\n    vscode.commands.registerCommand('claudeToolkit.openOnStartup', withFolder((folder) => openOnStartup(context, folder))),\n    vscode.commands.registerCommand('claudeToolkit.stopOpening', withFolder((folder) => stopOpening(context, folder))),\n  );\n  sessionsView = registerSessionsView(context, tabsBySession, plainTabs);\n\n  const folder = projectFolder();\n\n  if (folder)\n    startForMode(context, folder);\n};\n\nconst deactivate = () => {};\n\nmodule.exports = { activate, deactivate };\n",
+          "mode": 438
+        }
+      ]
+    },
+    "concernsApplied": [
+      "accessibility",
+      "combined"
+    ],
+    "fallback": "same-provider-fresh",
+    "durationMs": 51439,
+    "usage": {
+      "inputTokens": 2,
+      "outputTokens": 4531,
+      "cachedInputTokens": 0,
+      "cacheCreationInputTokens": 58812
+    },
+    "invocations": 1
+  },
+  "acceptance": [
+    {
+      "scenarioId": "session-status#resume-inside-a-tab",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:2ddf95c7c7ca49dc3c8c793923ace598318dd966afeb3edc9b3ebc40fae421f5",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#clear-inside-a-tab",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:2ddf95c7c7ca49dc3c8c793923ace598318dd966afeb3edc9b3ebc40fae421f5",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#plain-tab-follows-its-chat",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:2ddf95c7c7ca49dc3c8c793923ace598318dd966afeb3edc9b3ebc40fae421f5",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    },
+    {
+      "scenarioId": "session-status#unknown-process",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:2ddf95c7c7ca49dc3c8c793923ace598318dd966afeb3edc9b3ebc40fae421f5",
+      "evidenceIds": [
+        "tests",
+        "e2e"
+      ]
+    }
+  ],
+  "limitations": [],
+  "openspec": {
+    "changeName": "fix-session-tab-identity",
+    "artifactsReady": true,
+    "tasksComplete": true,
+    "scenariosCovered": true,
+    "scenarioCount": 4,
+    "scenarioDigest": "sha256:d1adc7947b37240693eddae69f3cf3620e5f95af5c0cef8eabf5f70a3b31f78b",
+    "guidanceDigest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "validationDigest": "sha256:db2dc376fb336d72373aac8de20910411fe27f3ea67525c2e5965cced1c41b29"
+  },
+  "applicability": {
+    "requiredValidationLanes": [
+      "accessibility",
+      "regression",
+      "test"
+    ],
+    "reviewConcerns": [
+      "accessibility",
+      "combined"
+    ]
+  },
+  "continuation": {
+    "baseline": {
+      "schemaVersion": 2,
+      "base": "527d7f2ed4f498bd15c6706b2c3568bac51ae50d",
+      "unrelatedPaths": [],
+      "unrelatedDigest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "remediationCycles": 1,
+    "history": [
+      {
+        "resultDigest": "sha256:83af6411932f22b81fe15dee6e6dd32262da9a8e41d7bb8b1b085cf58db04618",
+        "sourceDigest": "sha256:caffde7e8b5ad24c517a037115ef557e1a6ba118ec1f313d2cd7423f85c7c219",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:63c95dee5a919acf1eac65e9705ab7371eee73c5828cd415b036cd7c09ee1b69",
+        "sourceDigest": "sha256:caffde7e8b5ad24c517a037115ef557e1a6ba118ec1f313d2cd7423f85c7c219",
+        "status": "blocked",
+        "stage": "validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:1dbcbad8532ed7ca0f13d2bbd49b8ff7ae12e99f2c5004babe4919ab11ab5baa",
+        "sourceDigest": "sha256:caffde7e8b5ad24c517a037115ef557e1a6ba118ec1f313d2cd7423f85c7c219",
+        "status": "blocked",
+        "stage": "validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:a4d3cfa72a903c0a6fd139a999783392db297d796321643b79dfadf6458041e5",
+        "sourceDigest": "sha256:caffde7e8b5ad24c517a037115ef557e1a6ba118ec1f313d2cd7423f85c7c219",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 0,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:23a5feee50264825bcf050c719eb9dfea2a31413a995896ddf7c685c688ebfda",
+        "sourceDigest": "sha256:caffde7e8b5ad24c517a037115ef557e1a6ba118ec1f313d2cd7423f85c7c219",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:d07d00e87eae870b366e4bb60bf7c74f4749e5f9074edcb2b9c89fc5ebc69c63",
+        "sourceDigest": "sha256:caffde7e8b5ad24c517a037115ef557e1a6ba118ec1f313d2cd7423f85c7c219",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "plain-tab-rename-breaks-duplicate-check",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "vscode/extension.js openTab skips opening only when openTabNames().includes(name), where name is core.PLAIN_TAB for the plain tab. Once renameActivePlainTab renames it to the session name (e.g. test-chat), running claudeToolkit.openOnStartup again opens a second plain Claude tab. tabsBySession.set(plainSessionName, ...) then overwrites the original tab's entry, so the old tab is untracked: closing it hides nothing and focus requests target the wrong tab. design.md says names are used for duplicate checks but only protects coordinator and worker tabs. Fix: check the plain tab by its tracked terminal (tabsBySession entry still open) instead of its title, and add a regression test."
+          },
+          {
+            "id": "rename-race-and-floating-promise",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "sessions-view.js renameActivePlainTab checks vscode.window.activeTerminal, then runs renameWithArg, which acts on whichever terminal is active when the command runs. If focus moves in between (this runs on every refresh and file-watch event), a coordinator or worker tab could be renamed, breaking request validation and duplicate checks. The void executeCommand(...) result also has no rejection handler, which the Node guidance forbids. Re-check the active terminal right before sending, and handle or log a rejection."
+          },
+          {
+            "id": "publishWindow-unhandled-refresh",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "publishWindow is now async and called with void from openTab, onDidCloseTerminal and registration. this.refresh() runs outside its try/catch, so a sync error there becomes an unhandled rejection instead of reaching the caller as before. Move refresh inside the error handling or attach a catch at the call sites."
+          },
+          {
+            "id": "formatting-plainTabs-wiring",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "extension.js openTab: no blank line between output.appendLine(...) and const terminal. sessions-view.js registerSessionsView sets provider.plainTabs after construction, without a blank line before const refresh, and renameActivePlainTab uses defensive this.plainTabs?.has. Simpler: pass plainTabs through the SessionsProvider constructor like tabsBySession and drop the optional chaining."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:13a6f49dd80ec2bcdf941ee590b53658510d3602f7b2c39c9d5b5ce10445f90e",
+        "sourceDigest": "sha256:caffde7e8b5ad24c517a037115ef557e1a6ba118ec1f313d2cd7423f85c7c219",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "plain-tab-rename-breaks-duplicate-check",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "vscode/extension.js openTab skips opening only when openTabNames().includes(name), where name is core.PLAIN_TAB for the plain tab. Once renameActivePlainTab renames it to the session name (e.g. test-chat), running claudeToolkit.openOnStartup again opens a second plain Claude tab. tabsBySession.set(plainSessionName, ...) then overwrites the original tab's entry, so the old tab is untracked: closing it hides nothing and focus requests target the wrong tab. design.md says names are used for duplicate checks but only protects coordinator and worker tabs. Fix: check the plain tab by its tracked terminal (tabsBySession entry still open) instead of its title, and add a regression test."
+          },
+          {
+            "id": "rename-race-and-floating-promise",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "sessions-view.js renameActivePlainTab checks vscode.window.activeTerminal, then runs renameWithArg, which acts on whichever terminal is active when the command runs. If focus moves in between (this runs on every refresh and file-watch event), a coordinator or worker tab could be renamed, breaking request validation and duplicate checks. The void executeCommand(...) result also has no rejection handler, which the Node guidance forbids. Re-check the active terminal right before sending, and handle or log a rejection."
+          },
+          {
+            "id": "publishWindow-unhandled-refresh",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "publishWindow is now async and called with void from openTab, onDidCloseTerminal and registration. this.refresh() runs outside its try/catch, so a sync error there becomes an unhandled rejection instead of reaching the caller as before. Move refresh inside the error handling or attach a catch at the call sites."
+          },
+          {
+            "id": "formatting-plainTabs-wiring",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "extension.js openTab: no blank line between output.appendLine(...) and const terminal. sessions-view.js registerSessionsView sets provider.plainTabs after construction, without a blank line before const refresh, and renameActivePlainTab uses defensive this.plainTabs?.has. Simpler: pass plainTabs through the SessionsProvider constructor like tabsBySession and drop the optional chaining."
+          }
+        ],
+        "checks": 1,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:4c97d0a7d2b9cedf887805a0c75dd5a61ad8ce18310c3e38b869e59277659ff2",
+        "sourceDigest": "sha256:2ddf95c7c7ca49dc3c8c793923ace598318dd966afeb3edc9b3ebc40fae421f5",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:8e9fddbf2d34e527175f78b5ed3dbef29daa62bd28049f6c70efd17369a9eb55",
+        "sourceDigest": "sha256:2ddf95c7c7ca49dc3c8c793923ace598318dd966afeb3edc9b3ebc40fae421f5",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "PASS",
+        "findings": [
+          {
+            "id": "plain-tab-manual-rename-overwritten",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "vscode/sessions-view.js renameActivePlainTab runs on every refresh (every 15 s and on file or active-terminal events). While a plain tab is active, any name the developer gives it by hand is reverted to the session name. This follows the spec, but it is not documented as a deliberate trade-off."
+          },
+          {
+            "id": "plain-tab-rename-name-collision",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "A resumed chat whose name equals a worker name or 'coordinator' renames the plain tab to that name. extension.js handleRequest (openTabs: openTabNames()) and openTab's name check would then reject or skip the real worker or coordinator tab as 'already open'. The rename should skip names reserved for toolkit tabs, or this edge case should be documented."
+          },
+          {
+            "id": "openspec-impact-tasks-incomplete",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "In openspec/changes/fix-session-tab-identity, the proposal.md Impact section leaves out vscode/core.js and vscode/extension.js. tasks.md has no task or acceptance item for the plain-tab rename, although the spec defines the 'Plain tab follows its chat' scenario."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      }
+    ],
+    "historyCount": 9,
+    "historyDigest": "sha256:c560ada1c1068037be83f114027bb0571b3a26be6daf13612991be63ac810755"
+  },
+  "schemaVersion": 2,
+  "createdAt": "2026-11-18T15:48:40.019Z",
+  "definitionOfDone": {
+    "status": "PASS",
+    "blockers": []
+  },
+  "status": "complete",
+  "nextAction": "No further SDD action is required."
+}

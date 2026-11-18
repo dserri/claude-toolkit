@@ -35,16 +35,30 @@ const settings = (context) => {
 const openTabNames = () => vscode.window.terminals.map((terminal) => terminal.name);
 
 const tabsBySession = new Map();
+const plainTabs = new WeakSet();
 
 const openTab = ({ name, sessionName, args, folder, claudePath, role }) => {
   const layout = vscode.workspace.getConfiguration('claudeToolkit').get('workerLayout', 'beside');
+  const alreadyOpen = core.tabAlreadyOpen({
+    tracked: tabsBySession.get(sessionName),
+    openTerminals: vscode.window.terminals,
+    name,
+    openNames: openTabNames(),
+  });
 
-  if (openTabNames().includes(name))
+  if (alreadyOpen)
     return;
 
   output.appendLine(`Opening ${name}: ${claudePath} ${JSON.stringify(args)}`);
-  tabsBySession.set(sessionName, vscode.window.createTerminal(core.terminalOptions({ name, claudePath, args, folder, role, layout })));
-  sessionsView?.publishWindow();
+
+  const terminal = vscode.window.createTerminal(core.terminalOptions({ name, claudePath, args, folder, role, layout }));
+
+  tabsBySession.set(sessionName, terminal);
+
+  if (role === 'plain')
+    plainTabs.add(terminal);
+
+  void sessionsView?.publishWindow();
 };
 
 const readSessionRecord = (folder, name) => {
@@ -263,7 +277,7 @@ const activate = (context) => {
     vscode.commands.registerCommand('claudeToolkit.openOnStartup', withFolder((folder) => openOnStartup(context, folder))),
     vscode.commands.registerCommand('claudeToolkit.stopOpening', withFolder((folder) => stopOpening(context, folder))),
   );
-  sessionsView = registerSessionsView(context, tabsBySession);
+  sessionsView = registerSessionsView(context, tabsBySession, plainTabs);
 
   const folder = projectFolder();
 

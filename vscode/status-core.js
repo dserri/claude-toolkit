@@ -46,6 +46,9 @@ const applyEvent = (state, event) => {
   if (event.folder)
     state.folder ??= event.folder;
 
+  if (Number.isInteger(event.pid))
+    state.pid = event.pid;
+
   if (event.event === 'SessionStart') {
     state.status ??= 'idle';
     state.since ??= event.t;
@@ -107,6 +110,7 @@ const sessionState = ({ id, events, now, stuckMs }) => {
   return {
     id,
     titled: Boolean(state.name),
+    pid: state.pid,
     name: state.name || state.folder || id.slice(0, 8),
     project: state.folder || 'unknown project',
     status: stuck ? 'stuck' : state.status ?? 'idle',
@@ -233,6 +237,28 @@ const latestPerTitle = (sessions) => {
 
 const byGroupUrgency = (first, second) => byUrgency(first.top, second.top) || first.project.localeCompare(second.project);
 
+const plainTabRename = (tabName, tabPid, sessions) => {
+  if (tabPid === undefined)
+    return null;
+
+  const session = sessions.find((candidate) => candidate.pid === tabPid);
+
+  return session && session.name !== tabName ? session.name : null;
+};
+
+const latestPerProcess = (sessions) => {
+  const latest = new Map();
+
+  for (const session of sessions.filter((candidate) => candidate.pid !== undefined)) {
+    const current = latest.get(session.pid);
+
+    if (!current || session.lastEventAt > current.lastEventAt)
+      latest.set(session.pid, session);
+  }
+
+  return sessions.filter((session) => session.pid === undefined || latest.get(session.pid) === session);
+};
+
 const groupByProject = (sessions) => {
   const groups = new Map();
 
@@ -274,8 +300,11 @@ const liveWindows = (entries, isAlive) => entries.filter((entry) =>
   && Array.isArray(entry.sessions)
   && isAlive(entry.pid));
 
-const sessionLocation = (sessionName, ownPid, windows) => {
-  const holder = windows.find((entry) => entry.sessions.includes(sessionName));
+const holdsProcess = (entry, pid) => pid !== undefined && Array.isArray(entry.pids) && entry.pids.includes(pid);
+
+const sessionLocation = (sessionName, ownPid, windows, sessionPid) => {
+  const holder = windows.find((entry) => holdsProcess(entry, sessionPid))
+    ?? windows.find((entry) => entry.sessions.includes(sessionName));
 
   if (!holder)
     return { kind: 'none' };
@@ -304,6 +333,8 @@ module.exports = {
   groupByProject,
   groupDescription,
   isVisible,
+  latestPerProcess,
+  plainTabRename,
   latestPerTitle,
   liveWindows,
   locationLabel,

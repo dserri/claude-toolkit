@@ -39,8 +39,14 @@ const describeStop = (message) => {
 const eventRecord = (input) => {
   const record = { t: Date.now(), event: input.hook_event_name, promptId: input.prompt_id, tool: input.tool_name, title: input.session_title };
 
-  if (input.hook_event_name === 'SessionStart' || input.hook_event_name === 'UserPromptSubmit')
+  if (input.hook_event_name === 'SessionStart' || input.hook_event_name === 'UserPromptSubmit') {
+    const pid = Number(process.env.CLAUDE_PID);
+
     record.folder = basename(process.env.CLAUDE_PROJECT_DIR || input.cwd || '');
+
+    if (Number.isInteger(pid) && pid > 0)
+      record.pid = pid;
+  }
 
   if (input.hook_event_name === 'Stop')
     Object.assign(record, describeStop(input.last_assistant_message));

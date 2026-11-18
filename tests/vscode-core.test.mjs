@@ -199,6 +199,16 @@ test('a plain Claude tab starts without agent, plugin or prompt, named after the
   assert.deepEqual(core.terminalOptions({ name: 'claude', claudePath: 'claude', args: [], folder: projectFolder, role: 'plain', layout: 'tabs' }).location, { viewColumn: 1, preserveFocus: false });
 });
 
+test('a tracked tab counts as open whatever its title, so a renamed plain tab is not opened twice', () => {
+  const renamedPlain = { name: 'test-chat' };
+  const openTerminals = [renamedPlain];
+
+  assert.equal(core.tabAlreadyOpen({ tracked: renamedPlain, openTerminals, name: 'claude', openNames: ['test-chat'] }), true);
+  assert.equal(core.tabAlreadyOpen({ tracked: renamedPlain, openTerminals: [], name: 'claude', openNames: [] }), false);
+  assert.equal(core.tabAlreadyOpen({ tracked: undefined, openTerminals, name: 'tester', openNames: ['tester'] }), true);
+  assert.equal(core.tabAlreadyOpen({ tracked: undefined, openTerminals, name: 'claude', openNames: ['test-chat'] }), false);
+});
+
 test('the coordinator takes precedence over plain mode, and nothing starts without either', () => {
   assert.equal(core.startMode({ coordinatorEnabled: true, plainEnabled: true }), 'coordinator');
   assert.equal(core.startMode({ coordinatorEnabled: true, plainEnabled: false }), 'coordinator');

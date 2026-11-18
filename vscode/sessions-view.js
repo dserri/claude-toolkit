@@ -20,7 +20,7 @@ const focusDir = () => path.join(statusDir(), 'focus');
 const ownWindowFile = () => path.join(windowsDir(), `${process.pid}.json`);
 const focusFile = (pid) => path.join(focusDir(), `${pid}.json`);
 
-const writeFocusRequest = (pid, sessionName) => registry.writeAtomically(focusFile(pid), JSON.stringify({ session: sessionName, at: Date.now() }));
+const writeFocusRequest = (windowPid, session) => registry.writeAtomically(focusFile(windowPid), JSON.stringify({ session: session.name, pid: session.pid, at: Date.now() }));
 
 const isAlive = (pid) => {
   try {
@@ -44,13 +44,15 @@ const readSessions = (now, stuckMs) => {
 const readWindows = () => registry.readLiveWindows(windowsDir(), isAlive);
 
 class SessionsProvider {
-  constructor(tabsBySession, globalState) {
+  constructor(tabsBySession, plainTabs, globalState) {
     this.tabsBySession = tabsBySession;
+    this.plainTabs = plainTabs;
     this.globalState = globalState;
     this.sessions = [];
     this.hiddenSessions = [];
     this.groups = [];
     this.windows = [];
+    this.tabPids = new Map();
     this.changed = new vscode.EventEmitter();
     this.onDidChangeTreeData = this.changed.event;
     this.statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
@@ -65,7 +67,7 @@ class SessionsProvider {
     this.windows = readWindows();
 
     const { sessions, unreadableIds } = readSessions(now, stuckMs);
-    const all = status.latestPerTitle(sessions);
+    const all = status.latestPerProcess(status.latestPerTitle(sessions));
     const stored = this.storedHidden();
     const hidden = status.pruneHidden(stored, all, unreadableIds);
 
@@ -77,19 +79,26 @@ class SessionsProvider {
     this.sessions = split.visible;
     this.hiddenSessions = split.hidden;
     this.groups = status.orderedGroups(status.groupByProject(this.sessions), this.globalState.get(SESSION_ORDER, {}));
+    this.renameActivePlainTab(all);
     this.updateStatusBar();
     this.changed.fire();
   }
 
-  publishWindow() {
-    const entry = {
-      pid: process.pid,
-      folder: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? '',
-      sessions: [...this.tabsBySession.keys()],
-    };
+  async publishWindow() {
+    try {
+      const tabs = await Promise.all([...this.tabsBySession].map(async ([name, terminal]) => ({ name, terminal, pid: await terminal.processId })));
 
-    registry.writeAtomically(ownWindowFile(), JSON.stringify(entry));
-    this.refresh();
+      this.tabPids = new Map(tabs.filter((tab) => Number.isInteger(tab.pid)).map((tab) => [tab.pid, tab.terminal]));
+      registry.writeAtomically(ownWindowFile(), JSON.stringify({
+        pid: process.pid,
+        folder: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? '',
+        sessions: tabs.map((tab) => tab.name),
+        pids: [...this.tabPids.keys()],
+      }));
+      this.refresh();
+    } catch (error) {
+      reportStorageError(error);
+    }
   }
 
   updateStatusBar() {
@@ -173,10 +182,10 @@ class SessionsProvider {
     this.storeHidden({ ...this.storedHidden(), [session.id]: session.lastEventAt });
   }
 
-  hideSessionNamed(sessionName) {
-    const named = this.sessions.filter((candidate) => candidate.name === sessionName);
+  hideTabSessions(sessionName, pid) {
+    const inTab = this.sessions.filter((candidate) => (pid !== undefined && candidate.pid === pid) || candidate.name === sessionName);
 
-    this.storeHidden({ ...this.storedHidden(), ...Object.fromEntries(named.map((session) => [session.id, session.lastEventAt])) });
+    this.storeHidden({ ...this.storedHidden(), ...Object.fromEntries(inTab.map((session) => [session.id, session.lastEventAt])) });
   }
 
   showAgain(session) {
@@ -185,12 +194,29 @@ class SessionsProvider {
     this.storeHidden(rest);
   }
 
-  location(session) {
-    return status.sessionLocation(session.name, process.pid, this.windows);
+  renameActivePlainTab(sessions) {
+    const terminal = vscode.window.activeTerminal;
+
+    if (!terminal || !this.plainTabs.has(terminal))
+      return;
+
+    const pid = [...this.tabPids].find(([, candidate]) => candidate === terminal)?.[0];
+    const name = status.plainTabRename(terminal.name, pid, sessions);
+
+    if (!name || vscode.window.activeTerminal !== terminal)
+      return;
+
+    vscode.commands.executeCommand('workbench.action.terminal.renameWithArg', { name }).then(undefined, (error) => {
+      void vscode.window.showWarningMessage(`Claude Toolkit: could not rename the Claude tab: ${error.message}`);
+    });
   }
 
-  showOwnTab(sessionName) {
-    const terminal = this.tabsBySession.get(sessionName);
+  location(session) {
+    return status.sessionLocation(session.name, process.pid, this.windows, session.pid);
+  }
+
+  showOwnTab(sessionName, pid) {
+    const terminal = (pid !== undefined && this.tabPids.get(pid)) || this.tabsBySession.get(sessionName);
 
     if (terminal)
       terminal.show(false);
@@ -203,13 +229,13 @@ class SessionsProvider {
     this.lastFocusedId = session.id;
 
     if (action === 'show') {
-      this.showOwnTab(session.name);
+      this.showOwnTab(session.name, session.pid);
 
       return;
     }
 
     if (action === 'raise') {
-      writeFocusRequest(location.window.pid, session.name);
+      writeFocusRequest(location.window.pid, session);
       void vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(location.window.folder), { forceNewWindow: true });
 
       return;
@@ -249,7 +275,7 @@ class SessionsProvider {
     fs.rmSync(file, { force: true });
 
     if (typeof request?.session === 'string')
-      this.showOwnTab(request.session);
+      this.showOwnTab(request.session, Number.isInteger(request.pid) ? request.pid : undefined);
   }
 
   getTreeItem(element) {
@@ -340,8 +366,9 @@ const watch = (directory, pattern, onEvent) => {
   return watcher;
 };
 
-const registerSessionsView = (context, tabsBySession) => {
-  const provider = new SessionsProvider(tabsBySession, context.globalState);
+const registerSessionsView = (context, tabsBySession, plainTabs) => {
+  const provider = new SessionsProvider(tabsBySession, plainTabs, context.globalState);
+
   const refresh = () => provider.refresh();
   const timer = setInterval(refresh, REFRESH_MS);
 
@@ -361,19 +388,22 @@ const registerSessionsView = (context, tabsBySession) => {
     vscode.commands.registerCommand('claudeToolkit.showSessionAgain', (session) => provider.showAgain(session)),
     vscode.commands.registerCommand('claudeToolkit.focusMostUrgent', () => provider.focusMostUrgent()),
     vscode.commands.registerCommand('claudeToolkit.nextWaiting', () => provider.focusNextWaiting()),
+    vscode.window.onDidChangeActiveTerminal(refresh),
     vscode.window.onDidCloseTerminal((terminal) => {
       for (const [sessionName, tab] of tabsBySession) {
         if (tab !== terminal)
           continue;
 
+        const pid = [...provider.tabPids].find(([, candidate]) => candidate === terminal)?.[0];
+
         tabsBySession.delete(sessionName);
-        provider.hideSessionNamed(sessionName);
-        provider.publishWindow();
+        provider.hideTabSessions(sessionName, pid);
+        void provider.publishWindow();
       }
     }),
   );
 
-  provider.publishWindow();
+  void provider.publishWindow();
 
   return { publishWindow: () => provider.publishWindow() };
 };

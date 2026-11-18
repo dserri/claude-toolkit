@@ -43,6 +43,8 @@ const plainSessionName = (projectFolder) => `${sessionPrefix(projectFolder)}-cla
 
 const plainArgs = ({ projectFolder }) => ['--name', plainSessionName(projectFolder)];
 
+const tabAlreadyOpen = ({ tracked, openTerminals, name, openNames }) => (tracked !== undefined && openTerminals.includes(tracked)) || openNames.includes(name);
+
 const startMode = ({ coordinatorEnabled, plainEnabled }) => {
   if (coordinatorEnabled)
     return 'coordinator';
@@ -192,6 +194,7 @@ module.exports = {
   plainArgs,
   plainSessionName,
   startMode,
+  tabAlreadyOpen,
   withoutFolder,
   activeWorkers,
   coordinatorArgs,

@@ -69,6 +69,21 @@ test('the project folder comes from CLAUDE_PROJECT_DIR, not the current folder',
   });
 });
 
+test('session start and prompts record the Claude process id; invalid values are left out', () => {
+  for (const [value, expected] of [['4242', 4242], ['', undefined], ['abc', undefined], ['-3', undefined]]) {
+    withHome((home) => {
+      const result = spawnSync(process.execPath, [hook], {
+        input: JSON.stringify(event('SessionStart')),
+        encoding: 'utf8',
+        env: { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_CODE_ENTRYPOINT: 'cli', CLAUDE_PID: value },
+      });
+
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(lines(home)[0].pid, expected, value);
+    });
+  }
+});
+
 test('a new prompt keeps only the first line and the new turn', () => {
   withHome((home) => {
     runQuietly(home, event('SessionStart', { session_title: 'portal' }));

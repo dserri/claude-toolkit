@@ -167,6 +167,46 @@ test('a click shows an own tab, raises another window, or explains', () => {
   assert.equal(status.clickAction({ kind: 'none' }), 'message');
 });
 
+test('a session reports the latest Claude process id it recorded', () => {
+  assert.equal(stateOf([at(90, 'SessionStart', { pid: 100 }), at(60, 'UserPromptSubmit', { promptId: 'p1', pid: 100 })]).pid, 100);
+  assert.equal(stateOf([at(90, 'SessionStart')]).pid, undefined);
+});
+
+test('after /resume or /clear only the newest session of a process is kept; sessions without pid are untouched', () => {
+  const session = (id, pid, lastEventAt) => ({ id, pid, lastEventAt });
+  const kept = status.latestPerProcess([
+    session('backoffices-claude', 7, 100),
+    session('test-chat', 7, 200),
+    session('other-tab', 8, 50),
+    session('old-a', undefined, 10),
+    session('old-b', undefined, 20),
+  ]);
+
+  assert.deepEqual(kept.map((entry) => entry.id), ['test-chat', 'other-tab', 'old-a', 'old-b']);
+});
+
+test('a plain tab is renamed to the session now running in its process, and only then', () => {
+  const sessions = [{ name: 'test-chat', pid: 7 }, { name: 'api-coordinator', pid: 9 }];
+
+  assert.equal(status.plainTabRename('claude', 7, sessions), 'test-chat');
+  assert.equal(status.plainTabRename('test-chat', 7, sessions), null);
+  assert.equal(status.plainTabRename('claude', 99, sessions), null);
+  assert.equal(status.plainTabRename('claude', undefined, sessions), null);
+});
+
+test('a session is located by its process first, then by name', () => {
+  const windows = [
+    { pid: 10, folder: 'P:\\repos\\Rehlko\\backoffices', sessions: ['backoffices-claude'], pids: [7] },
+    { pid: 20, folder: 'P:\\repos\\Rehlko\\api', sessions: ['api-coordinator'], pids: [9] },
+  ];
+
+  assert.equal(status.sessionLocation('test-chat', 10, windows, 7).kind, 'here');
+  assert.equal(status.sessionLocation('test-chat', 20, windows, 7).window.pid, 10);
+  assert.equal(status.sessionLocation('api-coordinator', 10, windows, undefined).window.pid, 20);
+  assert.equal(status.sessionLocation('test-chat', 10, windows, 99).kind, 'none');
+  assert.equal(status.sessionLocation('api-coordinator', 10, [{ pid: 20, folder: 'x', sessions: ['api-coordinator'] }], 9).window.pid, 20);
+});
+
 test('only well-formed entries of running windows count', () => {
   const entries = [
     { pid: 10, folder: 'P:\\repos\\Rehlko\\rehlko-portal', sessions: ['rehlko-portal-coordinator'] },
