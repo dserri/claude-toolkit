@@ -40,6 +40,11 @@
         "icon": "$(eye-closed)"
       },
       {
+        "command": "claudeToolkit.showSessionAgain",
+        "title": "Toolkit: Show session again",
+        "icon": "$(eye)"
+      },
+      {
         "command": "claudeToolkit.focusMostUrgent",
         "title": "Toolkit: Show the session waiting longest"
       },
@@ -78,6 +83,11 @@
           "command": "claudeToolkit.hideSession",
           "when": "view == claudeToolkit.sessions && viewItem == session",
           "group": "inline"
+        },
+        {
+          "command": "claudeToolkit.showSessionAgain",
+          "when": "view == claudeToolkit.sessions && viewItem == hiddenSession",
+          "group": "inline"
         }
       ],
       "commandPalette": [
@@ -87,6 +97,10 @@
         },
         {
           "command": "claudeToolkit.hideSession",
+          "when": "false"
+        },
+        {
+          "command": "claudeToolkit.showSessionAgain",
           "when": "false"
         }
       ]

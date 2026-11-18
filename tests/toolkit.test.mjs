@@ -75,6 +75,7 @@ test('the extension adds only native, labelled VS Code UI: commands, settings an
     'Toolkit: Stop opening Claude here',
     'Toolkit: Show session tab',
     'Toolkit: Hide session until its next event',
+    'Toolkit: Show session again',
     'Toolkit: Show the session waiting longest',
     'Toolkit: Next waiting session',
   ]);

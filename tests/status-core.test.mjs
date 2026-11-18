@@ -206,6 +206,27 @@ test('durations read as seconds, minutes, then hours and minutes', () => {
   assert.equal(status.formatDuration(-5), '0s');
 });
 
+test('hidden sessions are split out, newest first, and come back with a newer event', () => {
+  const sessions = [
+    { id: 'a', lastEventAt: 100 },
+    { id: 'b', lastEventAt: 300 },
+    { id: 'c', lastEventAt: 200 },
+    { id: 'd', lastEventAt: 500 },
+  ];
+  const { visible, hidden } = status.splitHidden(sessions, { b: 300, c: 200, d: 400 });
+
+  assert.deepEqual(visible.map((session) => session.id), ['a', 'd']);
+  assert.deepEqual(hidden.map((session) => session.id), ['b', 'c']);
+  assert.deepEqual(status.splitHidden(sessions, {}).hidden, []);
+});
+
+test('pruning keeps only hidden entries of existing sessions without newer events', () => {
+  const sessions = [{ id: 'a', lastEventAt: 100 }, { id: 'b', lastEventAt: 300 }];
+
+  assert.deepEqual(status.pruneHidden({ a: 100, b: 200, gone: 50 }, sessions), { a: 100 });
+  assert.deepEqual(status.pruneHidden({}, sessions), {});
+});
+
 test('a hidden card comes back only with a newer event', () => {
   assert.equal(status.isVisible({ lastEventAt: 100 }, undefined), true);
   assert.equal(status.isVisible({ lastEventAt: 100 }, 100), false);

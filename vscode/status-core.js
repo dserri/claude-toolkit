@@ -155,6 +155,19 @@ const waitingCount = (sessions) => sessions.filter((session) => WAITING.has(sess
 
 const isVisible = (session, hiddenAt) => hiddenAt === undefined || session.lastEventAt > hiddenAt;
 
+const splitHidden = (sessions, hidden) => ({
+  visible: sessions.filter((session) => isVisible(session, hidden[session.id])),
+  hidden: sessions
+    .filter((session) => !isVisible(session, hidden[session.id]))
+    .sort((first, second) => second.lastEventAt - first.lastEventAt),
+});
+
+const pruneHidden = (hidden, sessions) => Object.fromEntries(
+  sessions
+    .filter((session) => hidden[session.id] !== undefined && !isVisible(session, hidden[session.id]))
+    .map((session) => [session.id, hidden[session.id]]),
+);
+
 const latestPerTitle = (sessions) => {
   const latest = new Map();
 
@@ -243,7 +256,9 @@ module.exports = {
   liveWindows,
   locationLabel,
   parseEvents,
+  pruneHidden,
   sessionLocation,
+  splitHidden,
   sessionState,
   waitingCount,
 };

@@ -8,6 +8,7 @@ const registry = require('./registry');
 const VIEW_ID = 'claudeToolkit.sessions';
 const STALE_MS = 6 * 3_600_000;
 const REFRESH_MS = 15_000;
+const HIDDEN_SESSIONS = 'hiddenSessions';
 
 const statusDir = () => path.join(os.homedir(), '.agent-status');
 const sessionsDir = () => path.join(statusDir(), 'sessions');
@@ -56,10 +57,11 @@ const readSessions = (now, stuckMs) => {
 const readWindows = () => registry.readLiveWindows(windowsDir(), isAlive);
 
 class SessionsProvider {
-  constructor(tabsBySession) {
+  constructor(tabsBySession, globalState) {
     this.tabsBySession = tabsBySession;
-    this.hidden = new Map();
+    this.globalState = globalState;
     this.sessions = [];
+    this.hiddenSessions = [];
     this.groups = [];
     this.windows = [];
     this.changed = new vscode.EventEmitter();
@@ -74,7 +76,18 @@ class SessionsProvider {
 
     this.now = now;
     this.windows = readWindows();
-    this.sessions = status.latestPerTitle(readSessions(now, stuckMs)).filter((session) => status.isVisible(session, this.hidden.get(session.id)));
+
+    const all = status.latestPerTitle(readSessions(now, stuckMs));
+    const stored = this.storedHidden();
+    const hidden = status.pruneHidden(stored, all);
+
+    if (Object.keys(hidden).length !== Object.keys(stored).length)
+      void this.globalState.update(HIDDEN_SESSIONS, hidden);
+
+    const split = status.splitHidden(all, hidden);
+
+    this.sessions = split.visible;
+    this.hiddenSessions = split.hidden;
     this.groups = status.groupByProject(this.sessions);
     this.updateStatusBar();
     this.changed.fire();
@@ -100,16 +113,28 @@ class SessionsProvider {
     this.statusBar.show();
   }
 
+  storedHidden() {
+    return this.globalState.get(HIDDEN_SESSIONS, {});
+  }
+
+  storeHidden(hidden) {
+    void this.globalState.update(HIDDEN_SESSIONS, hidden).then(() => this.refresh());
+  }
+
   hide(session) {
-    this.hidden.set(session.id, session.lastEventAt);
-    this.refresh();
+    this.storeHidden({ ...this.storedHidden(), [session.id]: session.lastEventAt });
   }
 
   hideSessionNamed(sessionName) {
-    for (const session of this.sessions.filter((candidate) => candidate.name === sessionName))
-      this.hidden.set(session.id, session.lastEventAt);
+    const named = this.sessions.filter((candidate) => candidate.name === sessionName);
 
-    this.refresh();
+    this.storeHidden({ ...this.storedHidden(), ...Object.fromEntries(named.map((session) => [session.id, session.lastEventAt])) });
+  }
+
+  showAgain(session) {
+    const { [session.id]: _shown, ...rest } = this.storedHidden();
+
+    this.storeHidden(rest);
   }
 
   location(session) {
@@ -180,7 +205,21 @@ class SessionsProvider {
   }
 
   getTreeItem(element) {
+    if (element.kind === 'hidden')
+      return this.hiddenGroupItem(element);
+
     return element.sessions ? this.groupItem(element) : this.sessionItem(element);
+  }
+
+  hiddenGroupItem(group) {
+    const item = new vscode.TreeItem('Hidden', vscode.TreeItemCollapsibleState.Collapsed);
+
+    item.id = 'hidden';
+    item.description = `${group.sessions.length}`;
+    item.tooltip = 'Sessions you hid or whose tab you closed. Use the eye button to show one again.';
+    item.iconPath = new vscode.ThemeIcon('eye-closed');
+
+    return item;
   }
 
   groupItem(group) {
@@ -202,14 +241,17 @@ class SessionsProvider {
     item.description = status.cardDescription(session, this.now);
     item.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(look.color));
     item.tooltip = [look.label, where, session.last].filter(Boolean).join('\n');
-    item.contextValue = 'session';
+    item.contextValue = this.hiddenSessions.includes(session) ? 'hiddenSession' : 'session';
     item.command = { command: 'claudeToolkit.focusSession', title: 'Show tab', arguments: [session] };
 
     return item;
   }
 
   getChildren(element) {
-    return element ? element.sessions : this.groups;
+    if (element)
+      return element.sessions;
+
+    return this.hiddenSessions.length > 0 ? [...this.groups, { kind: 'hidden', sessions: this.hiddenSessions }] : this.groups;
   }
 }
 
@@ -226,7 +268,7 @@ const watch = (directory, pattern, onEvent) => {
 };
 
 const registerSessionsView = (context, tabsBySession) => {
-  const provider = new SessionsProvider(tabsBySession);
+  const provider = new SessionsProvider(tabsBySession, context.globalState);
   const refresh = () => provider.refresh();
   const timer = setInterval(refresh, REFRESH_MS);
 
@@ -240,6 +282,7 @@ const registerSessionsView = (context, tabsBySession) => {
     vscode.window.registerTreeDataProvider(VIEW_ID, provider),
     vscode.commands.registerCommand('claudeToolkit.focusSession', (session) => provider.focus(session)),
     vscode.commands.registerCommand('claudeToolkit.hideSession', (session) => provider.hide(session)),
+    vscode.commands.registerCommand('claudeToolkit.showSessionAgain', (session) => provider.showAgain(session)),
     vscode.commands.registerCommand('claudeToolkit.focusMostUrgent', () => provider.focusMostUrgent()),
     vscode.commands.registerCommand('claudeToolkit.nextWaiting', () => provider.focusNextWaiting()),
     vscode.window.onDidCloseTerminal((terminal) => {
