@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -10,9 +10,20 @@ import status from '../vscode/status-core.js';
 
 const hookPath = fileURLToPath(new URL('../status/status-hook.mjs', import.meta.url));
 
+const homes = [];
+
 function makeHome() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'window-blackbox-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'window-blackbox-'));
+
+  homes.push(home);
+
+  return home;
 }
+
+after(() => {
+  for (const home of homes)
+    fs.rmSync(home, { recursive: true, force: true });
+});
 
 function sessionsDir(home) {
   return path.join(home, '.agent-status', 'sessions');

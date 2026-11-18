@@ -1,0 +1,499 @@
+{
+  "route": "full",
+  "request": {
+    "digest": "sha256:15843bb324ad7343fd2a19e88673ea791addcee1878dc1c42ea07df12444e6c7",
+    "route": "full",
+    "changeName": "add-session-navigation",
+    "kind": "feature",
+    "summary": "status-core: waitingSessions (waiting only, urgency order), nextWaiting (after the last focused, wrapping, first when unknown) and clickAction (show / raise / message) feed one focus path; core.terminalOptions takes role and layout (coordinator column 1 with focus; workers column 2, or column 1 with layout tabs, both without taking focus). sessions-view: status-bar command claudeToolkit.focusMostUrgent (most urgent waiting session, else opens the view) and claudeToolkit.nextWaiting (ctrl+alt+n, cmd+alt+n on mac); focus requests written to a temp file and renamed; registry files deleted by the file name read, unreadable ones included. package.json: activity bar container claudeToolkit with media/sessions.svg holding the sessions view; machine-scoped claudeToolkit.workerLayout enum beside|tabs, default beside. Black-box tests updated for the placement signature and now remove their temporary homes; archived tasks wording corrected. Developer acceptance in VS Code: the container appears in the Activity Bar and the developer moved it under Explorer; VS Code stores that order in global storage (pinnedViewlets2), so other windows show it after a reload; no code can set the order. Tests: node --test 172 passed; e2e unchanged. UI stays native (commands, keybinding, activity bar container with a currentColor SVG, tree view). Review round 1 fix: window registry files are now written via temp file and rename (vscode/registry.js writeAtomically, shared with focus requests), and registry reading/deletion moved to vscode/registry.js with direct tests (live kept, dead and unreadable deleted by file name, non-json files untouched).",
+    "surfaces": [
+      "accessibility",
+      "dependency",
+      "runtime",
+      "security",
+      "ui"
+    ],
+    "acceptance": [
+      "session-status#sessions-waiting",
+      "session-status#nothing-waiting",
+      "session-status#cycling",
+      "session-status#two-windows",
+      "session-status#unreadable-registry-file",
+      "vscode-session-launcher#default-layout",
+      "vscode-session-launcher#tabs-layout"
+    ]
+  },
+  "repository": {
+    "baseDigest": "sha256:66a09ace4449322a48b078f135c13b473777b653763e76c55f40f33017e6325d",
+    "finalDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+    "configDigest": "sha256:02364ae71f2969fd56df5ba07b0efffdc9d917317b22e9596c7933de4bdec3f6",
+    "dependencyDigest": "sha256:02364ae71f2969fd56df5ba07b0efffdc9d917317b22e9596c7933de4bdec3f6",
+    "environmentDigest": "sha256:2385622c4dfd2867cf84e02a9e8f8b0036331258ca50e36a0af283b95c6f450e",
+    "affectedFiles": [
+      "README.md",
+      "openspec/changes/add-session-navigation/.openspec.yaml",
+      "openspec/changes/add-session-navigation/design.md",
+      "openspec/changes/add-session-navigation/proposal.md",
+      "openspec/changes/add-session-navigation/specs/session-status/spec.md",
+      "openspec/changes/add-session-navigation/specs/vscode-session-launcher/spec.md",
+      "openspec/changes/add-session-navigation/tasks.md",
+      "openspec/changes/archive/2026-11-18-add-cross-window-focus/tasks.md",
+      "tests/coordinator-blackbox.test.mjs",
+      "tests/registry.test.mjs",
+      "tests/status-core.test.mjs",
+      "tests/toolkit.test.mjs",
+      "tests/vscode-core.test.mjs",
+      "tests/window-blackbox.test.mjs",
+      "vscode/core.js",
+      "vscode/extension.js",
+      "vscode/media/sessions.svg",
+      "vscode/package.json",
+      "vscode/registry.js",
+      "vscode/sessions-view.js",
+      "vscode/status-core.js"
+    ],
+    "unrelatedWorkPreserved": true,
+    "recoverable": true
+  },
+  "implementation": {
+    "summary": "status-core: waitingSessions (waiting only, urgency order), nextWaiting (after the last focused, wrapping, first when unknown) and clickAction (show / raise / message) feed one focus path; core.terminalOptions takes role and layout (coordinator column 1 with focus; workers column 2, or column 1 with layout tabs, both without taking focus). sessions-view: status-bar command claudeToolkit.focusMostUrgent (most urgent waiting session, else opens the view) and claudeToolkit.nextWaiting (ctrl+alt+n, cmd+alt+n on mac); focus requests written to a temp file and renamed; registry files deleted by the file name read, unreadable ones included. package.json: activity bar container claudeToolkit with media/sessions.svg holding the sessions view; machine-scoped claudeToolkit.workerLayout enum beside|tabs, default beside. Black-box tests updated for the placement signature and now remove their temporary homes; archived tasks wording corrected. Developer acceptance in VS Code: the container appears in the Activity Bar and the developer moved it under Explorer; VS Code stores that order in global storage (pinnedViewlets2), so other windows show it after a reload; no code can set the order. Tests: node --test 172 passed; e2e unchanged. UI stays native (commands, keybinding, activity bar container with a currentColor SVG, tree view). Review round 1 fix: window registry files are now written via temp file and rename (vscode/registry.js writeAtomically, shared with focus requests), and registry reading/deletion moved to vscode/registry.js with direct tests (live kept, dead and unreadable deleted by file name, non-json files untouched).",
+    "builder": {
+      "provider": "claude",
+      "identityStrength": "operator-asserted"
+    }
+  },
+  "validation": [
+    {
+      "id": "tests",
+      "lane": "test",
+      "coverage": [
+        "test",
+        "security",
+        "ui",
+        "accessibility"
+      ],
+      "kind": "command",
+      "key": "sha256:bd927b8955188460480acf1e4992c6184f87442dd29868ec520cbd0cd19c8074",
+      "codeDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          "README.md",
+          "vscode/core.js",
+          "vscode/extension.js",
+          "vscode/media/sessions.svg",
+          "vscode/package.json",
+          "vscode/sessions-view.js",
+          "vscode/status-core.js",
+          "tests/coordinator-blackbox.test.mjs",
+          "tests/status-core.test.mjs",
+          "tests/toolkit.test.mjs",
+          "tests/vscode-core.test.mjs",
+          "tests/window-blackbox.test.mjs",
+          "vscode/registry.js",
+          "tests/registry.test.mjs"
+        ]
+      },
+      "summary": "✔ marketplace.json exists at the repository root and parses (5.0679ms)\n✔ marketplace is named claude-toolkit with an owner and plugins (0.9241ms)\n✔ marketplace lists exactly one plugin named toolkit (0.9276ms)\n✔ every plugin source is a relative path inside the repository root (2.7463ms)\n✔ source containment check rejects escaping and absolute sources (1.7273ms)\n✔ toolkit source is a directory with plugin.json named toolkit (2.0966ms)\n✔ every listed plugin source has a plugin.json whose name matches its listing (1.3169ms)\n✔ toolkit plugin.json declares no version (0.9788ms)\n✔ toolkit marketplace entry declares no version (0.8044ms)\n✔ the listed plugins ship no skills yet (1.947ms)\n✔ every SKILL.md frontmatter name matches its directory and none is sdd (0.8654ms)\n✔ no listed plugin ships an sdd skill directory or agent file (1.2565ms)\n✔ claude plugin validate accepts the marketplace and the toolkit plugin (5076.7697ms)\n▶ isWorkerName\n  ✔ accepts valid names (2.1591ms)\n  ✔ rejects invalid names (0.4995ms)\n✔ isWorkerName (5.5793ms)\n▶ sessionPrefix\n  ✔ normalises the base name (1.0927ms)\n  ✔ uses project when nothing remains (0.556ms)\n✔ sessionPrefix (2.1613ms)\n▶ workerSessionName\n  ✔ joins prefix and name (0.5657ms)\n  ✔ throws for invalid names (1.5031ms)\n✔ workerSessionName (2.5373ms)\n▶ coordinatorArgs\n  ✔ contains the required flags and a fixed prompt (1.1227ms)\n✔ coordinatorArgs (1.4297ms)\n▶ newWorkerArgs\n  ✔ contains the requ\n[... diagnostic truncated ...]\nnState without title or folder (0.308ms)\n✔ hook records events with folder from cwd (729.7435ms)\n✔ hook prefers CLAUDE_PROJECT_DIR for folder (908.6982ms)\n✔ SessionEnd deletes the file, leaves a marker and blocks later events (2525.442ms)\n✔ SessionStart after SessionEnd removes the marker and records (1384.517ms)\n✔ SessionStart removes files older than six hours, including markers (470.716ms)\nℹ tests 176\nℹ suites 18\nℹ pass 176\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 13112.9372\n",
+      "exitCode": 0,
+      "durationMs": 13372,
+      "reused": true
+    },
+    {
+      "id": "e2e",
+      "lane": "test",
+      "coverage": [
+        "test"
+      ],
+      "kind": "command",
+      "key": "sha256:b57c34c655aa80dd7e450a647afa84eb160dab5f97a0c6cec36bb3a70b019fe8",
+      "codeDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+      "result": "PASS",
+      "required": true,
+      "scope": {
+        "files": [
+          "tests/status-entrypoint.e2e.mjs"
+        ]
+      },
+      "summary": "✔ the installed Claude Code tells hooks of a headless session that its entrypoint is sdk-* (18618.2895ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 19293.7199\n",
+      "exitCode": 0,
+      "durationMs": 19520
+    }
+  ],
+  "review": {
+    "verdict": "PASS",
+    "reviewedDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+    "concerns": [
+      "ctrl+alt+n has no when clause; with focus in a Claude terminal tab VS Code may pass the chord to the shell unless the command is in terminal.integrated.commandsToSkipShell; AltGr layouts may also map it. Verify with terminal focus.",
+      "If writeAtomically throws (e.g. rename failure on Windows), publishWindow() and focus() throw, as writeFileSync did before; no regression, but no clear user message either.",
+      "openTab reads the workerLayout setting before the early return for an already-open tab; harmless but unneeded."
+    ],
+    "findings": [
+      {
+        "id": "click-action-indirection",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "vscode/status-core.js clickAction is a 3-way wrapper over location.kind; sessions-view still reads location.window, so the two must stay in step. Acceptable since it was added to make routing testable; advisory only."
+      },
+      {
+        "id": "readme-status-bar-glyph",
+        "severity": "low",
+        "status": "open",
+        "blocking": false,
+        "summary": "README shows the status-bar text as `🔔 2 waiting`, but updateStatusBar renders the $(bell-dot) codicon, not an emoji. Minor documentation wording mismatch."
+      }
+    ],
+    "coverage": "complete",
+    "independent": true,
+    "fresh": true,
+    "readOnly": true,
+    "reviewer": {
+      "provider": "claude",
+      "contextId": "e7df6130-1319-4a5a-bdc7-949b7217f297"
+    },
+    "policyDigest": "sha256:dfc56dd0d294c15c71b1b3827b25d4456e998122cdd1fe41b427f9790c628a98",
+    "inputs": {
+      "intentDigest": "sha256:8370ece372169a25b8807d3dbc92b867c1bf3d467f0668404454de9b565c9d98",
+      "files": {
+        "README.md": "sha256:8ee87f17647a8330adfc47ca1e322a34bf65bf8857135cf9ff92c407cb77496f",
+        "openspec/changes/add-session-navigation/.openspec.yaml": "sha256:e17cfa40d9043e7aab0c5de52b4ca5a211804c2ac593fad2dd0e861d0df70106",
+        "openspec/changes/add-session-navigation/design.md": "sha256:53f76a489ae95e16ee949b8f0d089728b0ef57e8743519bf478e1bb6404955fa",
+        "openspec/changes/add-session-navigation/proposal.md": "sha256:7ce5a388eb6fb1dec78635d55b08bf45c57d4b7fc0a4572bc72386b1ee79bd72",
+        "openspec/changes/add-session-navigation/specs/session-status/spec.md": "sha256:7fbccb3930b9c29b69dd49ba8f639f3719bd57d1052a7ee4868e0b6833ebd85c",
+        "openspec/changes/add-session-navigation/specs/vscode-session-launcher/spec.md": "sha256:41973bb9b9d6f9f057c8b2cd209c8c084e3ca91a361a16010efadf7dcec9a6c5",
+        "openspec/changes/add-session-navigation/tasks.md": "sha256:b3bfcf99780811e868682cdaefcf3f9c23a9b96c17ff5f0c94c09b98dd02f2f8",
+        "openspec/changes/archive/2026-11-18-add-cross-window-focus/tasks.md": "sha256:d7a5427569c520e3fdf3470978a49740eb86c81e8bf1f4ba24a69132a1d73eff",
+        "tests/coordinator-blackbox.test.mjs": "sha256:2ed6347fc0d03b95d3394acc8ac4db022b6cd00ba2858f0810cc44667432de66",
+        "tests/registry.test.mjs": "sha256:c72673259e9c0953e9219b9f91c482d3252dc33bfa691c3bdcf5759c04fc896a",
+        "tests/status-core.test.mjs": "sha256:8671494c537175ee5c19bd44962f17f123053b3a66c8c8e57537f57364e9cefc",
+        "tests/toolkit.test.mjs": "sha256:852acf5d029c6563a37559f6bf13883e5a4e8db869ccc34be62cb7f49a88c724",
+        "tests/vscode-core.test.mjs": "sha256:f12a910d452486d5ceb618cad7e21ccb1f5186a414ef72f47b506ee5b9cf6ec3",
+        "tests/window-blackbox.test.mjs": "sha256:1fe351aa9168be92e07e49c046b98bd3a628bcf23d2dcb67d3699209b2950a8f",
+        "vscode/core.js": "sha256:12fcfb5b440781b2361dcb1bfc78cd978d71733158faf5c7cf724c86b293e030",
+        "vscode/extension.js": "sha256:0c67101e6faf6acd3807b6a6fef890341e0a962f0f2c37f9f192191938a4ca7f",
+        "vscode/media/sessions.svg": "sha256:e2057ba3022983c47b8d556ec05d1cca68749fbdcddf40d48df0339c84196615",
+        "vscode/package.json": "sha256:02364ae71f2969fd56df5ba07b0efffdc9d917317b22e9596c7933de4bdec3f6",
+        "vscode/registry.js": "sha256:f44f1191d3988af2713f3c36078faaa7cd2159be98261bdd1ff7edebf8d4d3ac",
+        "vscode/sessions-view.js": "sha256:6045186620a2ae216bc6ab17e86bae382155600ab0e5637cf9d855511fa312f6",
+        "vscode/status-core.js": "sha256:36966e8b9fd7c67e6515fbb6bfb776ccb0cfecbc1bbc60cc0c2d252419cdf6fe"
+      },
+      "sources": [
+        {
+          "path": "README.md",
+          "content": "# claude-toolkit\n\nPersonal Claude Code plugins, laid out as a private plugin marketplace. A proof of concept: it is compatible with the team-shared SDD skill but entirely separate from it, and never changes it. Every toolkit agent carries the `toolkit:` prefix.\n\n## What it does\n\nOpen a project in VS Code and a **coordinator** Claude session starts in an editor tab. It reports the SDD team recap, reads the project board and asks what is next. You tell it the goal; it creates the **worker** sessions the job needs, each in its own named tab with a written brief, and follows them through SendMessage. Workers that still have open work reopen with their conversation the next time you open the project. You can still type in any worker's tab.\n\n| Part | Where |\n|---|---|\n| `toolkit:coordinator` and `toolkit:worker` agents | `plugins/toolkit/agents/` |\n| Start-up hook: runs SDD's team-mailbox pull for the coordinator only | `plugins/toolkit/hooks/` |\n| VS Code extension: starts the coordinator, reopens active workers, opens requested workers | `vscode/` |\n\nOne project at a time; coordinating several projects is planned.\n\n## Set up (once per machine)\n\nLink the extension into VS Code, then reload VS Code (Command Palette → \"Developer: Reload Window\"):\n\n```\nNew-Item -ItemType Junction -Path \"$env:USERPROFILE\\.vscode\\extensions\\dserri.claude-toolkit-0.0.1\" -Target \"<clone>\\vscode\"\n```\n\nThe extension starts every session with `--plugin-dir <clone>/plugins/toolkit` and `--permission-mode auto` (sessions in the same mode exchange messages without approval prompts). `claude` must be on `PATH`, or set `claudeToolkit.claudePath`; `claudeToolkit.pluginDir` overrides the plugin folder. `claudeToolkit.workerLayout` chooses where worker tabs open: `beside` (default, the column next to the coordinator) or `tabs` (full-width tabs in the coordinator's column).\n\n## Enable a project\n\nOpen the project folder and run \"Toolkit: Enable coordinator in this folder\". It records the folder as enabled on this machine (in the extension's own storage, never in the repository), creates `.coord/`, adds it to `.git/info/exclude` (never `.gitignore`), and opens the coordinator. From then on the coordinator opens whenever VS Code opens the folder; \"Toolkit: Start coordinator\" opens it again if you closed it. A repository that carries a `.coord/` folder starts nothing until you enable it yourself, and the extension's settings are machine-scoped, so a workspace cannot change which executable or plugin it runs.\n\n### The board (`.coord/`)\n\n| File | Written by | Contents |\n|---|---|---|\n| `team.json` | coordinator | `[{ \"name\", \"role\", \"state\": \"active\" \\| \"done\" }]`; active workers reopen at start-up |\n| `workers/<name>/brief.md` | coordinator | the worker's task |\n| `workers/<name>/status.md` | worker | `State`, `Summary`, `Next` |\n| `requests/<name>.json` | coordinator | `{ \"name\": \"<name>\" }`: asks the extension to open the worker; rejected requests leave `<name>.rejected.md` |\n| `log.md` | coordinator | decisions, assignments and outcomes |\n| `sessions/<session name>.id` | start-up hook | each worker's session ID, so its tab resumes exactly its own conversation, also when the coordinator requests a finished worker again |\n\nSessions are named `<project>-coordinator` and `<project>-<worker>` (the project folder name in lowercase, other characters as hyphens); tabs show the short name. Enabled projects need different folder names, or their sessions share names.\n\n## Session status\n\nThe \"Claude sessions\" view (its own icon in the Activity Bar, the same in every window; drag it elsewhere once if you prefer) and the status-bar item show every interactive Claude Code session on this machine, toolkit or not. Clicking the status-bar item (`🔔 2 waiting`) shows the session waiting longest; `Ctrl+Alt+N` (\"Toolkit: Next waiting session\") cycles through the waiting sessions in urgency order; both reach tabs in other windows like a card click does.\n\n| Colour | Status | Set by |\n|---|---|---|\n| red | waiting for permission / waiting for your answer | `PermissionRequest`; `AskUserQuestion`, or a turn ending with `STATUS: QUESTION` (coordinator and worker) or a final `?` |\n| purple | possibly stuck | working with no event for `claudeToolkit.stuckMinutes` (default 10) |\n| yellow | finished, needs review | any other end of turn |\n| green | working | a prompt or a tool result |\n| grey | idle | session started, no prompt yet |\n\nCards are grouped by project folder (the most urgent project first; each group shows how many of its sessions wait) and sorted by urgency inside each group (longest waiting first) and show the time in that status, the last tool used (\"after Bash\"; only finished tool calls are recorded) or the tool asking for permission, and the last line of the last message. Click a card to focus its tab, in any VS Code window: each window lists the session tabs it opened in `~/.agent-status/windows/<pid>.json`, and a click on a session held by another window brings that window to the front (by opening its folder) and asks it, through `~/.agent-status/focus/<pid>.json`, to show the tab. A card's tooltip says where its session runs; a session started by hand outside the toolkit's tabs only gets a message. Hide a card with its eye icon until the session's next event. Closing a tab hides its card.\n\nInstall the hooks once (they back up `~/.claude/settings.json` first and add only their own entries):\n\n```\nnode <clone>/status/install.mjs\nnode <clone>/status/install.mjs --uninstall\n```\n\nThe hook (`status/status-hook.mjs`) runs asynchronously, so sessions never wait for it, and appends one line per event to `~/.agent-status/sessions/<session_id>.jsonl`; errors go to `~/.agent-status/hook.log`. It deletes a session's file at `SessionEnd` and leaves a `<session_id>.ended` marker so late background events cannot bring the session back (a new start or resume clears it), and, when a session starts, removes files and markers idle for more than 6 hours (`STALE_HOURS` at the top of the script). Headless sessions (`claude -p`, SDK, SDD's reviewer) are skipped by the observed but undocumented `CLAUDE_CODE_ENTRYPOINT=sdk-*` value; `tests/status-entrypoint.e2e.mjs` checks it against the installed CLI. A denied permission stays red until the turn ends, because Claude Code fires no event for a denial.\n\n## Plugin delivery\n\nThe organization's managed Claude Code policy currently allows only the official Anthropic marketplace, so the plugin is loaded from the clone with `--plugin-dir` (the extension does it; by hand: `claude --plugin-dir <clone>/plugins/toolkit`). Update with `git pull`, then reload VS Code.\n\nOnce an admin allows the marketplace:\n\n```\nclaude plugin marketplace add dserri/claude-toolkit\nclaude plugin install toolkit@claude-toolkit\n```\n\nand enable auto-update for `claude-toolkit` in `/plugin` → Marketplaces. The plugin declares no version, so every pushed commit is a release.\n\n## Roll back\n\nDelete the `dserri.claude-toolkit-0.0.1` junction and reload VS Code; remove a project's `.coord/` folder if you no longer want its board. Sessions started by hand work as before.\n\n## Develop\n\n```\nnode --test\nnode --test tests/coordinator.e2e.mjs tests/status-entrypoint.e2e.mjs\n```\n\nThe first runs the unit, hook, installer and `claude plugin validate` tests (`claude` must be on `PATH`). The second starts real headless sessions with a model call. Tab behaviour and the session view in VS Code are verified by hand.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-navigation/.openspec.yaml",
+          "content": "schema: spec-driven\ncreated: 2026-11-18\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-navigation/design.md",
+          "content": "# Design\n\n## Context\n\nSee proposal.md. The view, the click routing (own tab, other window via registry and focus request, or message) and urgency sorting already exist. VS Code stores Explorer view placement and sizes per workspace, which is why the view shifts between windows; an Activity Bar container is a fixed home the developer can still drag elsewhere once.\n\n## Goals / Non-Goals\n\n**Goals:** one click or key to the waiting session; same view placement everywhere; optional full-width workers.\n\n**Non-Goals:** notifications (later, only if red cards are missed); the coordinator reading the status files (later); the supervisor.\n\n## Decisions\n\n- **One focus path.** The status-bar command and the next-waiting command reuse the card click (`focus(session)`), so every route reaches other windows the same way.\n- **Pure selection in `status-core.js`:** `waitingSessions(sessions)` (waiting ones in urgency order) and `nextWaiting(waiting, lastFocusedId)` (the one after the last focused, wrapping, first when unknown). The view remembers the last focused session id in memory.\n- **Activity Bar container** `claudeToolkit` with an SVG icon in `vscode/media/`, holding the `claudeToolkit.sessions` view; the status-bar fallback runs `claudeToolkit.sessions.focus`.\n- **Shortcut** `ctrl+alt+n` (no conflict on this machine; developers can rebind it).\n- **Worker layout** read when a tab opens; `terminalOptions` takes the tab's `role` (`coordinator` or `worker`) and the `layout` instead of the `beside` flag, so core stays the single place deciding placement: coordinator in column 1 with focus, workers in column 2 (or column 1 with `tabs`) without taking focus.\n- **Registry files written atomically** (found in review): readers delete unreadable window files, so each window writes its own file through a temporary file and rename, like focus requests. Reading and writing live in `vscode/registry.js`, plain Node, tested directly.\n- **Follow-ups:** registry reader deletes by the file name it read (unreadable files included); focus requests written as temp file plus rename; routing decisions moved into a pure `clickAction(location)` in core and tested; the window black-box tests remove their temporary homes; the archived `add-cross-window-focus` task 2.1 wording matches the helpers that exist.\n\n## Risks / Trade-offs\n\n- [`ctrl+alt+n` may collide with other extensions on other machines] → a normal VS Code keybinding, rebindable.\n- [Users with the view already dragged elsewhere] → VS Code keeps a moved view where the user put it.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-navigation/proposal.md",
+          "content": "# Proposal\n\n## Why\n\nThe session view made jumping between sessions easy, so the developer wants it faster still: one click or one key to the session that needs them, a view that stays in the same place in every VS Code window (inside the Explorer it shifts from window to window), and the option to give each worker a full-width tab now that side-by-side placement matters less.\n\n## What Changes\n\n- Clicking the status-bar item focuses the longest-waiting session in any window; with nothing waiting it opens the view.\n- A \"Toolkit: Next waiting session\" command, bound to `Ctrl+Alt+N`, cycles through waiting sessions in urgency order.\n- \"Claude sessions\" moves to its own Activity Bar container with its own icon.\n- A setting `claudeToolkit.workerLayout`: `beside` (default, today's layout) or `tabs` (workers open as tabs in the coordinator's editor group).\n- Open advisory findings of the cross-window review: registry files are removed by their file name, focus requests are written atomically, the click routing gets tests, the window black-box tests clean their temporary homes, and the archived tasks wording is corrected.\n\n## Capabilities\n\n### New Capabilities\n\nNone.\n\n### Modified Capabilities\n\n- `session-status`: status-bar jump, next-waiting command, Activity Bar placement.\n- `vscode-session-launcher`: worker layout setting.\n\n## Impact\n\n`vscode/` (package.json, sessions view, core helpers), tests, README.\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-navigation/specs/session-status/spec.md",
+          "content": "# Spec Delta\n\n## ADDED Requirements\n\n### Requirement: Jump to the waiting session\n\nClicking the status-bar item SHALL focus the most urgent waiting session (longest waiting first), in this or another window as a card click does; with no session waiting it SHALL open the sessions view.\n\n#### Scenario: Sessions waiting\n\n- **WHEN** two sessions wait and the developer clicks the status-bar item\n- **THEN** the one waiting longest is focused\n\n#### Scenario: Nothing waiting\n\n- **WHEN** no session waits and the developer clicks the status-bar item\n- **THEN** the sessions view opens\n\n### Requirement: Next waiting session\n\nA command \"Toolkit: Next waiting session\", bound by default to `Ctrl+Alt+N`, SHALL focus the waiting sessions one after another in urgency order, starting again from the first after the last; with none waiting it SHALL show a short message.\n\n#### Scenario: Cycling\n\n- **WHEN** three sessions wait and the developer presses the shortcut three times\n- **THEN** each of the three is focused once, in urgency order\n\n### Requirement: Fixed view placement\n\n\"Claude sessions\" SHALL live in its own Activity Bar container, so it appears in the same place in every window.\n\n#### Scenario: Two windows\n\n- **WHEN** the developer switches between two VS Code windows\n- **THEN** both show the \"Claude sessions\" container under the same Activity Bar icon\n\n### Requirement: Safe registry and focus files\n\nWindow registry files SHALL be removed by the name of the file read, including unreadable ones; registry files and focus requests SHALL be written to a temporary file and renamed into place, so a reader never sees a partial file.\n\n#### Scenario: Unreadable registry file\n\n- **WHEN** a window file cannot be parsed\n- **THEN** the next reader deletes that file and no other\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-navigation/specs/vscode-session-launcher/spec.md",
+          "content": "# Spec Delta\n\n## ADDED Requirements\n\n### Requirement: Worker layout\n\nA machine-scoped setting `claudeToolkit.workerLayout` SHALL choose where worker tabs open: `beside` (default) opens them in the column next to the coordinator, `tabs` opens them as tabs in the coordinator's column.\n\n#### Scenario: Default layout\n\n- **WHEN** the setting is not changed\n- **THEN** workers open beside the coordinator, as before\n\n#### Scenario: Tabs layout\n\n- **WHEN** the setting is `tabs` and the coordinator requests a worker\n- **THEN** the worker opens as a full-width tab in the coordinator's column without taking focus\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/add-session-navigation/tasks.md",
+          "content": "# Tasks\n\n## 1. Logic\n\n- [x] 1.1 Add `waitingSessions`, `nextWaiting` and `clickAction` to `vscode/status-core.js`, change `terminalOptions` to take a role and a layout, and verify with tests including wrap-around and an unknown last session\n\n## 2. VS Code\n\n- [x] 2.1 Status-bar command and \"Next waiting session\" command with `ctrl+alt+n`, Activity Bar container with icon, `claudeToolkit.workerLayout` setting; verify VS Code loads them\n- [x] 2.2 Registry deletion by file name, atomic focus requests, black-box temp cleanup, archived wording; verify with tests\n- [x] 2.3 Document the shortcut, the status-bar jump, the container and the layout setting in README\n\n## 3. Acceptance\n\n- [x] 3.1 With the developer: status-bar click and shortcut reach waiting sessions in both windows, the container sits in the same place in both windows, and `tabs` layout opens a worker full width\n",
+          "mode": 438
+        },
+        {
+          "path": "openspec/changes/archive/2026-11-18-add-cross-window-focus/tasks.md",
+          "content": "# Tasks\n\n## 1. Hook\n\n- [x] 1.1 Write an `.ended` marker at SessionEnd and record nothing for a session that has one; remove markers with the stale cleanup; verify with hook tests\n\n## 2. Window registry and focus\n\n- [x] 2.1 Add pure helpers (live-window filter, session location, location label, latest session per title) to `vscode/status-core.js` with tests\n- [x] 2.2 Publish and remove the window file, watch the window's own focus request, and route clicks to this window, another window or a message in `sessions-view.js`; verify VS Code loads it without errors\n- [x] 2.3 Correct the archived proposal wording and document cross-window focus in README\n\n## 3. Acceptance\n\n- [x] 3.1 With the developer and two VS Code windows, click a card held by the other window and verify the window comes to the front with the right tab; click a hand-started session and verify only a message appears\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/coordinator-blackbox.test.mjs",
+          "content": "import { test, describe, before, after } from 'node:test';\nimport assert from 'node:assert/strict';\nimport fs from 'node:fs';\nimport os from 'node:os';\nimport path from 'node:path';\nimport { spawnSync } from 'node:child_process';\nimport { fileURLToPath } from 'node:url';\nimport core from '../vscode/core.js';\n\nconst repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');\nconst hookPath = path.join(repoRoot, 'plugins', 'toolkit', 'hooks', 'session-start.mjs');\nconst pluginDir = path.join(os.tmpdir(), 'ext', 'plugins', 'toolkit');\nconst projectFolder = path.join(os.tmpdir(), 'My Cool.Project!!');\nconst prefix = 'my-cool-project';\nconst uuid = '0f8fad5b-d9cb-469f-a165-70867728950e';\nconst otherUuid = '7c9e6679-7425-40de-944b-e07fc1f90ae7';\n\nconst valueOf = (args, flag) => {\n  const index = args.indexOf(flag);\n  assert.notEqual(index, -1, `missing ${flag}`);\n  return args[index + 1];\n};\n\nconst badNames = [\n  '', '-a', 'A', 'Alpha', 'a'.repeat(41), 'coordinator', 'a/b', 'a\\\\b', '..', '../a', 'a..b/..',\n  'a b', ' a', 'a;b', 'a$b', '$(x)', \"a'b\", 'a\"b', 'a`b', 'a.b', 'a_b', 'a\\nb', 'a\\n', 'a|b', 'a&b'\n];\n\ndescribe('isWorkerName', () => {\n  test('accepts valid names', () => {\n    for (const name of ['a', '1', 'abc', 'abc-1', '9lives', 'x-', 'a'.repeat(40), 'coordinator-2', 'coord']) {\n      assert.equal(core.isWorkerName(name), true, name);\n    }\n  });\n\n  test('rejects invalid names', () => {\n    for (const name of [...badNames, null, undefined]) {\n      assert.equal(core.isWorkerName(name), false, JSON.stringify(name));\n    }\n  });\n});\n\ndescribe('sessionPrefix', () => {\n  test('normalises the base name', () => {\n    assert.equal(core.sessionPrefix(projectFolder), prefix);\n    assert.equal(core.sessionPrefix(path.join(os.tmpdir(), '--Foo__Bar--')), 'foo-bar');\n    assert.equal(core.sessionPrefix(path.join(os.tmpdir(), 'abc123')), 'abc123');\n    assert.equal(core.sessionPrefix(path.join(os.tmpdir(), 'Ünïcode')), 'n-code');\n  });\n\n  test('uses project when nothing remains', () => {\n    assert.equal(core.sessionPrefix(path.join(os.tmpdir(), '!!!')), 'project');\n    assert.equal(core.sessionPrefix(path.join(os.tmpdir(), '___')), 'project');\n  });\n});\n\ndescribe('workerSessionName', () => {\n  test('joins prefix and name', () => {\n    assert.equal(core.workerSessionName(projectFolder, 'alpha'), `${prefix}-alpha`);\n  });\n\n  test('throws for invalid names', () => {\n    for (const name of badNames) {\n      assert.throws(() => core.workerSessionName(projectFolder, name), /Invalid worker name/, JSON.stringify(name));\n    }\n  });\n});\n\ndescribe('coordinatorArgs', () => {\n  test('contains the required flags and a fixed prompt', () => {\n    const args = core.coordinatorArgs({ projectFolder, pluginDir });\n    assert.ok(args.every((arg) => typeof arg === 'string'));\n    assert.equal(valueOf(args, '--plugin-dir'), pluginDir);\n    assert.equal(valueOf(args, '--permission-mode'), 'auto');\n    assert.equal(valueOf(args, '--agent'), 'toolkit:coordinator');\n    assert.equal(valueOf(args, '--name'), `${prefix}-coordinator`);\n    const prompt = args[args.length - 1];\n    assert.ok(prompt.length > 0 && !prompt.startsWith('--'));\n    const other = core.coordinatorArgs({ projectFolder: path.join(os.tmpdir(), 'other'), pluginDir });\n    assert.equal(other[other.length - 1], prompt);\n    assert.equal(valueOf(other, '--name'), 'other-coordinator');\n  });\n});\n\ndescribe('newWorkerArgs', () => {\n  test('contains the required flags and the brief prompt', () => {\n    const args = core.newWorkerArgs({ projectFolder, pluginDir, name: 'alpha' });\n    assert.equal(valueOf(args, '--plugin-dir'), pluginDir);\n    assert.equal(valueOf(args, '--permission-mode'), 'auto');\n    assert.equal(valueOf(args, '--agent'), 'toolkit:worker');\n    assert.equal(valueOf(args, '--name'), `${prefix}-alpha`);\n    assert.equal(args[args.length - 1], 'Read .coord/workers/alpha/brief.md and follow it.');\n    assert.ok(!args.includes('--resume'));\n  });\n\n  test('throws for invalid names', () => {\n    for (const name of badNames) {\n      assert.throws(() => core.newWorkerArgs({ projectFolder, pluginDir, name }), JSON.stringify(name));\n    }\n  });\n});\n\ndescribe('resumeWorkerArgs', () => {\n  const resume = (sessionRecord, name = 'alpha') => core.resumeWorkerArgs({ projectFolder, pluginDir, name, sessionRecord });\n\n  const assertFlags = (args) => {\n    assert.equal(valueOf(args, '--plugin-dir'), pluginDir);\n    assert.equal(valueOf(args, '--permission-mode'), 'auto');\n    assert.equal(valueOf(args, '--agent'), 'toolkit:worker');\n    assert.ok(!args.some((arg) => arg.includes('brief.md')));\n    assert.ok(!args.some((arg) => arg.startsWith('Read ')));\n  };\n\n  test('resumes by session ID for a UUID record', () => {\n    for (const record of [uuid, `${uuid}\\n`, `  ${uuid}  \\n`, `\\n${uuid}\\r\\n`]) {\n      const args = resume(record);\n      assert.deepEqual(args.slice(0, 2), ['--resume', uuid], JSON.stringify(record));\n      assertFlags(args);\n    }\n  });\n\n  test('resumes by session name otherwise', () => {\n    const records = [\n      undefined, null, '', 'not-a-uuid', `${uuid} extra`, `${uuid}\\n${otherUuid}`, `${uuid}; rm -rf /`,\n      `${uuid} --dangerously-skip-permissions`, uuid.slice(0, -1), `${uuid}0`, uuid.replace(/-/g, ''),\n      `{${uuid}}`, uuid.replace('0f8', 'zf8')\n    ];\n    for (const record of records) {\n      const args = resume(record);\n      assert.deepEqual(args.slice(0, 2), ['--resume', `${prefix}-alpha`], JSON.stringify(record));\n      assertFlags(args);\n      assert.ok(!args.some((arg) => arg.includes('rm -rf') || arg.includes('dangerously') || arg.includes(otherUuid)));\n    }\n  });\n\n  test('throws for invalid names', () => {\n    for (const name of badNames) {\n      assert.throws(() => resume(uuid, name), JSON.stringify(name));\n    }\n  });\n});\n\ndescribe('requestedWorkerArgs', () => {\n  const requested = (sessionRecord, name = 'alpha') => core.requestedWorkerArgs({ projectFolder, pluginDir, name, sessionRecord });\n\n  test('resumes a recorded session with the newest-section prompt', () => {\n    const args = requested(`${uuid}\\n`);\n    assert.deepEqual(args.slice(0, 2), ['--resume', uuid]);\n    assert.equal(valueOf(args, '--plugin-dir'), pluginDir);\n    assert.equal(valueOf(args, '--permission-mode'), 'auto');\n    assert.equal(valueOf(args, '--agent'), 'toolkit:worker');\n    assert.equal(args[args.length - 1], 'Read the newest section of .coord/workers/alpha/brief.md and follow it.');\n  });\n\n  test('starts a new worker without a valid record', () => {\n    const expected = core.newWorkerArgs({ projectFolder, pluginDir, name: 'alpha' });\n    for (const record of [undefined, null, '', 'garbage', `${uuid} trailing`, `${uuid}\\nmore`]) {\n      assert.deepEqual(requested(record), expected, JSON.stringify(record));\n    }\n  });\n\n  test('throws for invalid names', () => {\n    for (const name of badNames) {\n      assert.throws(() => requested(uuid, name), JSON.stringify(name));\n    }\n  });\n});\n\ndescribe('activeWorkers', () => {\n  test('lists valid active names in order', () => {\n    const team = JSON.stringify([\n      { name: 'beta', state: 'active' },\n      { name: 'Alpha', state: 'active' },\n      { name: 'gamma', state: 'done' },\n      { name: 'alpha', state: 'active' },\n      { name: 'coordinator', state: 'active' },\n      { name: '../evil', state: 'active' },\n      { name: 'a b', state: 'active' },\n      { name: 'delta' },\n      { name: 'eps', state: 'Active' }\n    ]);\n    assert.deepEqual(core.activeWorkers(team), ['beta', 'alpha']);\n    assert.deepEqual(core.activeWorkers('[]'), []);\n  });\n\n  test('throws when not an array', () => {\n    for (const text of ['{}', 'null', '\"x\"', '5', '{\"name\":\"a\",\"state\":\"active\"}']) {\n      assert.throws(() => core.activeWorkers(text), text);\n    }\n  });\n\n  test('throws SyntaxError on invalid JSON', () => {\n    assert.throws(() => core.activeWorkers('not json'), SyntaxError);\n    assert.throws(() => core.activeWorkers('[{'), SyntaxError);\n  });\n});\n\ndescribe('validateRequest', () => {\n  const check = (overrides = {}) => {\n    const calls = [];\n    const result = core.validateRequest({\n      fileName: 'alpha.json',\n      content: '{\"name\": \"alpha\"}',\n      openTabs: [],\n      briefExists: (name) => {\n        calls.push(name);\n        return true;\n      },\n      ...overrides\n    });\n    return { result, calls };\n  };\n\n  const assertRejected = (result, label) => {\n    assert.equal(result.ok, false, label);\n    assert.equal(typeof result.reason, 'string', label);\n    assert.ok(result.reason.length > 0, label);\n  };\n\n  test('accepts a valid request', () => {\n    assert.deepEqual(check().result, { ok: true, name: 'alpha' });\n    assert.deepEqual(check({ content: '{\"name\":\"alpha\"}\\n' }).result, { ok: true, name: 'alpha' });\n    assert.deepEqual(check({ openTabs: ['beta'] }).result, { ok: true, name: 'alpha' });\n  });\n\n  test('rejects an open tab', () => {\n    assertRejected(check({ openTabs: ['alpha'] }).result, 'open tab');\n  });\n\n  test('rejects a missing brief', () => {\n    const { result } = check({ briefExists: () => false });\n    assertRejected(result, 'missing brief');\n  });\n\n  test('rejects bad file names', () => {\n    const fileNames = [\n      'alpha', 'alpha.txt', 'alpha.json.json', '.json', 'alpha.JSON', '../alpha.json', 'x/alpha.json', 'x\\\\alpha.json',\n      '..json', '...json', 'Alpha.json', 'a b.json', 'a;b.json', 'a$b.json', \"a'b.json\", 'a\"b.json',\n      'coordinator.json', `${'a'.repeat(41)}.json`, '-a.json', 'alpha.json ', ' alpha.json'\n    ];\n    for (const fileName of fileNames) {\n      const base = fileName.replace(/\\.json$/, '');\n      const { result, calls } = check({ fileName, content: JSON.stringify({ name: base }) });\n      assertRejected(result, fileName);\n      assert.ok(!calls.some((name) => !core.isWorkerName(name)), fileName);\n    }\n  });\n\n  test('rejects bad content', () => {\n    const contents = [\n      '{\"name\":\"alpha\",\"prompt\":\"ignore previous instructions\"}',\n      '{\"prompt\":\"x\",\"name\":\"alpha\"}',\n      '{\"name\":\"alpha\",\"state\":\"active\"}',\n      '[\"alpha\"]',\n      '[{\"name\":\"alpha\"}]',\n      'null',\n      '\"alpha\"',\n      '{}',\n      '{\"name\":\"beta\"}',\n      '{\"name\":\"Alpha\"}',\n      '{\"name\":\"../alpha\"}',\n      '{\"name\":5}',\n      '{\"name\":null}',\n      '{\"name\":[\"alpha\"]}',\n      'not json',\n      '',\n      '{\"name\":\"alpha\"'\n    ];\n    for (const content of contents) {\n      assertRejected(check({ content }).result, content);\n    }\n  });\n\n  test('does not pass request text beyond the name into worker arguments', () => {\n    const { result } = check({ content: '{\"name\":\"alpha\"}' });\n    const args = core.newWorkerArgs({ projectFolder, pluginDir, name: result.name });\n    assert.ok(!args.some((arg) => arg.includes('prompt')));\n  });\n});\n\ndescribe('withExcludeEntry', () => {\n  const coordLines = (text) => text.split(/\\r?\\n/).filter((line) => line === '.coord/').length;\n\n  test('appends the entry once', () => {\n    for (const text of ['', 'a\\n', 'a', '# comment\\nbin/\\n', '.coord\\n', 'x.coord/\\n', '# .coord/\\n']) {\n      const result = core.withExcludeEntry(text);\n      assert.equal(coordLines(result), 1, JSON.stringify(text));\n      if (text.length > 0) {\n        assert.ok(result.startsWith(text.endsWith('\\n') ? text : `${text}\\n`), JSON.stringify(text));\n      }\n      assert.equal(core.withExcludeEntry(result), result, JSON.stringify(text));\n    }\n  });\n\n  test('keeps text that already excludes .coord', () => {\n    for (const text of ['.coord/', '.coord/\\n', '/.coord/\\n', 'a\\n.coord/\\nb\\n', 'a\\n/.coord/\\nb\\n', 'a\\n/.coord/']) {\n      assert.equal(core.withExcludeEntry(text), text, JSON.stringify(text));\n    }\n  });\n});\n\ndescribe('terminalOptions', () => {\n  test('builds coordinator options', () => {\n    const args = ['--a', 'b c'];\n    const options = core.terminalOptions({ name: 'Coordinator', claudePath: '/bin/claude', args, folder: '/work', role: 'coordinator', layout: 'beside' });\n    assert.equal(options.shellPath, '/bin/claude');\n    assert.deepEqual(options.shellArgs, args);\n    assert.ok(Array.isArray(options.shellArgs));\n    assert.equal(options.cwd, '/work');\n    assert.equal(options.isTransient, true);\n    assert.equal(options.location.viewColumn, 1);\n    assert.equal(options.location.preserveFocus, false);\n  });\n\n  test('builds worker options', () => {\n    const options = core.terminalOptions({ name: 'alpha', claudePath: '/bin/claude', args: ['x'], folder: '/work', role: 'worker', layout: 'beside' });\n    assert.equal(options.location.viewColumn, 2);\n    assert.equal(options.location.preserveFocus, true);\n    assert.equal(options.isTransient, true);\n    assert.deepEqual(options.shellArgs, ['x']);\n  });\n});\n\ndescribe('defaultPluginDir', () => {\n  test('points beside the extension', () => {\n    const extension = path.join(os.tmpdir(), 'repo', 'vscode');\n    assert.equal(core.defaultPluginDir(extension), path.join(extension, '..', 'plugins', 'toolkit'));\n    assert.equal(core.defaultPluginDir(extension), path.join(os.tmpdir(), 'repo', 'plugins', 'toolkit'));\n  });\n});\n\ndescribe('session-start hook', () => {\n  let root;\n  let home;\n  let scriptDir;\n  let counter = 0;\n\n  const stub = [\n    \"import fs from 'node:fs';\",\n    \"import path from 'node:path';\",\n    \"import { fileURLToPath } from 'node:url';\",\n    'const dir = path.dirname(fileURLToPath(import.meta.url));',\n    \"fs.writeFileSync(path.join(dir, 'argv.json'), JSON.stringify(process.argv.slice(2)));\",\n    \"const mode = fs.readFileSync(path.join(dir, 'mode.txt'), 'utf8').trim();\",\n    \"if (mode === 'recap') { process.stdout.write(JSON.stringify({ recap: 'Recap line one\\\\nRecap line two' })); }\",\n    \"if (mode === 'norecap') { process.stdout.write(JSON.stringify({ ok: true })); }\",\n    \"if (mode === 'fail') { process.stderr.write('stub broke badly\\\\nsecond line\\\\n'); process.exit(3); }\"\n  ].join('\\n');\n\n  before(() => {\n    root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'coord-blackbox-')));\n    home = path.join(root, 'home');\n    scriptDir = path.join(home, '.claude', 'skills', 'sdd', 'scripts');\n    fs.mkdirSync(scriptDir, { recursive: true });\n    fs.writeFileSync(path.join(scriptDir, 'complete-change.mjs'), stub);\n  });\n\n  after(() => {\n    fs.rmSync(root, { recursive: true, force: true });\n  });\n\n  const newProject = (withCoord) => {\n    counter += 1;\n    const folder = path.join(root, `project-${counter}`);\n    fs.mkdirSync(folder);\n    if (withCoord) {\n      fs.mkdirSync(path.join(folder, '.coord'));\n    }\n    return folder;\n  };\n\n  const setMode = (mode) => {\n    fs.rmSync(path.join(scriptDir, 'argv.json'), { force: true });\n    fs.writeFileSync(path.join(scriptDir, 'mode.txt'), mode);\n  };\n\n  const pulled = () => fs.existsSync(path.join(scriptDir, 'argv.json'));\n\n  const runHook = (input) => {\n    const result = spawnSync(process.execPath, [hookPath], {\n      input: typeof input === 'string' ? input : JSON.stringify(input),\n      env: { ...process.env, HOME: home, USERPROFILE: home },\n      encoding: 'utf8',\n      timeout: 30000\n    });\n    assert.equal(result.status, 0, result.stderr);\n    return result.stdout;\n  };\n\n  const contextOf = (stdout) => {\n    const parsed = JSON.parse(stdout);\n    assert.equal(parsed.hookSpecificOutput.hookEventName, 'SessionStart');\n    assert.equal(typeof parsed.hookSpecificOutput.additionalContext, 'string');\n    return parsed.hookSpecificOutput.additionalContext;\n  };\n\n  const coordinatorInput = (cwd, source = 'startup') => ({\n    agent_type: 'toolkit:coordinator', source, cwd, session_id: uuid, session_title: 'proj-coordinator'\n  });\n\n  test('coordinator startup reports the recap', () => {\n    setMode('recap');\n    const cwd = newProject(true);\n    const context = contextOf(runHook(coordinatorInput(cwd)));\n    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(scriptDir, 'argv.json'), 'utf8')), ['--collab', 'pull', '--repository', cwd]);\n    assert.ok(context.endsWith('Recap line one\\nRecap line two'), context);\n    assert.match(context, /first/i);\n    assert.match(context, /pull/i);\n    assert.match(context, /again/i);\n  });\n\n  test('coordinator startup without recap reports no team mailbox', () => {\n    setMode('norecap');\n    const context = contextOf(runHook(coordinatorInput(newProject(false))));\n    assert.ok(pulled());\n    assert.match(context, /no team mailbox/i);\n  });\n\n  test('coordinator startup reports a failed pull', () => {\n    setMode('fail');\n    const context = contextOf(runHook(coordinatorInput(newProject(false))));\n    assert.equal(context, 'SDD collaboration pull failed: stub broke badly');\n  });\n\n  test('coordinator startup reports a missing script', () => {\n    const emptyHome = path.join(root, 'empty-home');\n    fs.mkdirSync(emptyHome, { recursive: true });\n    const result = spawnSync(process.execPath, [hookPath], {\n      input: JSON.stringify(coordinatorInput(newProject(false))),\n      env: { ...process.env, HOME: emptyHome, USERPROFILE: emptyHome },\n      encoding: 'utf8',\n      timeout: 30000\n    });\n    assert.equal(result.status, 0, result.stderr);\n    assert.ok(contextOf(result.stdout).startsWith('SDD collaboration pull failed:'));\n  });\n\n  test('coordinator resume does nothing', () => {\n    setMode('recap');\n    const cwd = newProject(true);\n    assert.equal(runHook(coordinatorInput(cwd, 'resume')).trim(), '');\n    assert.equal(pulled(), false);\n    assert.deepEqual(fs.readdirSync(path.join(cwd, '.coord')), []);\n  });\n\n  test('worker records its session ID at startup and resume', () => {\n    setMode('recap');\n    const cwd = newProject(true);\n    const record = path.join(cwd, '.coord', 'sessions', 'proj-alpha.id');\n    const input = { agent_type: 'toolkit:worker', source: 'startup', cwd, session_id: uuid, session_title: 'proj-alpha' };\n    assert.equal(runHook(input).trim(), '');\n    assert.equal(fs.readFileSync(record, 'utf8'), `${uuid}\\n`);\n    assert.equal(runHook({ ...input, source: 'resume', session_id: otherUuid }).trim(), '');\n    assert.equal(fs.readFileSync(record, 'utf8'), `${otherUuid}\\n`);\n    assert.equal(pulled(), false);\n  });\n\n  test('worker replaces an earlier record', () => {\n    setMode('recap');\n    const cwd = newProject(true);\n    fs.mkdirSync(path.join(cwd, '.coord', 'sessions'));\n    const record = path.join(cwd, '.coord', 'sessions', 'proj-beta.id');\n    fs.writeFileSync(record, 'old content that is longer than a uuid by quite a margin indeed\\n');\n    runHook({ agent_type: 'toolkit:worker', source: 'startup', cwd, session_id: uuid, session_title: 'proj-beta' });\n    assert.equal(fs.readFileSync(record, 'utf8'), `${uuid}\\n`);\n  });\n\n  test('worker writes nothing for unsafe titles or IDs', () => {\n    setMode('recap');\n    const cases = [\n      { session_title: '../escape', session_id: uuid },\n      { session_title: 'a/b', session_id: uuid },\n      { session_title: 'a\\\\b', session_id: uuid },\n      { session_title: 'Proj-Alpha', session_id: uuid },\n      { session_title: 'a b', session_id: uuid },\n      { session_title: '-alpha', session_id: uuid },\n      { session_title: '', session_id: uuid },\n      { session_id: uuid },\n      { session_title: 'proj-alpha', session_id: 'not-a-uuid' },\n      { session_title: 'proj-alpha', session_id: `${uuid}\\nextra` },\n      { session_title: 'proj-alpha' }\n    ];\n    for (const fields of cases) {\n      const cwd = newProject(true);\n      assert.equal(runHook({ agent_type: 'toolkit:worker', source: 'startup', cwd, ...fields }).trim(), '', JSON.stringify(fields));\n      const sessions = path.join(cwd, '.coord', 'sessions');\n      const written = fs.existsSync(sessions) ? fs.readdirSync(sessions) : [];\n      assert.deepEqual(written, [], JSON.stringify(fields));\n      assert.deepEqual(fs.readdirSync(root).filter((entry) => entry === 'escape' || entry.endsWith('.id')), [], JSON.stringify(fields));\n    }\n    assert.equal(pulled(), false);\n  });\n\n  test('worker never creates .coord', () => {\n    setMode('recap');\n    const cwd = newProject(false);\n    assert.equal(runHook({ agent_type: 'toolkit:worker', source: 'startup', cwd, session_id: uuid, session_title: 'proj-alpha' }).trim(), '');\n    assert.deepEqual(fs.readdirSync(cwd), []);\n    assert.equal(pulled(), false);\n  });\n\n  test('sessions without an agent do nothing', () => {\n    setMode('recap');\n    for (const source of ['startup', 'resume']) {\n      const cwd = newProject(true);\n      assert.equal(runHook({ source, cwd, session_id: uuid, session_title: 'proj-alpha' }).trim(), '');\n      assert.deepEqual(fs.readdirSync(path.join(cwd, '.coord')), []);\n    }\n    assert.equal(pulled(), false);\n  });\n\n  test('exits 0 on malformed input', () => {\n    setMode('recap');\n    runHook('not json');\n    runHook('');\n  });\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/registry.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';\nimport { tmpdir } from 'node:os';\nimport { join } from 'node:path';\nimport registry from '../vscode/registry.js';\n\nconst withFolder = (run) => {\n  const folder = mkdtempSync(join(tmpdir(), 'toolkit-registry-'));\n\n  try {\n    return run(folder);\n  } finally {\n    rmSync(folder, { recursive: true, force: true });\n  }\n};\n\ntest('the reader keeps live windows and deletes dead and unreadable files by the name it read', () => {\n  withFolder((folder) => {\n    const windows = join(folder, 'windows');\n    const live = { pid: 10, folder: 'P:\\\\repos\\\\Rehlko\\\\api', sessions: ['api-coordinator'] };\n\n    mkdirSync(windows);\n    writeFileSync(join(windows, '10.json'), JSON.stringify(live));\n    writeFileSync(join(windows, '20.json'), JSON.stringify({ pid: 20, folder: 'x', sessions: [] }));\n    writeFileSync(join(windows, '30.json'), '{\"pid\": 30, \"fol');\n    writeFileSync(join(windows, '40.json'), JSON.stringify({ pid: 10, folder: 'y', sessions: [] }));\n    writeFileSync(join(windows, 'notes.txt'), 'keep');\n\n    const found = registry.readLiveWindows(windows, (pid) => pid === 10);\n\n    assert.deepEqual(found.map((entry) => entry.folder).sort(), ['P:\\\\repos\\\\Rehlko\\\\api', 'y']);\n    assert.deepEqual(readdirSync(windows).sort(), ['10.json', '40.json', 'notes.txt']);\n  });\n});\n\ntest('a missing registry folder means no windows', () => {\n  withFolder((folder) => {\n    assert.deepEqual(registry.readLiveWindows(join(folder, 'absent'), () => true), []);\n  });\n});\n\ntest('atomic writes create the folder, replace the target and leave no temporary file', () => {\n  withFolder((folder) => {\n    const file = join(folder, 'focus', '42.json');\n\n    registry.writeAtomically(file, '{\"session\":\"a\"}');\n    registry.writeAtomically(file, '{\"session\":\"b\"}');\n\n    assert.equal(readFileSync(file, 'utf8'), '{\"session\":\"b\"}');\n    assert.deepEqual(readdirSync(join(folder, 'focus')), ['42.json']);\n    assert.equal(existsSync(`${file}.${process.pid}.tmp`), false);\n  });\n});\n\ntest('unreadable JSON reads as undefined', () => {\n  withFolder((folder) => {\n    const file = join(folder, 'bad.json');\n\n    writeFileSync(file, 'nope');\n    assert.equal(registry.readJson(file), undefined);\n    assert.equal(registry.readJson(join(folder, 'missing.json')), undefined);\n    writeFileSync(file, '{\"session\":\"tester\"}');\n    assert.deepEqual(registry.readJson(file), { session: 'tester' });\n  });\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/status-core.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport status from '../vscode/status-core.js';\n\nconst now = 1_000_000_000;\nconst stuckMs = 10 * 60_000;\nconst id = '7fa97870-6578-4ed2-b7c9-1dc4c9a2ef09';\n\nconst at = (secondsAgo, event, extra = {}) => ({ t: now - secondsAgo * 1000, event, ...extra });\nconst stateOf = (events) => status.sessionState({ id, events: [...events].sort((first, second) => first.t - second.t), now, stuckMs });\n\ntest('a fresh session is idle and named after its title, else its folder', () => {\n  assert.equal(stateOf([at(60, 'SessionStart', { title: 'portal-tester', folder: 'rehlko-portal' })]).name, 'portal-tester');\n\n  const session = stateOf([at(60, 'SessionStart', { folder: 'rehlko-portal' })]);\n\n  assert.equal(session.name, 'rehlko-portal');\n  assert.equal(session.status, 'idle');\n});\n\ntest('a prompt and its tools mean working, with the current tool', () => {\n  const session = stateOf([\n    at(90, 'SessionStart'),\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(30, 'PostToolUse', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'working');\n  assert.equal(session.tool, 'Bash');\n  assert.equal(session.since, now - 60_000);\n});\n\ntest('a permission request waits for the developer, and the next tool result returns to working', () => {\n  const waiting = [at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(40, 'PermissionRequest', { promptId: 'p1', tool: 'Edit' })];\n\n  assert.equal(stateOf(waiting).status, 'permission');\n  assert.equal(stateOf([...waiting, at(10, 'PostToolUse', { promptId: 'p1', tool: 'Edit' })]).status, 'working');\n});\n\ntest('AskUserQuestion and asking stops wait for an answer; other stops need review', () => {\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'PreToolUse', { promptId: 'p1', tool: 'AskUserQuestion' })]).status, 'question');\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'Stop', { promptId: 'p1', asks: true, last: 'Which one?' })]).status, 'question');\n\n  const finished = stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1' }), at(5, 'Stop', { promptId: 'p1', asks: false, last: 'All tests pass.' })]);\n\n  assert.equal(finished.status, 'finished');\n  assert.equal(finished.last, 'All tests pass.');\n});\n\ntest('a tool event of a turn recorded after its stop does not reopen it', () => {\n  const session = stateOf([\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(20, 'Stop', { promptId: 'p1', asks: false, last: 'Done.' }),\n    at(19, 'PostToolUse', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'finished');\n});\n\ntest('late events of an earlier turn do not change the current one', () => {\n  const session = stateOf([\n    at(60, 'UserPromptSubmit', { promptId: 'p1' }),\n    at(30, 'UserPromptSubmit', { promptId: 'p2' }),\n    at(20, 'PermissionRequest', { promptId: 'p1', tool: 'Bash' }),\n  ]);\n\n  assert.equal(session.status, 'working');\n});\n\ntest('a working session without events past the threshold is possibly stuck, keeping its tool', () => {\n  const session = stateOf([at(1200, 'UserPromptSubmit', { promptId: 'p1' }), at(700, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]);\n\n  assert.equal(session.status, 'stuck');\n  assert.equal(session.tool, 'Bash');\n  assert.equal(status.cardDescription(session, now), 'possibly stuck · after Bash · 11m');\n  assert.equal(status.cardDescription({ status: 'permission', tool: 'Edit', since: now - 5000 }, now), 'waiting for permission · Edit · 5s');\n  assert.equal(status.cardDescription({ status: 'finished', tool: 'Bash', since: now - 5000 }, now), 'finished, needs review · 5s');\n  assert.equal(stateOf([at(1200, 'UserPromptSubmit', { promptId: 'p1' }), at(500, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).status, 'working');\n});\n\ntest('unreadable lines are skipped and lines are ordered by time', () => {\n  const events = status.parseEvents('{\"t\":2,\"event\":\"Stop\"}\\nnot json\\n\\n{\"t\":1,\"event\":\"SessionStart\"}\\n{\"event\":\"NoTime\"}\\n');\n\n  assert.deepEqual(events.map((event) => event.event), ['SessionStart', 'Stop']);\n});\n\ntest('cards are sorted with waiting sessions first, longest waiting first, then stuck, finished, working, idle', () => {\n  const card = (name, sessionStatus, since) => ({ name, status: sessionStatus, since });\n  const sorted = [\n    card('idle', 'idle', 1),\n    card('working', 'working', 1),\n    card('question-new', 'question', 50),\n    card('finished', 'finished', 1),\n    card('permission-old', 'permission', 10),\n    card('stuck', 'stuck', 1),\n  ].sort(status.byUrgency);\n\n  assert.deepEqual(sorted.map((session) => session.name), ['permission-old', 'question-new', 'stuck', 'finished', 'working', 'idle']);\n  assert.equal(status.waitingCount(sorted), 2);\n});\n\ntest('sessions are grouped by project, the most urgent project first, each sorted by urgency', () => {\n  const card = (name, project, sessionStatus, since) => ({ name, project, status: sessionStatus, since });\n  const groups = status.groupByProject([\n    card('api-worker', 'api', 'working', 5),\n    card('portal-idle', 'rehlko-portal', 'idle', 1),\n    card('portal-asks', 'rehlko-portal', 'question', 20),\n    card('api-done', 'api', 'finished', 3),\n    card('portal-perm', 'rehlko-portal', 'permission', 10),\n  ]);\n\n  assert.deepEqual(groups.map((group) => group.project), ['rehlko-portal', 'api']);\n  assert.deepEqual(groups[0].sessions.map((session) => session.name), ['portal-perm', 'portal-asks', 'portal-idle']);\n  assert.deepEqual(groups[1].sessions.map((session) => session.name), ['api-done', 'api-worker']);\n  assert.equal(groups[0].top.name, 'portal-perm');\n  assert.equal(status.groupDescription(groups[0]), '2 waiting · 3 sessions');\n  assert.equal(status.groupDescription({ sessions: [card('a', 'x', 'working', 1)], waiting: 0 }), '1 session');\n});\n\ntest('a session takes its project from the first folder recorded, or a placeholder', () => {\n  assert.equal(stateOf([at(60, 'UserPromptSubmit', { promptId: 'p1', folder: 'rehlko-portal' })]).project, 'rehlko-portal');\n  assert.equal(stateOf([\n    at(90, 'SessionStart', { folder: 'rehlko-portal', title: 'rehlko-portal-coordinator' }),\n    at(60, 'UserPromptSubmit', { promptId: 'p1', folder: '.coord' }),\n  ]).project, 'rehlko-portal');\n  assert.equal(stateOf([at(60, 'PostToolUse', { promptId: 'p1', tool: 'Bash' })]).project, 'unknown project');\n});\n\ntest('only the latest session per title is kept; untitled sessions are never merged', () => {\n  const session = (sessionId, name, titled, lastEventAt) => ({ id: sessionId, name, titled, lastEventAt });\n  const kept = status.latestPerTitle([\n    session('old', 'rehlko-portal-coordinator', true, 100),\n    session('new', 'rehlko-portal-coordinator', true, 200),\n    session('tester', 'rehlko-portal-tester', true, 50),\n    session('plain-1', 'rehlko-portal', false, 10),\n    session('plain-2', 'rehlko-portal', false, 20),\n  ]);\n\n  assert.deepEqual(kept.map((entry) => entry.id), ['new', 'tester', 'plain-1', 'plain-2']);\n});\n\ntest('a titled session reports it, a folder-named one does not', () => {\n  assert.equal(stateOf([at(60, 'SessionStart', { title: 'portal-tester', folder: 'portal' })]).titled, true);\n  assert.equal(stateOf([at(60, 'SessionStart', { folder: 'portal' })]).titled, false);\n});\n\ntest('waiting sessions come in urgency order and the next one wraps around', () => {\n  const session = (id, sessionStatus, since) => ({ id, status: sessionStatus, since });\n  const waiting = status.waitingSessions([\n    session('working', 'working', 1),\n    session('question-new', 'question', 30),\n    session('permission-old', 'permission', 10),\n    session('finished', 'finished', 1),\n  ]);\n\n  assert.deepEqual(waiting.map((entry) => entry.id), ['permission-old', 'question-new']);\n  assert.equal(status.nextWaiting(waiting, undefined).id, 'permission-old');\n  assert.equal(status.nextWaiting(waiting, 'permission-old').id, 'question-new');\n  assert.equal(status.nextWaiting(waiting, 'question-new').id, 'permission-old');\n  assert.equal(status.nextWaiting(waiting, 'gone').id, 'permission-old');\n  assert.equal(status.nextWaiting([], 'permission-old'), undefined);\n});\n\ntest('a click shows an own tab, raises another window, or explains', () => {\n  assert.equal(status.clickAction({ kind: 'here' }), 'show');\n  assert.equal(status.clickAction({ kind: 'other', window: { pid: 2 } }), 'raise');\n  assert.equal(status.clickAction({ kind: 'none' }), 'message');\n});\n\ntest('only well-formed entries of running windows count', () => {\n  const entries = [\n    { pid: 10, folder: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal', sessions: ['rehlko-portal-coordinator'] },\n    { pid: 20, folder: 'P:\\\\repos\\\\Rehlko\\\\api', sessions: ['api-coordinator'] },\n    { pid: 30, folder: 'P:\\\\repos\\\\gone', sessions: [] },\n    { pid: '40', folder: 'x', sessions: [] },\n    { pid: 50, sessions: [] },\n    null,\n  ];\n\n  assert.deepEqual(status.liveWindows(entries, (pid) => pid !== 30).map((entry) => entry.pid), [10, 20]);\n});\n\ntest('a session is located in this window, another window, or none', () => {\n  const windows = [\n    { pid: 10, folder: 'P:\\\\repos\\\\Rehlko\\\\rehlko-portal', sessions: ['rehlko-portal-coordinator', 'rehlko-portal-tester'] },\n    { pid: 20, folder: 'P:\\\\repos\\\\Rehlko\\\\api', sessions: ['api-coordinator'] },\n  ];\n  const here = status.sessionLocation('rehlko-portal-tester', 10, windows);\n  const other = status.sessionLocation('api-coordinator', 10, windows);\n  const none = status.sessionLocation('vs-code skill upgrade', 10, windows);\n\n  assert.equal(here.kind, 'here');\n  assert.equal(other.kind, 'other');\n  assert.equal(other.window.pid, 20);\n  assert.equal(none.kind, 'none');\n  assert.equal(status.locationLabel(here), 'in this window');\n  assert.equal(status.locationLabel(other), 'in window api');\n  assert.equal(status.locationLabel({ kind: 'other', window: { folder: '/home/dev/app/' } }), 'in window app');\n  assert.equal(status.locationLabel(none), 'not in a toolkit tab');\n});\n\ntest('durations read as seconds, minutes, then hours and minutes', () => {\n  assert.equal(status.formatDuration(45_000), '45s');\n  assert.equal(status.formatDuration(12 * 60_000), '12m');\n  assert.equal(status.formatDuration((2 * 60 + 5) * 60_000), '2h 05m');\n  assert.equal(status.formatDuration(-5), '0s');\n});\n\ntest('a hidden card comes back only with a newer event', () => {\n  assert.equal(status.isVisible({ lastEventAt: 100 }, undefined), true);\n  assert.equal(status.isVisible({ lastEventAt: 100 }, 100), false);\n  assert.equal(status.isVisible({ lastEventAt: 101 }, 100), true);\n});\n\ntest('every status has a label and a theme colour', () => {\n  for (const [name, look] of Object.entries(status.STATUS)) {\n    assert.match(look.label, /\\w/, name);\n    assert.match(look.color, /^[a-zA-Z.]+$/, name);\n  }\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "tests/toolkit.test.mjs",
+          "content": "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { readFileSync, readdirSync } from 'node:fs';\nimport { fileURLToPath } from 'node:url';\nimport { join } from 'node:path';\n\nconst root = fileURLToPath(new URL('..', import.meta.url));\nconst pluginRoot = join(root, 'plugins', 'toolkit');\n\nconst readJson = (...segments) => JSON.parse(readFileSync(join(root, ...segments), 'utf8'));\nconst readAgent = (name) => readFileSync(join(pluginRoot, 'agents', `${name}.md`), 'utf8');\nconst frontmatter = (text) => /^---\\n([\\s\\S]*?)\\n---\\n/.exec(text)[1];\n\ntest('marketplace lists the toolkit plugin from inside the repository', () => {\n  const marketplace = readJson('.claude-plugin', 'marketplace.json');\n\n  assert.equal(marketplace.name, 'claude-toolkit');\n  assert.ok(marketplace.owner?.name);\n  assert.deepEqual(\n    marketplace.plugins.map(({ name, source }) => ({ name, source })),\n    [{ name: 'toolkit', source: './plugins/toolkit' }],\n  );\n});\n\ntest('plugin manifest is named toolkit and declares no version', () => {\n  const plugin = readJson('plugins', 'toolkit', '.claude-plugin', 'plugin.json');\n\n  assert.equal(plugin.name, 'toolkit');\n  assert.equal(Object.hasOwn(plugin, 'version'), false);\n});\n\ntest('the plugin ships exactly the coordinator and worker agents and the start-up hook', () => {\n  assert.deepEqual(readdirSync(pluginRoot).sort(), ['.claude-plugin', 'agents', 'hooks']);\n  assert.deepEqual(readdirSync(join(pluginRoot, 'agents')).sort(), ['coordinator.md', 'worker.md']);\n  assert.deepEqual(readdirSync(join(pluginRoot, 'hooks')).sort(), ['hooks.json', 'session-start.mjs']);\n});\n\ntest('agent definitions are named after their files and carry a description', () => {\n  for (const name of ['coordinator', 'worker']) {\n    const fields = frontmatter(readAgent(name));\n\n    assert.match(fields, new RegExp(`^name: ${name}$`, 'm'));\n    assert.match(fields, /^description: \\S/m);\n  }\n});\n\ntest('both agents describe the same board paths', () => {\n  for (const name of ['coordinator', 'worker']) {\n    const prompt = readAgent(name);\n\n    for (const boardPath of ['team.json', 'requests/', 'sessions/', 'log.md', 'brief.md', 'status.md', '<prefix>-coordinator']) {\n      assert.ok(prompt.includes(boardPath), `${name} mentions ${boardPath}`);\n    }\n  }\n});\n\ntest('both agents end every turn with the status line the session view reads', () => {\n  for (const name of ['coordinator', 'worker'])\n    assert.match(readAgent(name), /End every turn with a final line on its own: `STATUS: QUESTION` when you need the developer's answer or decision, `STATUS: DONE` otherwise\\./, name);\n});\n\ntest('the coordinator writes requests in the exact shape the extension accepts', () => {\n  assert.match(readAgent('coordinator'), /^- `requests\\/<name>\\.json`: .*containing exactly `\\{ \"name\": \"<name>\" \\}`/m);\n});\n\ntest('the extension adds only native, labelled VS Code UI: commands, settings and a tree view, no webview', () => {\n  const extension = readJson('vscode', 'package.json');\n  const { commands, configuration, views, viewsContainers, keybindings } = extension.contributes;\n\n  assert.deepEqual(Object.keys(extension.contributes).sort(), ['commands', 'configuration', 'keybindings', 'menus', 'views', 'viewsContainers']);\n  assert.deepEqual(commands.map((command) => command.title), [\n    'Toolkit: Enable coordinator in this folder',\n    'Toolkit: Start coordinator',\n    'Toolkit: Show session tab',\n    'Toolkit: Hide session until its next event',\n    'Toolkit: Show the session waiting longest',\n    'Toolkit: Next waiting session',\n  ]);\n  assert.deepEqual(viewsContainers, { activitybar: [{ id: 'claudeToolkit', title: 'Claude sessions', icon: 'media/sessions.svg' }] });\n  assert.deepEqual(views, { claudeToolkit: [{ id: 'claudeToolkit.sessions', name: 'Claude sessions' }] });\n  assert.ok(readFileSync(join(root, 'vscode', 'media', 'sessions.svg'), 'utf8').startsWith('<svg'));\n  assert.deepEqual(keybindings, [{ command: 'claudeToolkit.nextWaiting', key: 'ctrl+alt+n', mac: 'cmd+alt+n' }]);\n  assert.deepEqual(configuration.properties['claudeToolkit.workerLayout'].enum, ['beside', 'tabs']);\n  assert.equal(configuration.properties['claudeToolkit.workerLayout'].default, 'beside');\n\n  for (const [key, setting] of Object.entries(configuration.properties)) {\n    assert.match(setting.description, /\\S{3}/, key);\n    assert.equal(setting.scope, 'machine', `${key} cannot be overridden by a workspace`);\n  }\n});\n\ntest('the start-up hook runs when a session starts or resumes', () => {\n  const hooks = readJson('plugins', 'toolkit', 'hooks', 'hooks.json').hooks;\n\n  assert.deepEqual(Object.keys(hooks), ['SessionStart']);\n  assert.equal(hooks.SessionStart.length, 1);\n  assert.equal(hooks.SessionStart[0].matcher, 'startup|resume');\n  assert.equal(hooks.SessionStart[0].hooks[0].command, 'node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.mjs\"');\n});\n",
+          "mode": 438
+        },
+        {
+          "path": "vscode/core.js",
+          "content": "const path = require('node:path');\n\nconst WORKER_NAME = /^[a-z0-9][a-z0-9-]{0,39}$/;\nconst REQUEST_FILE = /^([^/\\\\]+)\\.json$/;\nconst COORDINATOR_TAB = 'coordinator';\nconst COORDINATOR_PROMPT = 'Start-up: report the team recap if one is in your context, then read the board in .coord/ and summarize the open work and what you need from me.';\nconst EXCLUDE_ENTRY = '.coord/';\nconst SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst MAX_PREFIX_LENGTH = 50;\nconst FIRST_COLUMN = 1;\nconst SECOND_COLUMN = 2;\n\nconst isWorkerName = (name) => typeof name === 'string' && WORKER_NAME.test(name) && name !== COORDINATOR_TAB;\n\nconst trimHyphens = (value) => value.replace(/^-+|-+$/g, '');\n\nconst sessionPrefix = (projectFolder) => {\n  const safeName = trimHyphens(path.basename(projectFolder).toLowerCase().replace(/[^a-z0-9]+/g, '-'));\n  const prefix = trimHyphens(safeName.slice(0, MAX_PREFIX_LENGTH));\n\n  return prefix || 'project';\n};\n\nconst assertWorkerName = (name) => {\n  if (!isWorkerName(name))\n    throw new Error(`Invalid worker name: ${JSON.stringify(name)}`);\n};\n\nconst workerSessionName = (projectFolder, name) => {\n  assertWorkerName(name);\n\n  return `${sessionPrefix(projectFolder)}-${name}`;\n};\n\nconst commonArgs = (pluginDir) => ['--plugin-dir', pluginDir, '--permission-mode', 'auto'];\n\nconst coordinatorSessionName = (projectFolder) => `${sessionPrefix(projectFolder)}-coordinator`;\n\nconst coordinatorArgs = ({ projectFolder, pluginDir }) => [\n  ...commonArgs(pluginDir),\n  '--agent', 'toolkit:coordinator',\n  '--name', coordinatorSessionName(projectFolder),\n  COORDINATOR_PROMPT,\n];\n\nconst newWorkerArgs = ({ projectFolder, pluginDir, name }) => [\n  ...commonArgs(pluginDir),\n  '--agent', 'toolkit:worker',\n  '--name', workerSessionName(projectFolder, name),\n  `Read .coord/workers/${name}/brief.md and follow it.`,\n];\n\nconst recordedSessionId = (sessionRecord) => {\n  const sessionId = sessionRecord?.trim();\n\n  return SESSION_ID.test(sessionId ?? '') ? sessionId : undefined;\n};\n\nconst resumeWorkerArgs = ({ projectFolder, pluginDir, name, sessionRecord }) => {\n  const sessionName = workerSessionName(projectFolder, name);\n\n  return [\n    '--resume', recordedSessionId(sessionRecord) ?? sessionName,\n    ...commonArgs(pluginDir),\n    '--agent', 'toolkit:worker',\n  ];\n};\n\nconst requestedWorkerArgs = ({ projectFolder, pluginDir, name, sessionRecord }) => {\n  const sessionId = recordedSessionId(sessionRecord);\n\n  if (!sessionId)\n    return newWorkerArgs({ projectFolder, pluginDir, name });\n\n  assertWorkerName(name);\n\n  return [\n    '--resume', sessionId,\n    ...commonArgs(pluginDir),\n    '--agent', 'toolkit:worker',\n    `Read the newest section of .coord/workers/${name}/brief.md and follow it.`,\n  ];\n};\n\nconst activeWorkers = (teamJson) => {\n  const team = JSON.parse(teamJson);\n\n  if (!Array.isArray(team))\n    throw new Error('team.json must be a JSON array.');\n\n  return team\n    .filter((entry) => entry?.state === 'active' && isWorkerName(entry.name))\n    .map((entry) => entry.name);\n};\n\nconst isExactRequest = (request, name) =>\n  request !== null\n  && typeof request === 'object'\n  && !Array.isArray(request)\n  && Object.keys(request).join() === 'name'\n  && request.name === name;\n\nconst validateRequest = ({ fileName, content, openTabs, briefExists }) => {\n  const fileMatch = REQUEST_FILE.exec(fileName);\n\n  if (!fileMatch || !isWorkerName(fileMatch[1]))\n    return { ok: false, reason: `The request file name ${JSON.stringify(fileName)} is not <name>.json with a valid worker name.` };\n\n  const name = fileMatch[1];\n  let request;\n\n  try {\n    request = JSON.parse(content);\n  } catch {\n    return { ok: false, name, incomplete: true, reason: 'The request is not valid JSON.' };\n  }\n\n  if (!isExactRequest(request, name))\n    return { ok: false, name, reason: `The request must be exactly {\"name\": \"${name}\"}.` };\n\n  if (openTabs.includes(name))\n    return { ok: false, name, reason: `A tab named ${name} is already open.` };\n\n  if (!briefExists(name))\n    return { ok: false, name, reason: `.coord/workers/${name}/brief.md does not exist.` };\n\n  return { ok: true, name };\n};\n\nconst withExcludeEntry = (excludeText) => {\n  const lines = excludeText.split(/\\r?\\n/).map((line) => line.trim());\n\n  if (lines.includes(EXCLUDE_ENTRY) || lines.includes(`/${EXCLUDE_ENTRY}`))\n    return excludeText;\n\n  const separator = excludeText === '' || excludeText.endsWith('\\n') ? '' : '\\n';\n\n  return `${excludeText}${separator}${EXCLUDE_ENTRY}\\n`;\n};\n\nconst defaultPluginDir = (extensionRealPath) => path.join(extensionRealPath, '..', 'plugins', 'toolkit');\n\nconst folderKey = (folder, platform = process.platform) => {\n  const resolved = path.resolve(folder);\n\n  return platform === 'win32' ? resolved.toLowerCase() : resolved;\n};\n\nconst withEnabledFolder = (enabledFolders, folder) => {\n  const key = folderKey(folder);\n\n  return enabledFolders.includes(key) ? enabledFolders : [...enabledFolders, key];\n};\n\nconst isEnabledFolder = (enabledFolders, folder) => enabledFolders.includes(folderKey(folder));\n\nconst tabLocation = (role, layout) => {\n  if (role === 'coordinator')\n    return { viewColumn: FIRST_COLUMN, preserveFocus: false };\n\n  return { viewColumn: layout === 'tabs' ? FIRST_COLUMN : SECOND_COLUMN, preserveFocus: true };\n};\n\nconst terminalOptions = ({ name, claudePath, args, folder, role, layout }) => ({\n  name,\n  shellPath: claudePath,\n  shellArgs: args,\n  cwd: folder,\n  isTransient: true,\n  location: tabLocation(role, layout),\n});\n\nmodule.exports = {\n  COORDINATOR_TAB,\n  activeWorkers,\n  coordinatorArgs,\n  coordinatorSessionName,\n  defaultPluginDir,\n  folderKey,\n  isEnabledFolder,\n  isWorkerName,\n  newWorkerArgs,\n  requestedWorkerArgs,\n  resumeWorkerArgs,\n  sessionPrefix,\n  terminalOptions,\n  validateRequest,\n  withEnabledFolder,\n  workerSessionName,\n  withExcludeEntry,\n};\n",
+          "mode": 438
+        },
+        {
+          "path": "vscode/media/sessions.svg",
+          "content": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"4\" rx=\"1\"/><rect x=\"3\" y=\"10\" width=\"18\" height=\"4\" rx=\"1\"/><rect x=\"3\" y=\"16\" width=\"18\" height=\"4\" rx=\"1\"/><circle cx=\"6\" cy=\"6\" r=\"1\" fill=\"currentColor\"/><circle cx=\"6\" cy=\"12\" r=\"1\" fill=\"currentColor\"/><circle cx=\"6\" cy=\"18\" r=\"1\" fill=\"currentColor\"/></svg>\n",
+          "mode": 438
+        },
+        {
+          "path": "vscode/registry.js",
+          "content": "const fs = require('node:fs');\nconst path = require('node:path');\nconst status = require('./status-core');\n\nconst writeAtomically = (file, content) => {\n  const temporary = `${file}.${process.pid}.tmp`;\n\n  fs.mkdirSync(path.dirname(file), { recursive: true });\n  fs.writeFileSync(temporary, content);\n  fs.renameSync(temporary, file);\n};\n\nconst readJson = (file) => {\n  try {\n    return JSON.parse(fs.readFileSync(file, 'utf8'));\n  } catch {\n    return undefined;\n  }\n};\n\nconst readLiveWindows = (directory, isAlive) => {\n  if (!fs.existsSync(directory))\n    return [];\n\n  const live = [];\n\n  for (const fileName of fs.readdirSync(directory).filter((entry) => entry.endsWith('.json'))) {\n    const file = path.join(directory, fileName);\n    const [entry] = status.liveWindows([readJson(file)], isAlive);\n\n    if (entry)\n      live.push(entry);\n    else\n      fs.rmSync(file, { force: true });\n  }\n\n  return live;\n};\n\nmodule.exports = { readJson, readLiveWindows, writeAtomically };\n",
+          "mode": 438
+        }
+      ]
+    },
+    "concernsApplied": [
+      "accessibility",
+      "combined",
+      "compatibility",
+      "security"
+    ],
+    "fallback": "same-provider-fresh",
+    "durationMs": 54776,
+    "usage": {
+      "inputTokens": 2,
+      "outputTokens": 4050,
+      "cachedInputTokens": 0,
+      "cacheCreationInputTokens": 61280
+    },
+    "invocations": 1
+  },
+  "acceptance": [
+    {
+      "scenarioId": "session-status#sessions-waiting",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "session-status#nothing-waiting",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "session-status#cycling",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "session-status#two-windows",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "session-status#unreadable-registry-file",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "vscode-session-launcher#default-layout",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+      "evidenceIds": [
+        "tests"
+      ]
+    },
+    {
+      "scenarioId": "vscode-session-launcher#tabs-layout",
+      "mode": "combined",
+      "result": "PASS",
+      "codeDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+      "evidenceIds": [
+        "tests"
+      ]
+    }
+  ],
+  "limitations": [],
+  "openspec": {
+    "changeName": "add-session-navigation",
+    "artifactsReady": true,
+    "tasksComplete": true,
+    "scenariosCovered": true,
+    "scenarioCount": 7,
+    "scenarioDigest": "sha256:97d746e6f0e3bad9d0795698196bf8ad4ca2e95423f2723841b40e8811a9c3d5",
+    "guidanceDigest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "validationDigest": "sha256:ca751af4dfd07e1a118cceeaff3d4e8807f96458d1ac4a0f5d38a042475ca4ce"
+  },
+  "applicability": {
+    "requiredValidationLanes": [
+      "accessibility",
+      "security",
+      "test"
+    ],
+    "reviewConcerns": [
+      "accessibility",
+      "combined",
+      "compatibility",
+      "security"
+    ]
+  },
+  "continuation": {
+    "baseline": {
+      "schemaVersion": 2,
+      "base": "58663236a740e39c840822d07028e40e2dcaed93",
+      "unrelatedPaths": [],
+      "unrelatedDigest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "remediationCycles": 1,
+    "history": [
+      {
+        "resultDigest": "sha256:2efa20f19cd8bf828a62c3450841eac5073da1276a7d59edc682f5779c517cf7",
+        "sourceDigest": "sha256:9894018f8f72cd2cbdb8773270afc0446fc8a96ed1822a3c18203fc128d9d7ff",
+        "status": "blocked",
+        "stage": "focused-validation",
+        "checks": 1,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:96052824d0ab6d0a25e06345e6a1c016894dd5a15ae35a69e718e7fe3c9e2626",
+        "sourceDigest": "sha256:9894018f8f72cd2cbdb8773270afc0446fc8a96ed1822a3c18203fc128d9d7ff",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:57f9dcb772a0a69369d4eb84e46ecf9478f2862653854dec67befe158d1abf98",
+        "sourceDigest": "sha256:9894018f8f72cd2cbdb8773270afc0446fc8a96ed1822a3c18203fc128d9d7ff",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "registry-partial-write-deleted",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "sessions-view.js readWindows now deletes unparsable *.json files, but publishWindow writes ownWindowFile non-atomically (writeFileSync) and the windows watcher triggers refresh in other windows. A reader can catch a partial file and delete a live window's registry file. That window then stays missing until its next tab open/close, so clicks, the status-bar jump and Next waiting show 'started by hand' instead of raising it. Fix: write the window file with temp file plus rename, as focus requests do. Add a registry-reader test (deletes unreadable/dead by file name, keeps live); the unreadable-registry acceptance has no asserting test."
+          },
+          {
+            "id": "design-terminaloptions-wording",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "openspec/changes/add-session-navigation/design.md ('terminalOptions gains a `column` input instead of the `beside` flag') and tasks.md 1.1 ('change terminalOptions to take a column') do not match core.js, which takes `role` and `layout`. Update the wording so the change record describes the implemented contract."
+          },
+          {
+            "id": "keybinding-altgr",
+            "severity": "info",
+            "status": "open",
+            "blocking": false,
+            "summary": "On Windows, Ctrl+Alt is AltGr on many European layouts. ctrl+alt+n may type a character or be swallowed on some layouts. design.md accepts rebinding as the mitigation, so this is advisory only."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:7b661cb6dc42aff08062090e6ffacb369cd0eca1a6386e30730f360307569283",
+        "sourceDigest": "sha256:9894018f8f72cd2cbdb8773270afc0446fc8a96ed1822a3c18203fc128d9d7ff",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          {
+            "id": "registry-partial-write-deleted",
+            "severity": "medium",
+            "status": "open",
+            "blocking": true,
+            "summary": "sessions-view.js readWindows now deletes unparsable *.json files, but publishWindow writes ownWindowFile non-atomically (writeFileSync) and the windows watcher triggers refresh in other windows. A reader can catch a partial file and delete a live window's registry file. That window then stays missing until its next tab open/close, so clicks, the status-bar jump and Next waiting show 'started by hand' instead of raising it. Fix: write the window file with temp file plus rename, as focus requests do. Add a registry-reader test (deletes unreadable/dead by file name, keeps live); the unreadable-registry acceptance has no asserting test."
+          },
+          {
+            "id": "design-terminaloptions-wording",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "openspec/changes/add-session-navigation/design.md ('terminalOptions gains a `column` input instead of the `beside` flag') and tasks.md 1.1 ('change terminalOptions to take a column') do not match core.js, which takes `role` and `layout`. Update the wording so the change record describes the implemented contract."
+          },
+          {
+            "id": "keybinding-altgr",
+            "severity": "info",
+            "status": "open",
+            "blocking": false,
+            "summary": "On Windows, Ctrl+Alt is AltGr on many European layouts. ctrl+alt+n may type a character or be swallowed on some layouts. design.md accepts rebinding as the mitigation, so this is advisory only."
+          }
+        ],
+        "checks": 1,
+        "reviews": 1
+      },
+      {
+        "resultDigest": "sha256:e768236e7d25a51d54d54f16cc7f92eee08a61c11e114cf8934f266183e6783c",
+        "sourceDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+        "status": "blocked",
+        "stage": "acceptance",
+        "checks": 0,
+        "reviews": 0
+      },
+      {
+        "resultDigest": "sha256:2e4682f562626f2639a2afbf3de229f2b5745b2541015c99ed94d44119caeb71",
+        "sourceDigest": "sha256:82f22f79faf5ff99217ff6368881f97b86aba5a8faf84095970c509ae74a2f3d",
+        "status": "blocked",
+        "stage": "definition-of-done",
+        "verdict": "PASS",
+        "findings": [
+          {
+            "id": "click-action-indirection",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "vscode/status-core.js clickAction is a 3-way wrapper over location.kind; sessions-view still reads location.window, so the two must stay in step. Acceptable since it was added to make routing testable; advisory only."
+          },
+          {
+            "id": "readme-status-bar-glyph",
+            "severity": "low",
+            "status": "open",
+            "blocking": false,
+            "summary": "README shows the status-bar text as `🔔 2 waiting`, but updateStatusBar renders the $(bell-dot) codicon, not an emoji. Minor documentation wording mismatch."
+          }
+        ],
+        "checks": 0,
+        "reviews": 1
+      }
+    ],
+    "historyCount": 6,
+    "historyDigest": "sha256:292945144afba75ecc459dfce955cacf72e5782949573c7a09ca1be84e8c18d6"
+  },
+  "schemaVersion": 2,
+  "createdAt": "2026-11-18T14:11:07.261Z",
+  "definitionOfDone": {
+    "status": "PASS",
+    "blockers": []
+  },
+  "status": "complete",
+  "nextAction": "No further SDD action is required."
+}

@@ -185,6 +185,24 @@ const groupDescription = (group) => {
   return group.waiting > 0 ? `${group.waiting} waiting · ${count}` : count;
 };
 
+const waitingSessions = (sessions) => sessions.filter((session) => WAITING.has(session.status)).sort(byUrgency);
+
+const nextWaiting = (waiting, lastFocusedId) => {
+  if (waiting.length === 0)
+    return undefined;
+
+  const index = waiting.findIndex((session) => session.id === lastFocusedId);
+
+  return waiting[(index + 1) % waiting.length];
+};
+
+const clickAction = (location) => {
+  if (location.kind === 'here')
+    return 'show';
+
+  return location.kind === 'other' ? 'raise' : 'message';
+};
+
 const liveWindows = (entries, isAlive) => entries.filter((entry) =>
   Number.isInteger(entry?.pid)
   && typeof entry.folder === 'string'
@@ -214,6 +232,9 @@ module.exports = {
   STATUS,
   byUrgency,
   cardDescription,
+  clickAction,
+  nextWaiting,
+  waitingSessions,
   formatDuration,
   groupByProject,
   groupDescription,

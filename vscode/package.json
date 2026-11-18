@@ -30,16 +30,40 @@
         "command": "claudeToolkit.hideSession",
         "title": "Toolkit: Hide session until its next event",
         "icon": "$(eye-closed)"
+      },
+      {
+        "command": "claudeToolkit.focusMostUrgent",
+        "title": "Toolkit: Show the session waiting longest"
+      },
+      {
+        "command": "claudeToolkit.nextWaiting",
+        "title": "Toolkit: Next waiting session"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "claudeToolkit",
+          "title": "Claude sessions",
+          "icon": "media/sessions.svg"
+        }
+      ]
+    },
     "views": {
-      "explorer": [
+      "claudeToolkit": [
         {
           "id": "claudeToolkit.sessions",
           "name": "Claude sessions"
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "claudeToolkit.nextWaiting",
+        "key": "ctrl+alt+n",
+        "mac": "cmd+alt+n"
+      }
+    ],
     "menus": {
       "view/item/context": [
         {
@@ -80,6 +104,17 @@
           "default": 10,
           "minimum": 1,
           "description": "Minutes without events after which a working session is shown as possibly stuck."
+        },
+        "claudeToolkit.workerLayout": {
+          "type": "string",
+          "scope": "machine",
+          "enum": ["beside", "tabs"],
+          "enumDescriptions": [
+            "Worker tabs open in the column next to the coordinator.",
+            "Worker tabs open as full-width tabs in the coordinator's column."
+          ],
+          "default": "beside",
+          "description": "Where worker tabs open."
         }
       }
     }

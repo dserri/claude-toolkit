@@ -144,6 +144,29 @@ test('a titled session reports it, a folder-named one does not', () => {
   assert.equal(stateOf([at(60, 'SessionStart', { folder: 'portal' })]).titled, false);
 });
 
+test('waiting sessions come in urgency order and the next one wraps around', () => {
+  const session = (id, sessionStatus, since) => ({ id, status: sessionStatus, since });
+  const waiting = status.waitingSessions([
+    session('working', 'working', 1),
+    session('question-new', 'question', 30),
+    session('permission-old', 'permission', 10),
+    session('finished', 'finished', 1),
+  ]);
+
+  assert.deepEqual(waiting.map((entry) => entry.id), ['permission-old', 'question-new']);
+  assert.equal(status.nextWaiting(waiting, undefined).id, 'permission-old');
+  assert.equal(status.nextWaiting(waiting, 'permission-old').id, 'question-new');
+  assert.equal(status.nextWaiting(waiting, 'question-new').id, 'permission-old');
+  assert.equal(status.nextWaiting(waiting, 'gone').id, 'permission-old');
+  assert.equal(status.nextWaiting([], 'permission-old'), undefined);
+});
+
+test('a click shows an own tab, raises another window, or explains', () => {
+  assert.equal(status.clickAction({ kind: 'here' }), 'show');
+  assert.equal(status.clickAction({ kind: 'other', window: { pid: 2 } }), 'raise');
+  assert.equal(status.clickAction({ kind: 'none' }), 'message');
+});
+
 test('only well-formed entries of running windows count', () => {
   const entries = [
     { pid: 10, folder: 'P:\\repos\\Rehlko\\rehlko-portal', sessions: ['rehlko-portal-coordinator'] },

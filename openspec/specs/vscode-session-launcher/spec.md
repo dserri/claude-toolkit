@@ -75,3 +75,17 @@ Every session SHALL start Claude Code directly, without a shell, with `--plugin-
 
 - **WHEN** any session is opened
 - **THEN** the program and its arguments are passed as a list to the terminal, so no character in them is interpreted by a shell
+
+### Requirement: Worker layout
+
+A machine-scoped setting `claudeToolkit.workerLayout` SHALL choose where worker tabs open: `beside` (default) opens them in the column next to the coordinator, `tabs` opens them as tabs in the coordinator's column.
+
+#### Scenario: Default layout
+
+- **WHEN** the setting is not changed
+- **THEN** workers open beside the coordinator, as before
+
+#### Scenario: Tabs layout
+
+- **WHEN** the setting is `tabs` and the coordinator requests a worker
+- **THEN** the worker opens as a full-width tab in the coordinator's column without taking focus

@@ -154,13 +154,20 @@ const withEnabledFolder = (enabledFolders, folder) => {
 
 const isEnabledFolder = (enabledFolders, folder) => enabledFolders.includes(folderKey(folder));
 
-const terminalOptions = ({ name, claudePath, args, folder, beside }) => ({
+const tabLocation = (role, layout) => {
+  if (role === 'coordinator')
+    return { viewColumn: FIRST_COLUMN, preserveFocus: false };
+
+  return { viewColumn: layout === 'tabs' ? FIRST_COLUMN : SECOND_COLUMN, preserveFocus: true };
+};
+
+const terminalOptions = ({ name, claudePath, args, folder, role, layout }) => ({
   name,
   shellPath: claudePath,
   shellArgs: args,
   cwd: folder,
   isTransient: true,
-  location: { viewColumn: beside ? SECOND_COLUMN : FIRST_COLUMN, preserveFocus: beside },
+  location: tabLocation(role, layout),
 });
 
 module.exports = {

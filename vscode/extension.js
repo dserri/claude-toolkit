@@ -31,12 +31,14 @@ const openTabNames = () => vscode.window.terminals.map((terminal) => terminal.na
 
 const tabsBySession = new Map();
 
-const openTab = ({ name, sessionName, args, folder, claudePath, beside }) => {
+const openTab = ({ name, sessionName, args, folder, claudePath, role }) => {
+  const layout = vscode.workspace.getConfiguration('claudeToolkit').get('workerLayout', 'beside');
+
   if (openTabNames().includes(name))
     return;
 
   output.appendLine(`Opening ${name}: ${claudePath} ${JSON.stringify(args)}`);
-  tabsBySession.set(sessionName, vscode.window.createTerminal(core.terminalOptions({ name, claudePath, args, folder, beside })));
+  tabsBySession.set(sessionName, vscode.window.createTerminal(core.terminalOptions({ name, claudePath, args, folder, role, layout })));
   sessionsView?.publishWindow();
 };
 
@@ -106,7 +108,7 @@ const handleRequest = (context, folder, file, { waitForWrite }) => {
   const sessionRecord = readSessionRecord(folder, result.name);
   const args = core.requestedWorkerArgs({ projectFolder: folder, pluginDir, name: result.name, sessionRecord });
 
-  openTab({ name: result.name, sessionName: core.workerSessionName(folder, result.name), args, folder, claudePath, beside: true });
+  openTab({ name: result.name, sessionName: core.workerSessionName(folder, result.name), args, folder, claudePath, role: 'worker' });
 };
 
 const watchRequests = (context, folder) => {
@@ -129,13 +131,13 @@ const start = (context, folder) => {
   const { claudePath, pluginDir } = settings(context);
   const coordinatorArgs = core.coordinatorArgs({ projectFolder: folder, pluginDir });
 
-  openTab({ name: core.COORDINATOR_TAB, sessionName: core.coordinatorSessionName(folder), args: coordinatorArgs, folder, claudePath, beside: false });
+  openTab({ name: core.COORDINATOR_TAB, sessionName: core.coordinatorSessionName(folder), args: coordinatorArgs, folder, claudePath, role: 'coordinator' });
 
   for (const name of readActiveWorkers(folder)) {
     const sessionRecord = readSessionRecord(folder, name);
     const args = core.resumeWorkerArgs({ projectFolder: folder, pluginDir, name, sessionRecord });
 
-    openTab({ name, sessionName: core.workerSessionName(folder, name), args, folder, claudePath, beside: true });
+    openTab({ name, sessionName: core.workerSessionName(folder, name), args, folder, claudePath, role: 'worker' });
   }
 
   if (!watching) {

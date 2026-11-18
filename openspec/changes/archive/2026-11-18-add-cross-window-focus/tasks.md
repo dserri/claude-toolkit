@@ -6,7 +6,7 @@
 
 ## 2. Window registry and focus
 
-- [x] 2.1 Add pure helpers (registry entry, live-window filter, location label, focus target) to `vscode/status-core.js` with tests
+- [x] 2.1 Add pure helpers (live-window filter, session location, location label, latest session per title) to `vscode/status-core.js` with tests
 - [x] 2.2 Publish and remove the window file, watch the window's own focus request, and route clicks to this window, another window or a message in `sessions-view.js`; verify VS Code loads it without errors
 - [x] 2.3 Correct the archived proposal wording and document cross-window focus in README
 

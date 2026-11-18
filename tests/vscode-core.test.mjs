@@ -162,15 +162,18 @@ test('the Git exclude entry is added once', () => {
   assert.equal(core.withExcludeEntry('/.coord/\r\n'), '/.coord/\r\n');
 });
 
-test('tabs run Claude directly, are never restored by VS Code, and put workers beside the coordinator', () => {
+test('tabs run Claude directly, are never restored by VS Code, and place workers by the chosen layout', () => {
   const args = ['--agent', 'toolkit:worker'];
+  const options = (role, layout) => core.terminalOptions({ name: role, claudePath: 'claude', args, folder: projectFolder, role, layout });
 
-  assert.deepEqual(core.terminalOptions({ name: 'coordinator', claudePath: 'claude', args, folder: projectFolder, beside: false }), {
+  assert.deepEqual(options('coordinator', 'beside'), {
     name: 'coordinator', shellPath: 'claude', shellArgs: args, cwd: projectFolder, isTransient: true,
     location: { viewColumn: 1, preserveFocus: false },
   });
-  assert.deepEqual(core.terminalOptions({ name: 'tester', claudePath: 'claude', args, folder: projectFolder, beside: true }).location,
-    { viewColumn: 2, preserveFocus: true });
+  assert.deepEqual(options('coordinator', 'tabs').location, { viewColumn: 1, preserveFocus: false });
+  assert.deepEqual(options('worker', 'beside').location, { viewColumn: 2, preserveFocus: true });
+  assert.deepEqual(options('worker', undefined).location, { viewColumn: 2, preserveFocus: true });
+  assert.deepEqual(options('worker', 'tabs').location, { viewColumn: 1, preserveFocus: true });
 });
 
 test('enablement is keyed by the resolved folder, case-insensitive on Windows only', () => {

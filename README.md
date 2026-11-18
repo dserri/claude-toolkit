@@ -22,7 +22,7 @@ Link the extension into VS Code, then reload VS Code (Command Palette → "Devel
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.vscode\extensions\dserri.claude-toolkit-0.0.1" -Target "<clone>\vscode"
 ```
 
-The extension starts every session with `--plugin-dir <clone>/plugins/toolkit` and `--permission-mode auto` (sessions in the same mode exchange messages without approval prompts). `claude` must be on `PATH`, or set `claudeToolkit.claudePath`; `claudeToolkit.pluginDir` overrides the plugin folder.
+The extension starts every session with `--plugin-dir <clone>/plugins/toolkit` and `--permission-mode auto` (sessions in the same mode exchange messages without approval prompts). `claude` must be on `PATH`, or set `claudeToolkit.claudePath`; `claudeToolkit.pluginDir` overrides the plugin folder. `claudeToolkit.workerLayout` chooses where worker tabs open: `beside` (default, the column next to the coordinator) or `tabs` (full-width tabs in the coordinator's column).
 
 ## Enable a project
 
@@ -43,7 +43,7 @@ Sessions are named `<project>-coordinator` and `<project>-<worker>` (the project
 
 ## Session status
 
-The "Claude sessions" view (Explorer sidebar) and the status-bar item show every interactive Claude Code session on this machine, toolkit or not:
+The "Claude sessions" view (its own icon in the Activity Bar, the same in every window; drag it elsewhere once if you prefer) and the status-bar item show every interactive Claude Code session on this machine, toolkit or not. Clicking the status-bar item (`🔔 2 waiting`) shows the session waiting longest; `Ctrl+Alt+N` ("Toolkit: Next waiting session") cycles through the waiting sessions in urgency order; both reach tabs in other windows like a card click does.
 
 | Colour | Status | Set by |
 |---|---|---|

@@ -65,16 +65,23 @@ test('the coordinator writes requests in the exact shape the extension accepts',
 
 test('the extension adds only native, labelled VS Code UI: commands, settings and a tree view, no webview', () => {
   const extension = readJson('vscode', 'package.json');
-  const { commands, configuration, views } = extension.contributes;
+  const { commands, configuration, views, viewsContainers, keybindings } = extension.contributes;
 
-  assert.deepEqual(Object.keys(extension.contributes).sort(), ['commands', 'configuration', 'menus', 'views']);
+  assert.deepEqual(Object.keys(extension.contributes).sort(), ['commands', 'configuration', 'keybindings', 'menus', 'views', 'viewsContainers']);
   assert.deepEqual(commands.map((command) => command.title), [
     'Toolkit: Enable coordinator in this folder',
     'Toolkit: Start coordinator',
     'Toolkit: Show session tab',
     'Toolkit: Hide session until its next event',
+    'Toolkit: Show the session waiting longest',
+    'Toolkit: Next waiting session',
   ]);
-  assert.deepEqual(views, { explorer: [{ id: 'claudeToolkit.sessions', name: 'Claude sessions' }] });
+  assert.deepEqual(viewsContainers, { activitybar: [{ id: 'claudeToolkit', title: 'Claude sessions', icon: 'media/sessions.svg' }] });
+  assert.deepEqual(views, { claudeToolkit: [{ id: 'claudeToolkit.sessions', name: 'Claude sessions' }] });
+  assert.ok(readFileSync(join(root, 'vscode', 'media', 'sessions.svg'), 'utf8').startsWith('<svg'));
+  assert.deepEqual(keybindings, [{ command: 'claudeToolkit.nextWaiting', key: 'ctrl+alt+n', mac: 'cmd+alt+n' }]);
+  assert.deepEqual(configuration.properties['claudeToolkit.workerLayout'].enum, ['beside', 'tabs']);
+  assert.equal(configuration.properties['claudeToolkit.workerLayout'].default, 'beside');
 
   for (const [key, setting] of Object.entries(configuration.properties)) {
     assert.match(setting.description, /\S{3}/, key);

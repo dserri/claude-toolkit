@@ -302,7 +302,7 @@ describe('withExcludeEntry', () => {
 describe('terminalOptions', () => {
   test('builds coordinator options', () => {
     const args = ['--a', 'b c'];
-    const options = core.terminalOptions({ name: 'Coordinator', claudePath: '/bin/claude', args, folder: '/work', beside: false });
+    const options = core.terminalOptions({ name: 'Coordinator', claudePath: '/bin/claude', args, folder: '/work', role: 'coordinator', layout: 'beside' });
     assert.equal(options.shellPath, '/bin/claude');
     assert.deepEqual(options.shellArgs, args);
     assert.ok(Array.isArray(options.shellArgs));
@@ -313,7 +313,7 @@ describe('terminalOptions', () => {
   });
 
   test('builds worker options', () => {
-    const options = core.terminalOptions({ name: 'alpha', claudePath: '/bin/claude', args: ['x'], folder: '/work', beside: true });
+    const options = core.terminalOptions({ name: 'alpha', claudePath: '/bin/claude', args: ['x'], folder: '/work', role: 'worker', layout: 'beside' });
     assert.equal(options.location.viewColumn, 2);
     assert.equal(options.location.preserveFocus, true);
     assert.equal(options.isTransient, true);
